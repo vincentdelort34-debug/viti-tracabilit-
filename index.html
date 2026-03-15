@@ -240,6 +240,38 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
 #toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--noir);color:var(--creme);padding:11px 20px;border-radius:28px;font-size:13px;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.35);opacity:0;transition:all .3s;z-index:600;white-space:nowrap;pointer-events:none;max-width:92vw;text-align:center}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--gris2);border-radius:2px}
+/* ── DIAGNOSTIC ── */
+.diag-photo-zone{width:100%;height:200px;border-radius:14px;overflow:hidden;position:relative;cursor:pointer;background:linear-gradient(135deg,#1a2a1a,#2a3a2a);display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed rgba(201,168,76,.3);transition:all .25s;margin-bottom:12px}
+.diag-photo-zone:hover{border-color:var(--or)}
+.diag-photo-zone.has-img{border-style:solid;border-color:var(--or);padding:0}
+#diagPrevImg{width:100%;height:100%;object-fit:cover;display:none}
+.diag-scan-beam{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--vert2),transparent);animation:scandown 1.8s ease-in-out infinite;pointer-events:none;z-index:2}
+.diag-result-card{border-radius:16px;overflow:hidden;margin-bottom:12px;box-shadow:var(--sh2)}
+.diag-result-header{padding:16px;color:#fff;position:relative}
+.diag-result-header::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.07)}
+.diag-disease-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;line-height:1.1;margin-bottom:4px}
+.diag-confidence{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:8px}
+.diag-conf-bar{height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.diag-conf-fill{height:100%;border-radius:3px;background:rgba(255,255,255,.8);transition:width 1s ease}
+.diag-severity{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,.2)}
+.diag-result-body{background:var(--card);padding:16px}
+.diag-section{margin-bottom:14px}
+.diag-section-title{font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.diag-symptom{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:13px}
+.diag-symptom-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.conseil-card{background:linear-gradient(135deg,var(--vigne),#0f2a0f);border-radius:12px;padding:14px;margin-bottom:10px;color:#fff}
+.conseil-prod{font-weight:700;font-size:14px;margin-bottom:4px}
+.conseil-meta{font-size:12px;opacity:.8;margin-bottom:8px}
+.conseil-ift-preview{background:rgba(255,255,255,.12);border-radius:8px;padding:8px 12px;font-size:12px}
+.conseil-stock-ok{color:#6dcc6d;font-size:12px;font-weight:600}
+.conseil-stock-warn{color:var(--or2);font-size:12px;font-weight:600}
+.diag-history-item{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid var(--gris2)}
+.diag-history-item:last-child{border-bottom:none}
+.diag-thumb{width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--gris3);display:flex;align-items:center;justify-content:center;font-size:20px}
+.severity-high{background:linear-gradient(135deg,#c0392b,#8a1a10)}
+.severity-med{background:linear-gradient(135deg,#d4751a,#a04510)}
+.severity-low{background:linear-gradient(135deg,var(--vigne),#0f2a0f)}
+.severity-carence{background:linear-gradient(135deg,#8a6a10,#5a4a00)}
 </style>
 </head>
 <body>
@@ -264,6 +296,7 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
   <button class="tab"     onclick="go('sRegistre',this)">📋 Registre</button>
   <button class="tab"     onclick="go('sCave',this)">🍷 Cave</button>
   <button class="tab"     onclick="go('sObs',this)">👁️ Obs.</button>
+  <button class="tab"     onclick="go('sDiag',this)">🔬 Diagnostic IA</button>
 </nav>
 <div class="main">
 <!-- ══ ACCUEIL ══ -->
@@ -728,6 +761,154 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
     <div class="li"><div class="lic" style="background:#d4edda">🐛</div><div class="lib"><div class="lit">Cicadelles P1 — faible</div><div class="lim">5 mars · 2 photos</div></div><span class="badge bg">Faible</span></div>
   </div>
 </section>
+
+<!-- ══ DIAGNOSTIC IA ══ -->
+<section id="sDiag" class="sec">
+  <div class="stitle">Diagnostic maladie IA</div>
+  <div class="ssub">Photo de vigne → Identification + conseil de traitement personnalisé</div>
+
+  <!-- ZONE PHOTO -->
+  <div class="diag-photo-zone" id="diagZone" onclick="diagTriggerPhoto()">
+    <img id="diagPrevImg">
+    <div id="diagUploadContent">
+      <div style="font-size:48px;margin-bottom:10px">🔬</div>
+      <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,.9);margin-bottom:4px">Photographier la plante malade</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.55)">Feuille, grappe, sarment, sol…</div>
+      <div style="display:flex;justify-content:center;gap:8px;margin-top:12px">
+        <span style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:var(--or2);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">Maladies</span>
+        <span style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:var(--or2);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">Ravageurs</span>
+        <span style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:var(--or2);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">Carences</span>
+      </div>
+    </div>
+    <div class="diag-scan-beam" id="diagBeam" style="display:none"></div>
+  </div>
+  <input type="file" id="diagFileInput" accept="image/*" style="display:none" onchange="handleDiagFile(this)">
+  <input type="file" id="diagCamInput" accept="image/*" capture="environment" style="display:none" onchange="handleDiagFile(this)">
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <button class="btn" style="background:var(--vigne);color:var(--creme);flex-direction:column;gap:3px;padding:12px 8px" onclick="document.getElementById('diagCamInput').click()">
+      <span style="font-size:22px">📷</span><span>Appareil photo</span>
+    </button>
+    <button class="btn btghost" style="flex-direction:column;gap:3px;padding:12px 8px" onclick="document.getElementById('diagFileInput').click()">
+      <span style="font-size:22px">🖼️</span><span>Galerie</span>
+    </button>
+  </div>
+
+  <!-- PARCELLE CONTEXTE -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ch"><span class="ct">Contexte parcelle</span><span style="font-size:12px;color:var(--gris)">Pour conseil personnalisé</span></div>
+    <div class="row2">
+      <div class="fg" style="margin-bottom:0">
+        <label>📍 Parcelle concernée</label>
+        <select id="diagParc">
+          <option value="">GPS auto</option>
+          <option value="P1">P1 · Grenache (IFT 2,4)</option>
+          <option value="P2">P2 · Syrah (IFT 2,8)</option>
+          <option value="P3" selected>P3 · Syrah Sud (IFT 3,6)</option>
+          <option value="P4">P4 · Carignan (IFT 3,0)</option>
+          <option value="LG">Les Galets (IFT 4,2)</option>
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label>🌱 Stade BBCH actuel</label>
+        <select id="diagBBCH">
+          <option>BBCH 09</option>
+          <option selected>BBCH 53</option>
+          <option>BBCH 65</option>
+          <option>BBCH 71</option>
+          <option>BBCH 79</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btp" id="diagAnalyseBtn" onclick="lancerDiagnostic()" disabled>
+    🔬 Analyser avec l'IA — Diagnostic + conseil de traitement
+  </button>
+
+  <!-- LOADING DIAGNOSTIC -->
+  <div class="loading-card" id="diagLoadingCard" style="margin-top:12px">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--vigne);margin-bottom:6px">Diagnostic en cours…</div>
+    <div style="font-size:13px;color:var(--gris);margin-bottom:14px">Analyse visuelle + croisement données domaine</div>
+    <div class="spinner"></div>
+    <div style="margin-top:12px;text-align:left">
+      <div class="lstep" id="dl1"><div class="lstep-i">1</div><span>Analyse visuelle des symptômes</span></div>
+      <div class="lstep" id="dl2"><div class="lstep-i">2</div><span>Identification maladie / ravageur / carence</span></div>
+      <div class="lstep" id="dl3"><div class="lstep-i">3</div><span>Évaluation du stade et de la sévérité</span></div>
+      <div class="lstep" id="dl4"><div class="lstep-i">4</div><span>Croisement avec votre stock produits</span></div>
+      <div class="lstep" id="dl5"><div class="lstep-i">5</div><span>Calcul IFT impact sur la parcelle</span></div>
+      <div class="lstep" id="dl6"><div class="lstep-i">6</div><span>Conseil traitement personnalisé</span></div>
+    </div>
+  </div>
+
+  <!-- RÉSULTAT DIAGNOSTIC -->
+  <div id="diagResult" style="display:none;margin-top:12px">
+
+    <!-- CARTE MALADIE -->
+    <div class="diag-result-card" id="diagResultCard">
+      <div class="diag-result-header" id="diagResultHeader">
+        <div class="diag-confidence" id="diagConfidence">— %</div>
+        <div class="diag-disease-name" id="diagDiseaseName">—</div>
+        <div style="font-size:13px;opacity:.8;margin-bottom:10px" id="diagDiseaseLatin">—</div>
+        <div class="diag-conf-bar"><div class="diag-conf-fill" id="diagConfBar" style="width:0%"></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="diag-severity" id="diagSeverity">—</div>
+          <div style="font-size:12px;opacity:.7" id="diagStade">—</div>
+        </div>
+      </div>
+      <div class="diag-result-body">
+        <!-- SYMPTÔMES -->
+        <div class="diag-section">
+          <div class="diag-section-title">Symptômes observés</div>
+          <div id="diagSymptoms"></div>
+        </div>
+        <!-- CONDITIONS FAVORABLES -->
+        <div class="diag-section">
+          <div class="diag-section-title">Conditions favorisant le développement</div>
+          <div id="diagConditions" style="font-size:13px;color:var(--gris);line-height:1.6"></div>
+        </div>
+        <!-- RISQUE PROPAGATION -->
+        <div id="diagRisqueBox" class="al" style="margin-bottom:0"></div>
+      </div>
+    </div>
+
+    <!-- CONSEILS DE TRAITEMENT -->
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--vigne);margin-bottom:10px">
+      💊 Conseils de traitement
+      <span style="font-size:12px;font-family:'Outfit',sans-serif;font-weight:500;color:var(--gris);margin-left:6px">Personnalisés pour votre domaine</span>
+    </div>
+
+    <div id="diagConseils"></div>
+
+    <!-- FENÊTRE MÉTÉO -->
+    <div class="card">
+      <div class="ch"><span class="ct">Fenêtre traitement recommandée</span></div>
+      <div id="diagMeteo"></div>
+    </div>
+
+    <!-- IMPACT IFT -->
+    <div class="card" id="diagIFTCard">
+      <div class="ch"><span class="ct">Impact IFT si traitement aujourd'hui</span><span class="badge bgold" id="diagIFTBadge">—</span></div>
+      <div id="diagIFTContent"></div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <button class="btn btghost" onclick="resetDiag()">↩ Nouveau diagnostic</button>
+      <button class="btn btgold" onclick="diagToTraitement()">💊 Créer le traitement</button>
+    </div>
+    <button class="btn btp" onclick="saveDiagObs()">📍 Sauvegarder observation GPS</button>
+  </div>
+
+  <!-- HISTORIQUE DIAGNOSTICS -->
+  <div class="card" id="diagHistCard" style="margin-top:16px">
+    <div class="ch"><span class="ct">Historique diagnostics</span><span class="badge bb" id="diagHistCount">0</span></div>
+    <div id="diagHistList">
+      <div style="text-align:center;padding:16px;color:var(--gris);font-size:13px">Aucun diagnostic encore effectué.<br>Prenez une photo pour commencer.</div>
+    </div>
+  </div>
+</section>
+
 </div><!-- /main -->
 <button class="fab" onclick="showM('mNewInterv')">+</button>
 <!-- ══ MODALS ══ -->
@@ -1317,6 +1498,193 @@ function toast(msg){
 window.addEventListener('load',()=>{
   renderDash();renderStock('all');renderRegistre();
 });
+</script>
+
+<script>
+// ═══════════════════════════════════════════
+//  DIAGNOSTIC IA — RECONNAISSANCE MALADIE
+// ═══════════════════════════════════════════
+let diagImgBase64=null,diagImgType='image/jpeg',diagHistory=[];
+
+function diagTriggerPhoto(){if(!diagImgBase64)document.getElementById('diagCamInput').click();}
+
+function handleDiagFile(input){
+  const file=input.files[0];if(!file)return;
+  diagImgType=file.type||'image/jpeg';
+  const r=new FileReader();
+  r.onload=e=>{
+    diagImgBase64=e.target.result.split(',')[1];
+    const prev=document.getElementById('diagPrevImg'),zone=document.getElementById('diagZone');
+    prev.src=e.target.result;prev.style.display='block';
+    document.getElementById('diagUploadContent').style.display='none';
+    zone.classList.add('has-img');
+    document.getElementById('diagBeam').style.display='block';
+    document.getElementById('diagAnalyseBtn').disabled=false;
+    toast('✅ Photo chargée — prête pour le diagnostic');
+  };r.readAsDataURL(file);
+}
+
+async function lancerDiagnostic(){
+  if(!diagImgBase64){toast('⚠️ Prendre une photo d\'abord');return;}
+  document.getElementById('diagLoadingCard').classList.add('show');
+  document.getElementById('diagResult').style.display='none';
+  document.getElementById('diagAnalyseBtn').disabled=true;
+  const dlIds=['dl1','dl2','dl3','dl4','dl5','dl6'];
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i>0){const p=document.getElementById(dlIds[i-1]);p.classList.remove('active');p.classList.add('done');p.querySelector('.lstep-i').textContent='✓';}
+    if(i<dlIds.length){document.getElementById(dlIds[i]).classList.add('active');i++;}else clearInterval(iv);
+  },700);
+  const parcId=document.getElementById('diagParc').value||'P3';
+  const parc=PARCELLES[parcId];
+  const iftActuel=iftParc(parcId);
+  const bbch=document.getElementById('diagBBCH').value;
+  const stockResume=stockData.map(s=>`${s.nom} (${s.qte} ${s.unite} stock, DAR ${DOSE_REF[s.prodKey]?.dar||'?'}j)`).join('; ');
+  const prompt=`Tu es un expert viticole agronome français spécialisé en protection de la vigne. Analyse cette photo et effectue un diagnostic complet.
+CONTEXTE DOMAINE :
+- Parcelle : ${parc?.nom||'inconnue'} · ${parc?.ha||'—'} ha · ${parc?.cepage||'—'}
+- IFT actuel parcelle : ${iftActuel.toFixed(2)} / 4,0 (référence HVE). Important : recommander dose réduite si IFT proche de 4,0.
+- Stade BBCH : ${bbch}
+- Stock produits disponibles : ${stockResume}
+- Météo : pluies récentes 28mm, 18°C, risque mildiou élevé
+Réponds UNIQUEMENT en JSON strict sans markdown :
+{"maladie":"nom français","nom_latin":"nom latin","categorie":"maladie_fongique|ravageur|carence|stress_abiotique","severite":"faible|moyenne|elevee|critique","confiance":0_a_100,"symptomes":["s1","s2","s3"],"stade_developpement":"description","conditions_favorables":"texte","risque_propagation":"faible|moyen|eleve","risque_detail":"texte","conseils":[{"produit_nom":"nom","produit_type":"fongicide|insecticide|biocontrôle","dose_recommandee":"valeur","dose_unite":"kg/ha ou L/ha","dose_reference":"valeur ref ANSES","ift_contribution":0.0,"justification":"texte court","dans_stock":true,"stock_disponible":"texte","dar":0,"timing":"maintenant|sous_48h|cette_semaine","priorite":1}],"fenetre_traitement":"texte","mesures_complementaires":["m1","m2"],"ift_apres_traitement":0.0,"surveillance":"texte"}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:diagImgType,data:diagImgBase64}},
+        {type:'text',text:prompt}
+      ]}]})
+    });
+    clearInterval(iv);
+    dlIds.forEach(id=>{const el=document.getElementById(id);el.classList.remove('active');el.classList.add('done');el.querySelector('.lstep-i').textContent='✓';});
+    await new Promise(r=>setTimeout(r,400));
+    const data=await res.json();
+    let txt=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    renderDiagResult(JSON.parse(txt),parcId);
+  }catch(e){
+    clearInterval(iv);
+    renderDiagResult(demoDiagData(parcId),parcId);
+    toast('⚠️ Mode démo activé — API Claude requise pour le vrai diagnostic');
+  }
+}
+
+function renderDiagResult(d,parcId){
+  document.getElementById('diagLoadingCard').classList.remove('show');
+  document.getElementById('diagResult').style.display='block';
+  const sevClass={faible:'severity-low',moyenne:'severity-med',elevee:'severity-high',critique:'severity-high'}[d.severite]||'severity-low';
+  const sevLabel={faible:'🟢 Faible',moyenne:'🟡 Moyenne',elevee:'🔴 Élevée',critique:'🚨 Critique'}[d.severite]||d.severite;
+  document.getElementById('diagResultHeader').className='diag-result-header '+sevClass;
+  document.getElementById('diagConfidence').innerHTML='🎯 '+d.confiance+'% confiance';
+  document.getElementById('diagDiseaseName').textContent=d.maladie;
+  document.getElementById('diagDiseaseLatin').textContent=d.nom_latin||'';
+  const cf=document.getElementById('diagConfBar');cf.style.width='0%';setTimeout(()=>{cf.style.width=d.confiance+'%';},200);
+  document.getElementById('diagSeverity').textContent=sevLabel;
+  document.getElementById('diagStade').textContent=d.stade_developpement||'';
+  const dotColor=sevClass==='severity-high'?'var(--rouge)':sevClass==='severity-med'?'var(--orange)':'var(--vert2)';
+  document.getElementById('diagSymptoms').innerHTML=(d.symptomes||[]).map(s=>`<div class="diag-symptom"><div class="diag-symptom-dot" style="background:${dotColor}"></div><span style="font-size:13px">${s}</span></div>`).join('');
+  document.getElementById('diagConditions').textContent=d.conditions_favorables||'';
+  const rEl=document.getElementById('diagRisqueBox');
+  const rCls={faible:'alg',moyen:'alo',eleve:'alr'}[d.risque_propagation]||'alo';
+  const rIco={faible:'🟢',moyen:'⚠️',eleve:'🚨'}[d.risque_propagation]||'⚠️';
+  rEl.className='al '+rCls;
+  rEl.innerHTML=`<span class="al-i">${rIco}</span><div><b>Risque propagation ${d.risque_propagation||'moyen'}</b>${d.risque_detail||''}</div>`;
+  const iftActuel=iftParc(parcId);
+  document.getElementById('diagConseils').innerHTML=(d.conseils||[]).map((c,idx)=>{
+    const iftApres=iftActuel+(c.ift_contribution||1);
+    const ok=iftApres<=4.0;
+    const tl={maintenant:'🔴 Maintenant',sous_48h:'🟡 Sous 48h',cette_semaine:'🟢 Cette semaine'}[c.timing]||c.timing;
+    return`<div class="conseil-card" style="background:${idx===0?'linear-gradient(135deg,var(--vigne),#0f2a0f)':'linear-gradient(135deg,#2a3a2a,#1a2a1a)'}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
+        <div><div style="font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">${idx===0?'✅ Prioritaire':'Alternative'}</div><div class="conseil-prod">${c.produit_nom}</div></div>
+        <div style="background:rgba(255,255,255,.15);padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap">${tl}</div>
+      </div>
+      <div class="conseil-meta">${c.dose_recommandee} ${c.dose_unite} · DAR ${c.dar}j · ${c.justification}</div>
+      <div class="conseil-ift-preview">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span>IFT parcelle après traitement</span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:${ok?'#6dcc6d':'#ff8a80'}">${iftApres.toFixed(2)} / 4,0</span>
+        </div>
+        <div style="height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${Math.min(100,iftApres/4.8*100)}%;background:${ok?'#6dcc6d':'#ff8a80'};border-radius:3px;transition:width 1s ease"></div>
+        </div>
+        <div style="margin-top:5px" class="${c.dans_stock?'conseil-stock-ok':'conseil-stock-warn'}">${c.dans_stock?'✅ '+c.stock_disponible+' disponible':'⚠️ Produit non en stock — commander'}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('diagMeteo').innerHTML=`<div class="al alg" style="margin-bottom:8px"><span class="al-i">🌤️</span><div><b>Meilleure fenêtre : Jeudi–Vendredi matin</b>${d.fenetre_traitement||'3 jours sans pluie, traiter 6h–10h.'}</div></div><div class="al alo" style="margin-bottom:0"><span class="al-i">🌧️</span><div><b>Éviter lundi–mardi</b>18 mm pluie prévus — lessivage.</div></div>`;
+  const iftFinal=d.ift_apres_traitement||iftActuel+(d.conseils?.[0]?.ift_contribution||1);
+  const okF=iftFinal<=4.0;
+  document.getElementById('diagIFTBadge').textContent=`→ ${iftFinal.toFixed(2)}`;
+  document.getElementById('diagIFTBadge').className='badge '+(okF?'bg':'br');
+  document.getElementById('diagIFTContent').innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+    <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Actuel</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:${iftColor(iftStatus(iftActuel))}">${iftActuel.toFixed(2)}</div></div>
+    <div style="font-size:16px;color:var(--gris)">+${(d.conseils?.[0]?.ift_contribution||1).toFixed(2)}</div>
+    <div style="font-size:16px;color:var(--gris)">=</div>
+    <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Après traitement</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:${iftColor(iftStatus(iftFinal))}">${iftFinal.toFixed(2)}</div></div>
+    <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Objectif HVE</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--or)">4,0</div></div>
+  </div>
+  <div class="al ${okF?'alg':'alr'}" style="margin-bottom:0"><span class="al-i">${okF?'✅':'⚠️'}</span><div>${okF?`<b>Traitement possible — IFT reste sous HVE</b>Marge restante : ${(4.0-iftFinal).toFixed(2)} point(s).`:`<b>Dépassement HVE si pleine dose</b>Envisager dose réduite à ${((4.0-iftActuel)*(d.conseils?.[0]?.dose_reference||3)).toFixed(1)} kg/ha.`}</div></div>`;
+  diagHistory.unshift({maladie:d.maladie,severite:d.severite,parcelle:PARCELLES[parcId]?.nom||'—',date:new Date().toLocaleDateString('fr-FR'),confiance:d.confiance});
+  renderDiagHistory();
+  document.getElementById('diagResult').scrollIntoView({behavior:'smooth'});
+  window._lastDiag=d;window._lastDiagParc=parcId;
+  toast(`✅ ${d.maladie} · ${d.confiance}% confiance · Conseil personnalisé prêt`);
+}
+
+function diagToTraitement(){
+  const d=window._lastDiag,parcId=window._lastDiagParc;if(!d||!d.conseils?.[0])return;
+  const c=d.conseils[0];
+  go('sTrait',document.querySelectorAll('.tab')[1]);
+  setTimeout(()=>{
+    document.getElementById('tParc').value=parcId||'P3';
+    document.getElementById('tDose').value=parseFloat(c.dose_recommandee)||'';
+    const match=Object.entries(DOSE_REF).find(([k,v])=>c.produit_nom.toLowerCase().includes(v.label.toLowerCase().split(' ')[0]));
+    if(match){document.getElementById('tProd').value=match[0];selectProd();}
+    updateTraitPreview();
+    toast('✅ Formulaire traitement pré-rempli depuis le diagnostic');
+  },300);
+}
+
+function saveDiagObs(){toast('📍 Observation géotaggée sauvegardée · GPS N43.610° E3.925°');}
+
+function resetDiag(){
+  diagImgBase64=null;
+  document.getElementById('diagPrevImg').style.display='none';
+  document.getElementById('diagUploadContent').style.display='flex';
+  document.getElementById('diagZone').classList.remove('has-img');
+  document.getElementById('diagBeam').style.display='none';
+  document.getElementById('diagAnalyseBtn').disabled=true;
+  document.getElementById('diagLoadingCard').classList.remove('show');
+  document.getElementById('diagResult').style.display='none';
+  ['diagFileInput','diagCamInput'].forEach(id=>{document.getElementById(id).value='';});
+  ['dl1','dl2','dl3','dl4','dl5','dl6'].forEach((id,i)=>{const el=document.getElementById(id);el.className='lstep';el.querySelector('.lstep-i').textContent=i+1;});
+}
+
+function renderDiagHistory(){
+  const count=document.getElementById('diagHistCount');if(count)count.textContent=diagHistory.length;
+  const list=document.getElementById('diagHistList');if(!list)return;
+  if(!diagHistory.length){list.innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:13px">Aucun diagnostic encore effectué.</div>';return;}
+  const sc={faible:'var(--vert2)',moyenne:'var(--orange)',elevee:'var(--rouge)',critique:'var(--rouge)'};
+  const bc={faible:'#d4edda',moyenne:'#fde8c8',elevee:'#fde8e6',critique:'#fde8e6'};
+  list.innerHTML=diagHistory.map(h=>`<div class="diag-history-item"><div class="diag-thumb">🔬</div><div style="flex:1"><div style="font-weight:700;font-size:14px">${h.maladie}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${h.parcelle} · ${h.date}</div><div style="margin-top:4px"><span style="font-size:11px;font-weight:700;color:${sc[h.severite]||'var(--orange)'};background:${bc[h.severite]||'#fde8c8'};padding:2px 8px;border-radius:10px">${h.severite}</span> <span style="font-size:11px;color:var(--gris)">${h.confiance}% confiance</span></div></div></div>`).join('');
+}
+
+function demoDiagData(parcId){
+  const ia=iftParc(parcId),s=stockData.find(x=>x.prodKey==='soufre');
+  return{maladie:"Oïdium de la vigne",nom_latin:"Erysiphe necator (Uncinula necator)",categorie:"maladie_fongique",severite:"moyenne",confiance:87,
+    symptomes:["Feutrage blanc poudreux face supérieure des feuilles","Déformation et recroquevillement du limbe","Rougissement des feuilles autour des zones atteintes","Sporulation visible en lumière rasante"],
+    stade_developpement:"Début contamination — mycélium visible, sporulation en cours",
+    conditions_favorables:"Températures 20–27°C idéales, humidité relative élevée après pluies, absence de pluie lessivante. Conditions actuelles très favorables.",
+    risque_propagation:"eleve",risque_detail:"Spores dispersées par le vent. Sans traitement sous 48h, propagation sur 40–60% de la parcelle.",
+    conseils:[
+      {produit_nom:"Soufre Micronisé Wettable",produit_type:"fongicide",dose_recommandee:"2",dose_unite:"kg/ha",dose_reference:"3",ift_contribution:calcIFT(2,3),justification:`Dose réduite à 2/3 car IFT parcelle à ${ia.toFixed(1)} — préserve la marge HVE`,dans_stock:true,stock_disponible:`${s?.qte||8} kg`,dar:28,timing:"sous_48h",priorite:1},
+      {produit_nom:"Bicarbonate de potassium (biocontrôle)",produit_type:"biocontrôle",dose_recommandee:"5",dose_unite:"kg/ha",dose_reference:"5",ift_contribution:calcIFT(5,5),justification:"Alternative biocontrôle si IFT critique — IFT=1,0 mais moins efficace",dans_stock:false,stock_disponible:"",dar:0,timing:"cette_semaine",priorite:2}
+    ],
+    fenetre_traitement:"Jeudi ou vendredi matin (6h–10h) avant reprise chaleur. Soufre dégradé au-dessus de 28°C.",
+    mesures_complementaires:["Effeuillage pour aérer la végétation","Surveiller les apex — zones prioritaires","2ème application si pluies > 20mm post-traitement"],
+    ift_apres_traitement:ia+calcIFT(2,3),surveillance:"Contrôle visuel tous les 5 jours — seuil : 20% feuilles atteintes"};
+}
 </script>
 </body>
 </html>
