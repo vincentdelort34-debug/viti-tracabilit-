@@ -3,94 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>VitiTrace v2 — Suivi Vigne & Cave</title>
+<title>VitiTrace — Suivi Vigne & Cave</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<!-- Leaflet CSS -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-:root {
-  --noir: #1a1410;
-  --terre: #3d2b1f;
-  --vigne: #1c3d1c;
-  --vigne2: #254d25;
-  --or: #c9a84c;
-  --or2: #e8cc7a;
-  --raisin: #7a2040;
-  --raisin2: #a03060;
-  --creme: #f5f0e6;
-  --blanc: #faf8f2;
-  --bg: #eee8dc;
-  --gris: #8a8070;
-  --gris2: #ccc4b4;
-  --rouge: #c0392b;
-  --orange: #d4751a;
-  --vert: #2d5a27;
-  --vert2: #4a8a42;
-  --bleu: #1a5a8a;
-  --card: #faf8f2;
-  --sh: 0 2px 14px rgba(61,43,31,.11);
-  --sh2: 0 8px 32px rgba(61,43,31,.18);
+:root{
+  --noir:#1a1410;--terre:#3d2b1f;--vigne:#1c3d1c;--or:#c9a84c;--or2:#f0d878;
+  --creme:#f5f0e6;--blanc:#faf8f2;--bg:#eee8dc;--gris:#8a8070;--gris2:#ccc4b4;
+  --gris3:#e8e2d4;--rouge:#c0392b;--orange:#d4751a;--vert:#2d5a27;--vert2:#4a8a42;
+  --bleu:#1a5a8a;--card:#faf8f2;--raisin:#7a2040;
+  --sh:0 2px 14px rgba(61,43,31,.11);--sh2:0 8px 32px rgba(61,43,31,.18);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
 body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--terre);font-size:15px;display:flex;flex-direction:column}
-
-/* ── HEADER ── */
 header{background:var(--noir);color:var(--creme);padding:0 14px;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;z-index:200}
 .logo{display:flex;align-items:center;gap:9px}
-.logo-mark{width:34px;height:34px;background:var(--or);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
-.logo-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;letter-spacing:.04em;line-height:1}
-.logo-sub{font-size:10px;color:var(--or);letter-spacing:.14em;text-transform:uppercase;font-weight:500}
-.hdr-right{display:flex;align-items:center;gap:10px}
-.sync-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;background:#1c3d1c;color:#6dcc6d}
-.sync-pill.off{background:#3d1c1c;color:#cc6d6d}
+.lmark{width:34px;height:34px;background:var(--or);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.ltxt{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;line-height:1}
+.lsub{font-size:10px;color:var(--or);letter-spacing:.14em;text-transform:uppercase}
+.hdr-r{display:flex;align-items:center;gap:9px}
+.sync-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#1c3d1c;color:#6dcc6d;display:flex;align-items:center;gap:5px}
 .avatar{width:32px;height:32px;border-radius:50%;background:var(--or);color:var(--noir);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid rgba(201,168,76,.4)}
-
-/* ── NAV ── */
 nav.tabs{background:var(--terre);display:flex;overflow-x:auto;scrollbar-width:none;flex-shrink:0;z-index:190}
 nav.tabs::-webkit-scrollbar{display:none}
-.tab{flex:none;padding:11px 14px;color:rgba(245,240,230,.55);font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all .2s}
+.tab{flex:none;padding:11px 12px;color:rgba(245,240,230,.5);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:all .2s}
 .tab.on{color:var(--or);border-bottom-color:var(--or)}
 .tab:hover{color:var(--creme)}
 .ndot{width:7px;height:7px;background:var(--rouge);border-radius:50%;display:inline-block;margin-left:2px}
-
-/* ── MAIN SCROLL ── */
 .main{flex:1;overflow-y:auto;padding:14px;max-width:520px;width:100%;margin:0 auto}
 .sec{display:none}.sec.on{display:block}
-
-/* ── CARDS ── */
+.stitle{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--vigne);margin-bottom:3px}
+.ssub{font-size:12px;color:var(--gris);margin-bottom:14px}
 .card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--sh);border:1px solid rgba(61,43,31,.07)}
 .ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .ct{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--terre)}
-
-/* ── BADGES ── */
 .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .bg{background:#d4edda;color:var(--vert)}.br{background:#fde8e6;color:var(--rouge)}
 .bo{background:#fde8c8;color:var(--orange)}.bb{background:#d4e8f4;color:var(--bleu)}
 .bgold{background:#fdf3d0;color:#8a6a10}.braisin{background:#f0d4e0;color:var(--raisin)}
-
-/* ── BUTTONS ── */
-.btn{border:none;border-radius:10px;padding:13px 18px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;-webkit-appearance:none}
+.btn{border:none;border-radius:10px;padding:12px 16px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
 .btn:active{transform:scale(.97)}
 .btp{background:var(--vigne);color:var(--creme);width:100%;font-size:15px;padding:15px}
 .btgold{background:var(--or);color:var(--noir)}
 .btghost{background:var(--gris2);color:var(--terre)}
-.btred{background:#fde8e6;color:var(--rouge)}
 .btsm{padding:7px 12px;font-size:12px;border-radius:8px}
 .btraisin{background:var(--raisin);color:#fff}
-
-/* ── FORM ── */
-.fg{margin-bottom:13px}
-label{display:block;font-size:11.5px;font-weight:600;color:var(--gris);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
-input,select,textarea{width:100%;padding:11px 13px;border:2px solid var(--gris2);border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;background:var(--blanc);color:var(--terre);transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.btn:disabled{background:var(--gris2);color:var(--gris);cursor:not-allowed;transform:none}
+.fg{margin-bottom:12px}
+label{display:block;font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+input,select,textarea{width:100%;padding:11px 13px;border:2px solid var(--gris2);border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;background:var(--blanc);color:var(--terre);transition:all .2s;-webkit-appearance:none;appearance:none}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--or);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
 textarea{resize:vertical;min-height:72px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ig{position:relative}
 .isuf{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--gris);font-size:12px;font-weight:700;pointer-events:none}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-/* ── ALERTS ── */
+input.ai-filled{border-color:rgba(74,138,66,.5);background:#f0faf0}
+input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
 .al{border-radius:10px;padding:11px 13px;margin-bottom:10px;display:flex;align-items:flex-start;gap:9px;font-size:13px}
 .al-i{font-size:17px;flex-shrink:0;margin-top:1px}
 .al b{font-weight:700;display:block;margin-bottom:2px}
@@ -98,458 +68,552 @@ textarea{resize:vertical;min-height:72px}
 .alo{background:#fde8c8;border-left:4px solid var(--orange);color:#7a3a00}
 .alg{background:#d4edda;border-left:4px solid var(--vert);color:#1a3a1a}
 .alb{background:#d4e8f4;border-left:4px solid var(--bleu);color:#0a2a4a}
-
-/* ── STAT TILES ── */
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
 .st{background:var(--card);border-radius:12px;padding:13px;box-shadow:var(--sh);border:1px solid rgba(61,43,31,.07);text-align:center}
 .sv{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--vigne);line-height:1;margin-bottom:3px}
 .sv.d{color:var(--rouge)}.sv.w{color:var(--orange)}.sv.g{color:var(--vert)}
 .sl{font-size:10.5px;color:var(--gris);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
-
-/* ── IFT BARS ── */
-.ib{margin-bottom:12px}
+.ib{margin-bottom:11px}
 .ibh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
-.ibn{font-size:13px;font-weight:600}
-.ibv{font-family:'Cormorant Garamond',serif;font-size:15px}
-.ibar{height:9px;background:var(--gris2);border-radius:5px;overflow:hidden}
+.ibn{font-size:13px;font-weight:600}.ibv{font-family:'Cormorant Garamond',serif;font-size:15px}
+.ibar{height:9px;background:var(--gris2);border-radius:5px;overflow:hidden;position:relative}
 .if{height:100%;border-radius:5px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
 .ifg{background:var(--vert2)}.ifo{background:var(--orange)}.ifr{background:var(--rouge)}
-
-/* ── LIST ITEMS ── */
+.ibar-ref{position:absolute;top:0;bottom:0;width:2px;background:rgba(61,43,31,.25);z-index:1}
 .li{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--gris2)}
 .li:last-child{border-bottom:none}
 .lic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
-.lib{flex:1}
-.lit{font-weight:600;font-size:14px;color:var(--terre)}
+.lib{flex:1}.lit{font-weight:600;font-size:14px;color:var(--terre)}
 .lim{font-size:12px;color:var(--gris);margin-top:2px}
-
-/* ── STOCK SPECIFIC ── */
-.stock-item{background:var(--card);border-radius:12px;padding:13px;margin-bottom:9px;box-shadow:var(--sh);border:1px solid rgba(61,43,31,.07);display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.dar{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.dar-ok{background:#d4edda;color:var(--vert)}.dar-x{background:#fde8e6;color:var(--rouge)}
+/* IFT GAUGE */
+.ift-gauge{background:linear-gradient(135deg,var(--vigne),#0f2a0f);border-radius:18px;padding:18px;color:#fff;box-shadow:0 6px 24px rgba(28,61,28,.35);margin-bottom:12px}
+.igt{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px}
+.igv{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:700;line-height:1}
+.igs{font-size:13px;color:rgba(255,255,255,.7);margin-top:4px}
+.igt-bar{margin:12px 0 6px;height:13px;background:rgba(255,255,255,.15);border-radius:7px;overflow:visible;position:relative}
+.igt-fill{height:100%;border-radius:7px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.igt-fill::after{content:'';position:absolute;right:-1px;top:-3px;width:19px;height:19px;border-radius:50%;border:3px solid #fff;background:inherit;box-shadow:0 0 8px rgba(255,255,255,.3)}
+.igt-marks{position:relative;height:18px;margin-top:2px}
+.igt-mk{position:absolute;font-size:10px;color:rgba(255,255,255,.45);font-weight:700;transform:translateX(-50%)}
+.igt-mk-line{position:absolute;top:-18px;width:1px;height:8px;background:rgba(255,255,255,.25)}
+.igt-ref-line{position:absolute;top:-22px;width:2px;height:16px;background:var(--or2);border-radius:1px}
+.igt-ref-lbl{position:absolute;top:-34px;font-size:10px;color:var(--or2);font-weight:700;transform:translateX(-50%);white-space:nowrap}
+.igt-split{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.igt-cat{background:rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;text-align:center}
+.igt-cat-v{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;line-height:1;margin-bottom:2px}
+.igt-cat-l{font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em}
+.ift-ok .igt-fill{background:linear-gradient(90deg,#4a8a42,#6db865)}
+.ift-warn .igt-fill{background:linear-gradient(90deg,#d4751a,#f0a040)}
+.ift-danger .igt-fill{background:linear-gradient(90deg,#c0392b,#e05040)}
+/* PARCELLE CARDS */
+.parc-card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh);border:2px solid transparent;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.parc-card:hover{border-color:var(--or)}
+.parc-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:3px 0 0 3px}
+.parc-card.ok::before{background:var(--vert2)}.parc-card.warn::before{background:var(--orange)}.parc-card.danger::before{background:var(--rouge)}
+.parc-bar{height:8px;background:var(--gris2);border-radius:4px;overflow:hidden;position:relative;margin-bottom:4px}
+.parc-bar-fill{height:100%;border-radius:4px;transition:width 1s ease}
+.parc-bar-ref{position:absolute;top:0;bottom:0;width:2px;background:rgba(61,43,31,.3)}
+/* STOCK */
+.stock-item{background:var(--card);border-radius:12px;padding:12px;margin-bottom:9px;box-shadow:var(--sh);border:1px solid rgba(61,43,31,.07);display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .2s}
 .stock-item:hover{border-color:var(--or);background:#fdf8e8}
-.stock-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.stock-body{flex:1}
-.stock-name{font-weight:600;font-size:14px}
-.stock-amm{font-size:11px;color:var(--gris);margin-top:1px}
-.stock-qty-wrap{text-align:right}
-.stock-qty{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1}
-.stock-unit{font-size:11px;color:var(--gris)}
-.stock-bar{height:5px;background:var(--gris2);border-radius:3px;margin-top:5px;overflow:hidden;width:60px}
-.stock-bar-fill{height:100%;border-radius:3px;transition:width .8s}
-.sbok{background:var(--vert2)}.sbow{background:var(--orange)}.sbcrit{background:var(--rouge)}
-.stock-alerte{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
-
-/* ── MAP ── */
-#mapContainer{height:280px;border-radius:14px;overflow:hidden;margin-bottom:12px;border:2px solid rgba(61,43,31,.12);position:relative;box-shadow:var(--sh2)}
-#map{height:100%;width:100%}
-.map-overlay{position:absolute;top:10px;left:10px;z-index:1000;background:rgba(255,255,255,.95);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;color:var(--vigne);box-shadow:var(--sh);pointer-events:none}
-.map-controls{position:absolute;top:10px;right:10px;z-index:1000;display:flex;flex-direction:column;gap:6px}
-.map-ctrl-btn{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.95);border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
-.map-ctrl-btn:active{transform:scale(.93)}
-.parcelle-popup{font-family:'Outfit',sans-serif;font-size:13px}
-.parcelle-popup b{color:var(--vigne);font-size:14px}
-
-/* ── CAVE NÉGOCE SPECIFIC ── */
-.cuvee-card{background:linear-gradient(135deg,var(--raisin) 0%,#5a1030 100%);border-radius:14px;padding:16px;margin-bottom:10px;color:#fff;position:relative;overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(122,32,64,.3)}
-.cuvee-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06)}
-.cuvee-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(122,32,64,.4)}
-.cuvee-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.cuvee-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;line-height:1.1}
-.cuvee-vintage{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
-.cuvee-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
-.cuvee-stat{text-align:center}
-.cuvee-stat-val{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600}
-.cuvee-stat-lbl{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.06em}
-
-.negoce-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gris2)}
-.negoce-row:last-child{border-bottom:none}
-.negoce-acheteur{font-weight:600;font-size:14px}
-.negoce-detail{font-size:12px;color:var(--gris);margin-top:2px}
-.negoce-right{text-align:right}
-.negoce-prix{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--raisin);font-weight:600}
-.negoce-vol{font-size:12px;color:var(--gris)}
-
-.prix-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700}
-.trend-up{color:var(--vert)}.trend-dn{color:var(--rouge)}
-
-.tank-wrap{display:flex;align-items:flex-end;gap:8px;height:80px;margin:10px 0}
-.tank{flex:1;background:var(--gris2);border-radius:6px;position:relative;overflow:hidden;cursor:pointer}
-.tank-fill{position:absolute;bottom:0;left:0;right:0;border-radius:6px;transition:height 1s ease}
-.tank-label{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:9px;font-weight:700;padding-bottom:3px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
-.tank-name{font-size:10px;color:var(--gris);text-align:center;margin-top:4px;font-weight:600}
-
-/* ── VOICE ── */
-.voice-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0}
-.vbtn{width:72px;height:72px;border-radius:50%;background:var(--vigne);border:none;cursor:pointer;font-size:32px;color:var(--creme);box-shadow:0 4px 18px rgba(28,61,28,.45);transition:all .2s}
+.si-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.si-body{flex:1}.si-name{font-weight:700;font-size:13.5px}
+.si-amm{font-size:11px;color:var(--gris);margin-top:1px}
+.si-bar{height:5px;background:var(--gris2);border-radius:3px;margin-top:5px;overflow:hidden;width:56px}
+.si-bar-fill{height:100%;border-radius:3px}
+.si-qty{text-align:right}.si-q{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1}
+.si-u{font-size:11px;color:var(--gris)}
+/* VOICE */
+.voice-wrap{display:flex;flex-direction:column;align-items:center;padding:14px 0}
+.vbtn{width:68px;height:68px;border-radius:50%;background:var(--vigne);border:none;cursor:pointer;font-size:28px;color:var(--creme);box-shadow:0 4px 18px rgba(28,61,28,.45);transition:all .2s}
 .vbtn.rec{background:var(--rouge);animation:vpulse 1s infinite}
 @keyframes vpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-.vlabel{font-size:12px;color:var(--gris);margin-top:9px;font-weight:500}
-.vresult{background:var(--gris2);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--terre);margin-top:9px;width:100%;min-height:48px;text-align:center;font-style:italic}
-
-/* ── SCAN ── */
-.scan-zone{background:var(--vigne);border-radius:12px;padding:18px;text-align:center;color:var(--creme);cursor:pointer;transition:all .2s}
+.vlabel{font-size:12px;color:var(--gris);margin-top:8px;font-weight:500}
+.vresult{background:var(--gris2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--terre);margin-top:8px;width:100%;min-height:44px;text-align:center;font-style:italic}
+/* SCAN */
+.scan-zone{background:var(--vigne);border-radius:12px;padding:16px;text-align:center;color:var(--creme);cursor:pointer;transition:all .2s}
 .scan-zone:active{transform:scale(.98)}
-
-/* ── METEO STRIP ── */
+.upload-zone{border:2.5px dashed var(--gris2);border-radius:14px;padding:22px 18px;text-align:center;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;background:var(--blanc)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--or);background:#fdf8e8}
+.upload-zone.has-img{border-style:solid;border-color:var(--or);padding:0}
+#prevImg{width:100%;max-height:260px;object-fit:contain;border-radius:12px;display:block}
+.img-ov{position:absolute;inset:0;background:rgba(26,20,16,.5);border-radius:12px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;cursor:pointer}
+.img-ov:hover{opacity:1}
+.img-ov span{color:#fff;font-size:13px;font-weight:700;background:rgba(0,0,0,.5);padding:7px 14px;border-radius:20px}
+.scan-beam{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--or),transparent);animation:scandown 2s ease-in-out infinite;pointer-events:none;z-index:2}
+@keyframes scandown{0%{top:5%;opacity:1}50%{top:90%;opacity:1}100%{top:5%;opacity:0}}
+.ai-tag{background:#e8f4fd;color:var(--bleu);padding:2px 7px;border-radius:6px;font-size:10px;font-weight:700}
+.ai-tag.w{background:#fde8c8;color:var(--orange)}
+/* LOADING */
+.loading-card{background:var(--card);border-radius:14px;padding:26px 18px;text-align:center;box-shadow:var(--sh);border:1px solid rgba(61,43,31,.07);display:none;margin-bottom:12px}
+.loading-card.show{display:block}
+.spinner{width:44px;height:44px;border:3px solid var(--gris2);border-top-color:var(--or);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lstep{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:13px;color:var(--gris);transition:color .3s;text-align:left}
+.lstep.done{color:var(--vert)}.lstep.active{color:var(--terre);font-weight:600}
+.lstep-i{width:20px;height:20px;border-radius:50%;border:2px solid var(--gris2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .3s}
+.lstep.done .lstep-i{background:var(--vert2);border-color:var(--vert2);color:#fff}
+.lstep.active .lstep-i{border-color:var(--or);animation:pr .8s infinite}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.4)}50%{box-shadow:0 0 0 5px rgba(201,168,76,0)}}
+/* IMPORT PARCELLAIRE */
+.import-option{background:var(--card);border:2px solid var(--gris2);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:14px}
+.import-option:hover{border-color:var(--or);background:#fdf8e8}
+.import-option.selected{border-color:var(--or);background:#fdf8e8}
+.io-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.io-title{font-weight:700;font-size:14px;margin-bottom:3px}
+.io-desc{font-size:12px;color:var(--gris)}
+.io-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-top:4px;display:inline-block}
+/* MAP */
+#mapContainer{height:260px;border-radius:14px;overflow:hidden;margin-bottom:12px;border:2px solid rgba(61,43,31,.12);position:relative;box-shadow:var(--sh2)}
+#map{height:100%;width:100%}
+.map-ov{position:absolute;top:8px;left:8px;z-index:1000;background:rgba(255,255,255,.95);border-radius:8px;padding:5px 9px;font-size:11px;font-weight:700;color:var(--vigne);box-shadow:var(--sh);pointer-events:none}
+.map-ctrls{position:absolute;top:8px;right:8px;z-index:1000;display:flex;flex-direction:column;gap:5px}
+.map-cbtn{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.95);border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
+/* CAVE */
+.cuvee-card{border-radius:14px;padding:15px;margin-bottom:10px;color:#fff;position:relative;overflow:hidden;cursor:pointer;transition:all .2s}
+.cuvee-card::before{content:'';position:absolute;top:-28px;right:-28px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.06)}
+.cuvee-card:hover{transform:translateY(-2px)}
+.tank-wrap{display:flex;align-items:flex-end;gap:7px;height:76px;margin:8px 0}
+.tank{flex:1;background:var(--gris2);border-radius:6px;position:relative;overflow:hidden;cursor:pointer}
+.tank-fill{position:absolute;bottom:0;left:0;right:0;border-radius:6px}
+.tank-lbl{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:9px;font-weight:700;padding-bottom:3px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.tank-name{font-size:10px;color:var(--gris);text-align:center;margin-top:3px;font-weight:600}
+.negoce-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--gris2)}
+.negoce-row:last-child{border-bottom:none}
+.trend-up{color:var(--vert);font-size:11px;font-weight:700}.trend-dn{color:var(--rouge);font-size:11px;font-weight:700}
+/* METEO */
 .ms{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
 .ms::-webkit-scrollbar{display:none}
-.md{flex:none;background:var(--card);border-radius:10px;padding:9px 11px;text-align:center;min-width:60px;box-shadow:var(--sh);border:1px solid var(--gris2)}
+.md{flex:none;background:var(--card);border-radius:10px;padding:9px 11px;text-align:center;min-width:58px;box-shadow:var(--sh);border:1px solid var(--gris2)}
 .md.today{border-color:var(--or);background:#fdf8e8}
-.mdl{font-size:10.5px;color:var(--gris);font-weight:700;text-transform:uppercase;margin-bottom:3px}
-.mdi{font-size:20px;margin-bottom:3px}
-.mdt{font-size:12px;font-weight:600}
+.mdl{font-size:10px;color:var(--gris);font-weight:700;text-transform:uppercase;margin-bottom:3px}
+.mdi{font-size:20px;margin-bottom:3px}.mdt{font-size:12px;font-weight:600}
 .mdp{font-size:10px;color:var(--bleu);margin-top:2px}
-
-/* ── MODAL ── */
+/* EXPORT */
+.exrow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gris2)}
+.exrow:last-child{border-bottom:none}
+.exinfo{flex:1;margin-left:10px}.exname{font-weight:600;font-size:13.5px}
+.exdesc{font-size:11.5px;color:var(--gris);margin-top:2px}
+/* IFT PREVIEW */
+.ift-prev{background:var(--gris3);border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border:2px solid transparent;transition:all .3s}
+.ift-prev.has{background:#e8f4e8;border-color:rgba(74,138,66,.3)}
+.ift-prev-v{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--gris2);transition:color .3s;line-height:1}
+.ift-prev-v.has{color:var(--vigne)}
+/* CHART */
+.hc{width:100%;height:110px;position:relative;overflow:hidden}
+.hc-bars{display:flex;align-items:flex-end;gap:4px;height:100%;padding:0 2px}
+.hc-bw{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end}
+.hc-b{width:100%;border-radius:4px 4px 0 0;transition:height .8s ease;position:relative;min-height:2px}
+.hc-bl{font-size:9.5px;color:var(--gris);font-weight:600;text-align:center;white-space:nowrap}
+.hc-bv{font-size:9.5px;font-weight:700;text-align:center;position:absolute;top:-15px;left:50%;transform:translateX(-50%);white-space:nowrap}
+.hc-ref{position:absolute;left:2px;right:2px;height:2px;background:rgba(201,168,76,.6);border-radius:1px;pointer-events:none}
+.hc-ref-l{position:absolute;right:4px;font-size:10px;color:var(--or);font-weight:700}
+/* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(26,20,16,.65);z-index:500;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
 .overlay.op{display:flex}
-.modal{background:var(--blanc);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:20px 18px 32px;animation:sup .28s ease}
+.modal{background:var(--blanc);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 18px 32px;animation:sup .28s ease}
 @keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .mhandle{width:38px;height:4px;background:var(--gris2);border-radius:2px;margin:0 auto 18px}
 .mtitle{font-family:'Cormorant Garamond',serif;font-size:20px;margin-bottom:14px;color:var(--terre)}
-
-/* ── QA grid ── */
-.qa{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
 .qab{background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s}
 .qab:hover,.qab:active{border-color:var(--or);background:#fdf8e8;transform:scale(.97)}
-.qai{font-size:26px;margin-bottom:5px}
-.qal{font-size:12.5px;font-weight:600;color:var(--terre)}
+.qai{font-size:25px;margin-bottom:5px}.qal{font-size:12.5px;font-weight:600;color:var(--terre)}
 .qas{font-size:11px;color:var(--gris);margin-top:2px}
-
-/* ── SWITCH ── */
 .srow{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
 .swt{position:relative;width:46px;height:25px;background:var(--gris2);border-radius:13px;cursor:pointer;transition:background .2s;flex-shrink:0}
 .swt.on{background:var(--vert2)}
 .swt::after{content:'';position:absolute;width:21px;height:21px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .swt.on::after{left:23px}
-
-/* ── PROGRESS ── */
-.pbar{height:5px;background:var(--gris2);border-radius:3px;overflow:hidden;margin-top:5px}
-.pfill{height:100%;border-radius:3px;background:var(--or)}
-
-/* ── SECTION TITLES ── */
-.stitle{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--vigne);margin-bottom:3px}
-.ssub{font-size:12px;color:var(--gris);margin-bottom:14px}
-
-/* ── DAR PILLS ── */
-.dar{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
-.dar-ok{background:#d4edda;color:var(--vert)}.dar-w{background:#fde8c8;color:var(--orange)}.dar-x{background:#fde8e6;color:var(--rouge)}
-
-/* ── EXPORT ROWS ── */
-.exrow{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--gris2)}
-.exrow:last-child{border-bottom:none}
-.exinfo{flex:1;margin-left:11px}
-.exname{font-weight:600;font-size:13.5px}
-.exdesc{font-size:11.5px;color:var(--gris);margin-top:2px}
-
-/* ── RENDEMENT ── */
+.sep{height:1px;background:var(--gris2);margin:12px 0}
+.seplbl{text-align:center;font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.1em;position:relative;margin:14px 0}
+.seplbl::before,.seplbl::after{content:'';position:absolute;top:50%;width:calc(50% - 34px);height:1px;background:var(--gris2)}
+.seplbl::before{left:0}.seplbl::after{right:0}
 .rrow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gris2)}
 .rrow:last-child{border-bottom:none}
-
-/* ── FAB ── */
+.pbar{height:5px;background:var(--gris2);border-radius:3px;overflow:hidden;margin-top:5px}
+.pfill{height:100%;border-radius:3px;background:var(--or)}
 .fab{position:fixed;bottom:22px;right:14px;width:56px;height:56px;border-radius:28px;background:var(--or);border:none;cursor:pointer;font-size:26px;box-shadow:0 4px 16px rgba(201,168,76,.55);display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:180;color:var(--noir)}
 .fab:active{transform:scale(.92)}
-
-/* ── TOAST ── */
-#toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--noir);color:var(--creme);padding:11px 20px;border-radius:28px;font-size:13.5px;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.35);opacity:0;transition:all .3s;z-index:600;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
-
-/* ── SEP ── */
-.sep{height:1px;background:var(--gris2);margin:14px 0}
-.seplbl{text-align:center;font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.1em;position:relative;margin:14px 0}
-.seplbl::before,.seplbl::after{content:'';position:absolute;top:50%;width:calc(50% - 36px);height:1px;background:var(--gris2)}
-.seplbl::before{left:0}.seplbl::after{right:0}
-
-/* ── OBSPHOTO ── */
-.ophoto{width:100%;height:150px;background:linear-gradient(135deg,#8ab88a,#5a8a5a);border-radius:10px;margin-bottom:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px dashed rgba(61,43,31,.2);transition:all .2s;position:relative;overflow:hidden}
-.ophoto:hover{border-color:var(--or)}
-.ophoto-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.9);margin-top:5px}
-
-/* ── NEGOCE SUMMARY ── */
-.rev-big{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;color:var(--raisin);line-height:1;margin-bottom:4px}
-
+#toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--noir);color:var(--creme);padding:11px 20px;border-radius:28px;font-size:13px;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.35);opacity:0;transition:all .3s;z-index:600;white-space:nowrap;pointer-events:none;max-width:92vw;text-align:center}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--gris2);border-radius:2px}
 </style>
 </head>
 <body>
-
-<!-- ══ HEADER ══ -->
 <header>
   <div class="logo">
-    <div class="logo-mark">🍇</div>
-    <div>
-      <div class="logo-text">VitiTrace</div>
-      <div class="logo-sub">Vigne · Cave · Négoce</div>
-    </div>
+    <div class="lmark">🍇</div>
+    <div><div class="ltxt">VitiTrace</div><div class="lsub">Vigne · Cave · Négoce</div></div>
   </div>
-  <div class="hdr-right">
-    <div class="sync-pill" id="syncBadge"><span>●</span> Sync</div>
+  <div class="hdr-r">
+    <div class="sync-pill"><span>●</span> Sync</div>
     <div class="avatar" onclick="showM('mProfile')">VD</div>
   </div>
 </header>
-
-<!-- ══ NAV ══ -->
 <nav class="tabs">
-  <button class="tab on" onclick="go('sDash',this)">🏠 Accueil</button>
-  <button class="tab" onclick="go('sTrait',this)">🌿 Traitement<span class="ndot"></span></button>
-  <button class="tab" onclick="go('sStock',this)">🧪 Stock Phyto</button>
-  <button class="tab" onclick="go('sCarto',this)">🗺️ Parcelles</button>
-  <button class="tab" onclick="go('sMeteo',this)">🌤️ Météo</button>
-  <button class="tab" onclick="go('sRegistre',this)">📋 Registre</button>
-  <button class="tab" onclick="go('sCave',this)">🍷 Cave & Négoce</button>
-  <button class="tab" onclick="go('sObs',this)">👁️ Observations</button>
+  <button class="tab on"  onclick="go('sDash',this)">🏠 Accueil</button>
+  <button class="tab"     onclick="go('sTrait',this)">🌿 Traitement<span class="ndot"></span></button>
+  <button class="tab"     onclick="go('sIFT',this)">📊 IFT</button>
+  <button class="tab"     onclick="go('sScan',this)">📷 Scan IA</button>
+  <button class="tab"     onclick="go('sStock',this)">🧪 Stock</button>
+  <button class="tab"     onclick="go('sCarto',this)">🗺️ Parcelles</button>
+  <button class="tab"     onclick="go('sMeteo',this)">🌤️ Météo</button>
+  <button class="tab"     onclick="go('sRegistre',this)">📋 Registre</button>
+  <button class="tab"     onclick="go('sCave',this)">🍷 Cave</button>
+  <button class="tab"     onclick="go('sObs',this)">👁️ Obs.</button>
 </nav>
-
-<!-- ══ MAIN ══ -->
 <div class="main">
-
-<!-- ════════════ DASHBOARD ════════════ -->
+<!-- ══ ACCUEIL ══ -->
 <section id="sDash" class="sec on">
   <div class="stitle">Bonjour, Vincent 👋</div>
   <div class="ssub">Campagne 2025–26 · Domaine Delort · 6,8 ha</div>
-
-  <div class="al alr"><span class="al-i">🚨</span><div><b>DAR non respecté — Les Galets (Merlot)</b>Cuivre du 18 fév. DAR = 21 j. Récolte bloquée jusqu'au 11 mars.</div></div>
-  <div class="al alo"><span class="al-i">🧪</span><div><b>Stock critique — Soufre Micronisé</b>Reste 8 kg / seuil alerte 10 kg. Commander avant traitement P3.</div></div>
-  <div class="al alo"><span class="al-i">🍄</span><div><b>Risque mildiou élevé J+1 à J+3</b>28 mm cumulés + T° 18°C. Traitement préventif avant jeudi.</div></div>
-
+  <div class="al alr"><span class="al-i">🚨</span><div><b>DAR non respecté — Les Galets</b>Cuivre du 18 fév. DAR = 21 j. Récolte bloquée.</div></div>
+  <div class="al alo"><span class="al-i">🧪</span><div><b>Stock critique — Soufre Micronisé</b>Reste 8 kg / seuil 10 kg.</div></div>
+  <div class="al alo"><span class="al-i">🍄</span><div><b>Risque mildiou élevé J+1 à J+3</b>28 mm + 18°C. Traitement avant jeudi.</div></div>
   <div class="sg">
-    <div class="st"><div class="sv">5</div><div class="sl">Parcelles actives</div></div>
-    <div class="st"><div class="sv w">3,2</div><div class="sl">IFT moyen</div></div>
-    <div class="st"><div class="sv g">6,8 ha</div><div class="sl">Surface totale</div></div>
+    <div class="st"><div class="sv" id="dIFT">—</div><div class="sl">IFT moyen</div></div>
+    <div class="st"><div class="sv" id="dParcN">5</div><div class="sl">Parcelles</div></div>
+    <div class="st"><div class="sv g" id="dHa">6,8 ha</div><div class="sl">Surface</div></div>
     <div class="st"><div class="sv d">2</div><div class="sl">Alertes stock</div></div>
   </div>
-
+  <div class="card">
+    <div class="ch"><span class="ct">IFT Campagne 2025</span><button class="btn btghost btsm" onclick="go('sIFT',document.querySelectorAll('.tab')[2])">Détail →</button></div>
+    <div id="dashIFTBars"></div>
+  </div>
   <div class="card">
     <div class="ch"><span class="ct">Actions terrain</span></div>
     <div class="qa">
-      <div class="qab" onclick="go('sTrait',document.querySelectorAll('.tab')[1]);showM('mNewInterv')">
-        <div class="qai">💊</div><div class="qal">Traitement</div><div class="qas">Saisie phyto</div>
-      </div>
-      <div class="qab" onclick="go('sStock',document.querySelectorAll('.tab')[2])">
-        <div class="qai">🧪</div><div class="qal">Stock phyto</div><div class="qas">Gérer produits</div>
-      </div>
-      <div class="qab" onclick="go('sCave',document.querySelectorAll('.tab')[6])">
-        <div class="qai">🍷</div><div class="qal">Cave & négoce</div><div class="qas">Ventes / cuves</div>
-      </div>
-      <div class="qab" onclick="showM('mExport')">
-        <div class="qai">📤</div><div class="qal">Export registre</div><div class="qas">PDF + DDT</div>
-      </div>
+      <div class="qab" onclick="go('sTrait',document.querySelectorAll('.tab')[1])"><div class="qai">💊</div><div class="qal">Traitement</div><div class="qas">Saisie phyto</div></div>
+      <div class="qab" onclick="go('sScan',document.querySelectorAll('.tab')[3])"><div class="qai">📷</div><div class="qal">Scan étiquette IA</div><div class="qas">Photo → fiche auto</div></div>
+      <div class="qab" onclick="go('sCave',document.querySelectorAll('.tab')[8])"><div class="qai">🍷</div><div class="qal">Cave & négoce</div><div class="qas">Cuves / ventes</div></div>
+      <div class="qab" onclick="showM('mExport')"><div class="qai">📤</div><div class="qal">Export registre</div><div class="qas">PDF + DDT</div></div>
     </div>
   </div>
-
-  <div class="card">
-    <div class="ch"><span class="ct">IFT Campagne 2025</span><span class="badge bgold">Objectif ≤ 4,0</span></div>
-    <div class="ib"><div class="ibh"><span class="ibn">P1 · Grenache</span><span class="ibv" style="color:var(--vert)">2,4</span></div><div class="ibar"><div class="if ifg" data-w="60%"></div></div></div>
-    <div class="ib"><div class="ibh"><span class="ibn">P3 · Syrah Sud</span><span class="ibv" style="color:var(--orange)">3,6</span></div><div class="ibar"><div class="if ifo" data-w="90%"></div></div></div>
-    <div class="ib"><div class="ibh"><span class="ibn">Les Galets · Merlot</span><span class="ibv" style="color:var(--rouge)">4,2</span></div><div class="ibar"><div class="if ifr" data-w="100%"></div></div></div>
-  </div>
-
   <div class="card">
     <div class="ch"><span class="ct">Dernières interventions</span></div>
-    <div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">Soufre Micronisé — P3 Syrah</div><div class="lim">12 mars · BBCH 53 · 3 kg/ha</div></div><span class="dar dar-ok">✓ DAR OK</span></div>
-    <div class="li"><div class="lic" style="background:#fde8e6">🍄</div><div class="lib"><div class="lit">Cuivre Hydroxyde — Les Galets</div><div class="lim">18 fév · BBCH 09 · 2,5 kg/ha</div></div><span class="dar dar-x">🚫 DAR</span></div>
-    <div class="li"><div class="lic" style="background:#d4edda">✂️</div><div class="lib"><div class="lit">Taille Guyot — P1 Grenache</div><div class="lim">8 fév · 1,2 ha · 6h travail</div></div><span class="badge bg">Fait</span></div>
+    <div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">Soufre Micronisé — P3 Syrah</div><div class="lim">12 mars · BBCH 53 · 3 kg/ha · IFT +1,0</div></div><span class="dar dar-ok">✓ DAR</span></div>
+    <div class="li"><div class="lic" style="background:#fde8e6">🍄</div><div class="lib"><div class="lit">Cuivre Hydroxyde — Les Galets</div><div class="lim">18 fév · BBCH 09 · 2,5 kg/ha · IFT +1,0</div></div><span class="dar dar-x">🚫 DAR</span></div>
+    <div class="li"><div class="lic" style="background:#d4edda">✂️</div><div class="lib"><div class="lit">Taille Guyot — P1 Grenache</div><div class="lim">8 fév · 1,2 ha</div></div><span class="badge bg">Fait</span></div>
   </div>
 </section>
-
-<!-- ════════════ TRAITEMENT ════════════ -->
+<!-- ══ TRAITEMENT ══ -->
 <section id="sTrait" class="sec">
   <div class="stitle">Nouveau traitement</div>
   <div class="ssub">Saisie phytosanitaire conforme arrêté déc. 2025</div>
-
+  <div class="ift-prev" id="iftPrev">
+    <div><div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.07em">Contribution IFT</div><div style="font-size:12px;color:var(--gris);margin-top:3px" id="iftPrevDetail">Remplir les champs</div></div>
+    <div><div class="ift-prev-v" id="iftPrevVal">—</div><div style="font-size:10px;color:var(--gris);text-align:right">IFT / traitement</div></div>
+  </div>
   <div class="card">
     <div class="ch"><span class="ct">Saisie rapide</span></div>
     <div class="voice-wrap">
       <button class="vbtn" id="vBtn" onclick="toggleVoice()">🎙️</button>
       <div class="vlabel" id="vLabel">Appuyer pour dicter</div>
-      <div class="vresult" id="vResult">Ex : "Soufre 10 kg parcelle 3 ce matin BBCH 53"</div>
+      <div class="vresult" id="vResult">Ex : "Soufre 3 kg parcelle 3 BBCH 53"</div>
     </div>
     <div class="seplbl">ou scanner le bidon</div>
-    <div class="scan-zone" onclick="doScan()">
-      <div style="font-size:42px;margin-bottom:6px">📷</div>
-      <div style="font-size:14px;font-weight:600">Scanner l'étiquette produit</div>
-      <div style="font-size:12px;opacity:.7;margin-top:4px">AMM · Dose max · DAR pré-remplis</div>
+    <div class="scan-zone" onclick="go('sScan',document.querySelectorAll('.tab')[3])">
+      <div style="font-size:38px;margin-bottom:6px">📷</div>
+      <div style="font-size:14px;font-weight:600">Scanner l'étiquette → IFT calculé auto</div>
     </div>
   </div>
-
   <div class="card">
     <div class="ch"><span class="ct">Fiche traitement</span><span class="badge bo">Obligatoire 2026</span></div>
     <div class="row2">
-      <div class="fg">
-        <label>📅 Date</label>
-        <input type="date" id="tDate" value="2026-03-15">
-      </div>
-      <div class="fg">
-        <label>🕐 Heure</label>
-        <input type="time" id="tTime" value="08:30">
-      </div>
+      <div class="fg"><label>📅 Date</label><input type="date" id="tDate" value="2026-03-15"></div>
+      <div class="fg"><label>🕐 Heure</label><input type="time" id="tTime" value="08:30"></div>
     </div>
-    <div class="fg">
-      <label>📍 Parcelle(s)</label>
-      <select id="tParc">
-        <option>P1 · Grenache Noir (1,8 ha)</option>
-        <option>P2 · Syrah (1,2 ha)</option>
-        <option selected>P3 · Syrah Sud (2,0 ha)</option>
-        <option>P4 · Carignan (0,9 ha)</option>
-        <option>Les Galets · Merlot (0,9 ha)</option>
+    <div class="fg"><label>📍 Parcelle</label>
+      <select id="tParc" onchange="updateTraitPreview()">
+        <option value="">— Choisir —</option>
+        <option value="P1">P1 · Grenache Noir (1,8 ha)</option>
+        <option value="P2">P2 · Syrah (1,2 ha)</option>
+        <option value="P3" selected>P3 · Syrah Sud (2,0 ha)</option>
+        <option value="P4">P4 · Carignan (0,9 ha)</option>
+        <option value="LG">Les Galets · Merlot (0,9 ha)</option>
       </select>
     </div>
-    <div class="fg">
-      <label>🧪 Produit <span style="color:var(--rouge)">*</span></label>
-      <select id="tProd" onchange="updateFromStock()">
-        <option value="soufre">Soufre Micronisé Wettable (Stock: 8 kg ⚠️)</option>
-        <option value="cuivre">Cuivre Hydroxyde Champion (Stock: 24 kg ✓)</option>
-        <option value="folpet">Folpet 80 WG (Stock: 5 kg ⚠️)</option>
-        <option value="mancoz">Mancozèbe 75 WG (Stock: 0 kg 🚫)</option>
+    <div class="fg"><label>🧪 Produit</label>
+      <select id="tProd" onchange="selectProd()">
+        <option value="">— Choisir —</option>
+        <option value="soufre">Soufre Micronisé (stock: 8 kg ⚠️)</option>
+        <option value="cuivre">Cuivre Hydroxyde (stock: 24 kg ✓)</option>
+        <option value="folpet">Folpet 80 WG (stock: 5 kg ⚠️)</option>
+        <option value="spinosad">Spinosad biocontrôle (stock: 2,5 L ✓)</option>
+        <option value="glypho">Glyphosate 360 (stock: 10 L ✓)</option>
       </select>
     </div>
-    <div class="al alb" id="stockAlert" style="margin-bottom:12px;">
-      <span class="al-i">ℹ️</span>
-      <div>Stock disponible : <b>8 kg</b> · Besoin pour P3 (2 ha) à 3 kg/ha = <b>6 kg</b> · Reste après : 2 kg ⚠️</div>
-    </div>
+    <div class="al alb" id="stockAlert" style="display:none;margin-bottom:12px"><span class="al-i">ℹ️</span><div id="stockAlertTxt"></div></div>
     <div class="row2">
-      <div class="fg">
-        <label>🔢 N° AMM <span style="color:var(--rouge)">*</span></label>
-        <input type="text" id="tAMM" value="FR-2019-0847">
+      <div class="fg"><label>💊 Dose</label><div class="ig"><input type="number" id="tDose" step="0.1" oninput="updateTraitPreview()"><span class="isuf" id="tDoseUnit">kg/ha</span></div></div>
+      <div class="fg"><label>📐 Dose réf. ANSES</label><div class="ig"><input type="number" id="tDoseRef" readonly style="background:#f5f0e6;color:var(--gris)"><span class="isuf">kg/ha</span></div></div>
+    </div>
+    <div class="al alb" id="iftFormula" style="display:none;margin-bottom:12px"><span class="al-i">🧮</span><div id="iftFormulaTxt"></div></div>
+    <div id="impactBox" style="display:none;background:var(--gris3);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Impact sur la parcelle</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Avant</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700" id="impBefore">—</div></div>
+        <div style="font-size:18px;color:var(--gris)">→</div>
+        <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Après</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700" id="impAfter">—</div></div>
+        <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Objectif HVE</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--or)">4,0</div></div>
       </div>
-      <div class="fg">
-        <label>🌱 Stade BBCH <span style="color:var(--rouge)">*</span></label>
-        <select id="tBBCH">
-          <option>BBCH 09 — Débourrement</option>
-          <option selected>BBCH 53 — Boutons floraux</option>
-          <option>BBCH 65 — Pleine floraison</option>
-          <option>BBCH 71 — Nouaison</option>
-          <option>BBCH 81 — Véraison</option>
-        </select>
+      <div style="height:7px;background:var(--gris2);border-radius:4px;overflow:hidden;margin-top:8px;position:relative">
+        <div id="impFill" style="height:100%;border-radius:4px;background:var(--vert2);transition:width .5s ease"></div>
+        <div id="impRef" style="position:absolute;top:0;bottom:0;width:2px;background:var(--or);border-radius:1px"></div>
       </div>
     </div>
     <div class="row2">
-      <div class="fg">
-        <label>💊 Dose (kg/ha) <span style="color:var(--rouge)">*</span></label>
-        <div class="ig"><input type="number" id="tDose" value="3" oninput="calcStock()"><span class="isuf">kg/ha</span></div>
-      </div>
-      <div class="fg">
-        <label>💦 Volume bouillie</label>
-        <div class="ig"><input type="number" id="tVol" value="150"><span class="isuf">L/ha</span></div>
+      <div class="fg"><label>🔢 N° AMM</label><input type="text" id="tAMM"></div>
+      <div class="fg"><label>🌱 Stade BBCH</label>
+        <select id="tBBCH"><option>BBCH 09</option><option selected>BBCH 53</option><option>BBCH 65</option><option>BBCH 71</option><option>BBCH 81</option></select>
       </div>
     </div>
-    <div class="fg">
-      <label>🧫 Adjuvants (si utilisés)</label>
-      <input type="text" id="tAdj" placeholder="Nom + dose">
-    </div>
-    <div class="al alg" id="darDisplay">
-      <span class="al-i">✅</span>
-      <div><b>DAR respecté — 28 jours</b>Récolte possible à partir du 12 avril 2026.</div>
-    </div>
-    <button class="btn btp" onclick="saveTraitement()">💾 Enregistrer &amp; déduire du stock</button>
+    <div class="fg"><label>🧫 Adjuvants</label><input type="text" id="tAdj" placeholder="Nom + dose si utilisé"></div>
+    <div class="al alg" id="darDisplay"><span class="al-i">✅</span><div><b>DAR respecté — 28 jours</b>Récolte possible à partir du 12 avril 2026.</div></div>
+    <button class="btn btp" id="btnSaveTrait" onclick="saveTrait()" disabled>💾 Enregistrer · IFT + Stock mis à jour auto</button>
   </div>
 </section>
-
-<!-- ════════════ STOCK PHYTO ════════════ -->
+<!-- ══ IFT ══ -->
+<section id="sIFT" class="sec">
+  <div class="stitle">Indicateur Fréquence Traitement</div>
+  <div class="ssub">Calcul automatique · Temps réel · Par parcelle · Campagne 2025</div>
+  <div class="ift-gauge" id="iftGauge">
+    <div class="igt">IFT moyen domaine — Campagne 2025</div>
+    <div style="display:flex;align-items:baseline;gap:6px">
+      <div class="igv" id="iftGaugeVal">—</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.55)">/ 4,0 référence HVE</div>
+    </div>
+    <div class="igs" id="iftGaugeSub">Calcul en cours…</div>
+    <div class="igt-bar"><div class="igt-fill" id="iftGaugeFill" style="width:0%"></div></div>
+    <div class="igt-marks" id="iftGaugeMarks"></div>
+    <div class="igt-split">
+      <div class="igt-cat"><div class="igt-cat-v" id="iftCatFongi">—</div><div class="igt-cat-l">Fongicides</div></div>
+      <div class="igt-cat"><div class="igt-cat-v" id="iftCatInsect">—</div><div class="igt-cat-l">Insecticides</div></div>
+      <div class="igt-cat"><div class="igt-cat-v" id="iftCatHerbi">—</div><div class="igt-cat-l">Herbicides</div></div>
+      <div class="igt-cat"><div class="igt-cat-v" id="iftCatBio">—</div><div class="igt-cat-l">Biocontrôle</div></div>
+    </div>
+  </div>
+  <div id="iftAlertes"></div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--vigne);margin-bottom:8px">Par parcelle</div>
+  <div id="iftParcList"></div>
+  <div class="card">
+    <div class="ch"><span class="ct">Objectifs certifications</span></div>
+    <div id="iftObjectifs"></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Évolution mensuelle 2025</span></div>
+    <div class="hc" id="iftChart"></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Projection fin de campagne</span><span class="badge bgold">IA</span></div>
+    <div id="iftProjection"></div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);color:#fff;border:none">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;margin-bottom:8px;color:var(--or2)">Formule IFT officielle</div>
+    <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;font-size:14px;text-align:center;margin-bottom:8px;letter-spacing:.02em">IFT = Dose appliquée ÷ Dose de référence ANSES</div>
+    <div style="font-size:12px;opacity:.8;line-height:1.6">Ex : 3 kg/ha soufre ÷ 3 kg/ha ref = <b>IFT 1,0</b><br>1,5 kg/ha ÷ 3 = <b>IFT 0,5</b> · L'IFT parcelle = somme de tous les traitements de la campagne.</div>
+  </div>
+</section>
+<!-- ══ SCAN IA ══ -->
+<section id="sScan" class="sec">
+  <div class="stitle">Scan étiquette IA</div>
+  <div class="ssub">Photo → Extraction automatique · AMM · Dose · DAR · IFT calculé</div>
+  <div class="card">
+    <div class="ch"><span class="ct">📷 Photographier l'étiquette</span></div>
+    <div class="upload-zone" id="dropZone" onclick="triggerUpload()">
+      <div id="uploadContent">
+        <div style="font-size:46px;margin-bottom:8px">📦</div>
+        <div style="font-size:15px;font-weight:700;color:var(--terre);margin-bottom:4px">Photo de l'étiquette produit</div>
+        <div style="font-size:12px;color:var(--gris)">Bidon, sachet, boîte phyto…</div>
+        <div style="display:flex;justify-content:center;gap:6px;margin-top:10px">
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">JPG</span>
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">PNG</span>
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">HEIC</span>
+        </div>
+      </div>
+      <img id="prevImg" style="display:none">
+      <div class="img-ov" id="imgOv" style="display:none" onclick="event.stopPropagation();triggerUpload()"><span>📷 Changer</span></div>
+      <div class="scan-beam" id="scanBeam" style="display:none"></div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
+    <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+      <button class="btn" style="background:var(--vigne);color:var(--creme);flex-direction:column;gap:4px;padding:14px 10px" onclick="document.getElementById('camInput').click()">
+        <span style="font-size:24px">📷</span><span>Appareil photo</span><span style="font-size:11px;opacity:.7">Terrain</span>
+      </button>
+      <button class="btn btghost" style="flex-direction:column;gap:4px;padding:14px 10px" onclick="triggerUpload()">
+        <span style="font-size:24px">🖼️</span><span>Galerie</span><span style="font-size:11px;opacity:.7">Photo existante</span>
+      </button>
+    </div>
+  </div>
+  <div class="al alb"><span class="al-i">💡</span><div><b>Conseils lecture optimale</b>Étiquette à plat, bonne lumière. L'IA lit : nom, AMM, dose max, DAR, ZNT, pictogrammes SGH, cibles.</div></div>
+  <button class="btn btp" id="analyseBtn" onclick="lancerAnalyse()" disabled style="margin-bottom:14px">🔍 Analyser avec l'IA — extraction automatique</button>
+  <div class="loading-card" id="loadingCard">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--vigne);margin-bottom:6px">Analyse en cours…</div>
+    <div class="spinner"></div>
+    <div id="loadingSteps" style="margin-top:12px;text-align:left">
+      <div class="lstep" id="ls1"><div class="lstep-i">1</div><span>Détection de l'étiquette</span></div>
+      <div class="lstep" id="ls2"><div class="lstep-i">2</div><span>Lecture nom commercial et fabricant</span></div>
+      <div class="lstep" id="ls3"><div class="lstep-i">3</div><span>Extraction n° AMM et numéro de lot</span></div>
+      <div class="lstep" id="ls4"><div class="lstep-i">4</div><span>Analyse doses, DAR, ZNT, restrictions</span></div>
+      <div class="lstep" id="ls5"><div class="lstep-i">5</div><span>Lecture pictogrammes SGH</span></div>
+      <div class="lstep" id="ls6"><div class="lstep-i">6</div><span>Calcul IFT et intégration stock</span></div>
+    </div>
+  </div>
+  <div id="scanResult" style="display:none">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:#d4edda;border:1px solid #a8d5b5;color:var(--vert);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px">
+      <span>🤖</span><span>Données extraites par IA</span><span id="confBadge" style="background:rgba(45,90,39,.2);padding:2px 7px;border-radius:10px">conf. —%</span>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Identification produit</span></div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Nom commercial</label><span class="ai-tag">IA ✓</span></div><input type="text" id="rNom" class="ai-filled"></div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Fabricant</label><span class="ai-tag">IA ✓</span></div><input type="text" id="rFab" class="ai-filled"></div>
+      <div class="row2">
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">N° AMM</label><span class="ai-tag">IA ✓</span></div><input type="text" id="rAMM" class="ai-filled"></div>
+        <div class="fg"><label>Catégorie</label><select id="rCateg"><option>Fongicide</option><option>Fongicide cuivre</option><option>Insecticide</option><option>Herbicide</option><option>Biocontrôle</option></select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Conditions d'emploi vigne</span></div>
+      <div class="row2">
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Dose max</label><span class="ai-tag">IA ✓</span></div><div class="ig"><input type="text" id="rDose" class="ai-filled"><span class="isuf" id="rDoseU">kg/ha</span></div></div>
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Nb applic.</label><span class="ai-tag">IA ✓</span></div><input type="text" id="rNbA" class="ai-filled"></div>
+      </div>
+      <div class="row2">
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">DAR (jours)</label><span class="ai-tag">IA ✓</span></div><input type="text" id="rDAR" class="ai-filled"></div>
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">ZNT (m)</label><span class="ai-tag">IA ✓</span></div><input type="text" id="rZNT" class="ai-filled"></div>
+      </div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Cibles</label><span class="ai-tag">IA ✓</span></div><input type="text" id="rCibles" class="ai-filled"></div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Restriction horaire</label><span class="ai-tag w">À confirmer</span></div><input type="text" id="rHoraire" class="ai-unc"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Stock initial</span></div>
+      <div class="row2">
+        <div class="fg"><label>Quantité reçue</label><div class="ig"><input type="number" id="rQte" placeholder="25"><span class="isuf" id="rQteU">kg</span></div></div>
+        <div class="fg"><label>Seuil alerte</label><div class="ig"><input type="number" id="rSeuil" placeholder="5"><span class="isuf">kg</span></div></div>
+      </div>
+      <div class="row2">
+        <div class="fg"><label>Date réception</label><input type="date" id="rRecep" value="2026-03-15"></div>
+        <div class="fg"><label>Péremption</label><input type="date" id="rPerima"></div>
+      </div>
+    </div>
+    <div class="al alg" id="scanIFTRes" style="display:none"><span class="al-i">📊</span><div id="scanIFTTxt"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <button class="btn btghost" onclick="resetScan()">↩ Nouveau scan</button>
+      <button class="btn btgold" onclick="saveScan()">💾 Enregistrer au stock</button>
+    </div>
+    <button class="btn btp" onclick="saveScanAndTreat()">➕ Enregistrer + créer traitement</button>
+  </div>
+</section>
+<!-- ══ STOCK ══ -->
 <section id="sStock" class="sec">
   <div class="stitle">Stock phytosanitaire</div>
-  <div class="ssub">Gestion produits · Alertes · Péremptions</div>
-
-  <div class="al alo"><span class="al-i">⚠️</span><div><b>2 produits sous le seuil d'alerte</b>Commander avant la prochaine période de traitement.</div></div>
-
-  <!-- FILTRE -->
+  <div class="ssub">Déduit automatiquement à chaque traitement enregistré</div>
+  <div class="al alo"><span class="al-i">⚠️</span><div><b>2 produits sous le seuil d'alerte</b>Soufre Micronisé + Folpet 80 WG.</div></div>
   <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px">
-    <button class="btn btgold btsm" onclick="filterStock('all',this)" id="fAll">Tous (6)</button>
-    <button class="btn btghost btsm" onclick="filterStock('ok',this)">✓ OK (3)</button>
-    <button class="btn btghost btsm" onclick="filterStock('low',this)">⚠️ Faible (2)</button>
-    <button class="btn btghost btsm" onclick="filterStock('zero',this)">🚫 Épuisé (1)</button>
+    <button class="btn btgold btsm" id="fAll" onclick="filterStock('all',this)">Tous</button>
+    <button class="btn btghost btsm" onclick="filterStock('ok',this)">✓ OK</button>
+    <button class="btn btghost btsm" onclick="filterStock('low',this)">⚠️ Faible</button>
+    <button class="btn btghost btsm" onclick="filterStock('zero',this)">🚫 Épuisé</button>
   </div>
-
-  <div id="stockList">
-    <!-- JS rendered -->
-  </div>
-
-  <button class="btn btp" onclick="showM('mAddStock')">+ Ajouter un produit au stock</button>
-
-  <!-- HISTORIQUE MOUVEMENTS -->
-  <div class="card" style="margin-top:14px">
+  <div id="stockList"></div>
+  <button class="btn btp" onclick="go('sScan',document.querySelectorAll('.tab')[3])" style="margin-top:4px">📷 Scanner / ajouter un produit</button>
+  <div class="card" style="margin-top:12px">
     <div class="ch"><span class="ct">Derniers mouvements</span></div>
-    <div class="li">
-      <div class="lic" style="background:#fde8e6">📤</div>
-      <div class="lib"><div class="lit">Soufre Micronisé — Utilisé P3</div><div class="lim">12 mars · − 6 kg · Stock restant : 8 kg</div></div>
-      <span class="badge br">− 6 kg</span>
-    </div>
-    <div class="li">
-      <div class="lic" style="background:#d4edda">📥</div>
-      <div class="lib"><div class="lit">Cuivre Hydroxyde — Réception</div><div class="lim">5 mars · Fournisseur Phyteurop · BL 2024-8821</div></div>
-      <span class="badge bg">+ 30 kg</span>
-    </div>
-    <div class="li">
-      <div class="lic" style="background:#fde8e6">📤</div>
-      <div class="lib"><div class="lit">Folpet 80 WG — Utilisé P1+P2</div><div class="lim">10 fév · − 5,4 kg · Stock restant : 5 kg</div></div>
-      <span class="badge br">− 5,4 kg</span>
-    </div>
+    <div class="li"><div class="lic" style="background:#fde8e6">📤</div><div class="lib"><div class="lit">Soufre Micronisé — Utilisé P3</div><div class="lim">12 mars · −6 kg · Reste 8 kg</div></div><span class="badge br">−6 kg</span></div>
+    <div class="li"><div class="lic" style="background:#d4edda">📥</div><div class="lib"><div class="lit">Cuivre Hydroxyde — Réception</div><div class="lim">5 mars · Phyteurop · BL 2024-8821</div></div><span class="badge bg">+30 kg</span></div>
+    <div class="li"><div class="lic" style="background:#fde8e6">📤</div><div class="lib"><div class="lit">Folpet 80 WG — Utilisé P1+P2</div><div class="lim">10 fév · −5,4 kg · Reste 5 kg</div></div><span class="badge br">−5,4 kg</span></div>
   </div>
 </section>
-
-<!-- ════════════ CARTO / MAP ════════════ -->
+<!-- ══ PARCELLES / CARTO ══ -->
 <section id="sCarto" class="sec">
   <div class="stitle">Cartographie parcelles</div>
-  <div class="ssub">Plan parcellaire · GPS · Fonds OSM / IGN</div>
-
-  <!-- MAP LEAFLET -->
+  <div class="ssub">Plan parcellaire GPS · Import CVI / PAC / Ecocert · OSM / Satellite</div>
+  <!-- IMPORT PARCELLAIRE -->
+  <div class="card">
+    <div class="ch"><span class="ct">Importer le parcellaire</span><span class="badge bgold">Multi-sources</span></div>
+    <div class="import-option" onclick="selectImport(this,'cvi')">
+      <div class="io-icon" style="background:#d4e8f4">📋</div>
+      <div>
+        <div class="io-title">CVI — Casier Viticole Informatisé</div>
+        <div class="io-desc">Fichier PDF ou Excel FranceAgriMer · Toutes vos parcelles + cépages</div>
+        <span class="io-badge" style="background:#d4e8f4;color:var(--bleu)">PDF · XLSX</span>
+      </div>
+    </div>
+    <div class="import-option" onclick="selectImport(this,'pac')">
+      <div class="io-icon" style="background:#d4edda">🌾</div>
+      <div>
+        <div class="io-title">Déclaration PAC / RPG</div>
+        <div class="io-desc">Relevé parcellaire PAC · Shapefile ou PDF Télépac</div>
+        <span class="io-badge" style="background:#d4edda;color:var(--vert)">SHP · PDF · GeoJSON</span>
+      </div>
+    </div>
+    <div class="import-option" onclick="selectImport(this,'ecocert')">
+      <div class="io-icon" style="background:#fdf3d0">🏅</div>
+      <div>
+        <div class="io-title">Certificat Ecocert / AB</div>
+        <div class="io-desc">PDF certificat avec liste des parcelles AB</div>
+        <span class="io-badge" style="background:#fdf3d0;color:#8a6a10">PDF</span>
+      </div>
+    </div>
+    <div class="import-option" onclick="selectImport(this,'photo')">
+      <div class="io-icon" style="background:#f0d4e0">📷</div>
+      <div>
+        <div class="io-title">Photo du document papier</div>
+        <div class="io-desc">Photo de n'importe quel document · L'IA lit et extrait les parcelles</div>
+        <span class="io-badge" style="background:#f0d4e0;color:var(--raisin)">IA Vision</span>
+      </div>
+    </div>
+    <div id="importZone" style="display:none;margin-top:12px">
+      <div class="upload-zone" id="importDropZone" onclick="document.getElementById('importFile').click()" style="padding:20px">
+        <div style="font-size:36px;margin-bottom:8px" id="importIcon">📄</div>
+        <div style="font-size:14px;font-weight:700;color:var(--terre);margin-bottom:4px" id="importTitle">Déposer le fichier ici</div>
+        <div style="font-size:12px;color:var(--gris)" id="importDesc">ou cliquer pour parcourir</div>
+      </div>
+      <input type="file" id="importFile" style="display:none" onchange="handleImportFile(this)">
+      <button class="btn btp" id="btnImportAnalyse" style="margin-top:10px;display:none" onclick="analyseImport()">🤖 Analyser avec l'IA — extraction parcelles</button>
+    </div>
+    <div id="importResult" style="display:none">
+      <div class="al alg" style="margin-top:10px"><span class="al-i">✅</span><div id="importResultTxt"></div></div>
+      <div id="importParcList"></div>
+      <button class="btn btp" onclick="confirmImport()">💾 Importer ces parcelles dans VitiTrace</button>
+    </div>
+  </div>
+  <!-- MAP -->
   <div id="mapContainer">
-    <div class="map-overlay" id="mapOverlay">📍 GPS actif</div>
-    <div class="map-controls">
-      <button class="map-ctrl-btn" onclick="mapSatellite()" title="Satellite">🛰️</button>
-      <button class="map-ctrl-btn" onclick="mapOSM()" title="Plan">🗺️</button>
-      <button class="map-ctrl-btn" onclick="centerGPS()" title="Ma position">◎</button>
+    <div class="map-ov">📍 GPS actif</div>
+    <div class="map-ctrls">
+      <button class="map-cbtn" onclick="mapSat()">🛰️</button>
+      <button class="map-cbtn" onclick="mapOSM()">🗺️</button>
+      <button class="map-cbtn" onclick="mapCenter()">◎</button>
     </div>
     <div id="map"></div>
   </div>
-
-  <!-- LEGENDE -->
   <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600"><span style="width:14px;height:14px;background:#2d7d2d;border-radius:3px;display:inline-block"></span>Grenache</div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600"><span style="width:14px;height:14px;background:#4a6aaa;border-radius:3px;display:inline-block"></span>Syrah</div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600"><span style="width:14px;height:14px;background:#aa6a2d;border-radius:3px;display:inline-block"></span>Merlot</div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600"><span style="width:14px;height:14px;background:#aa4a4a;border-radius:3px;display:inline-block"></span>Carignan</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600"><span style="width:13px;height:13px;background:#2d7d2d;border-radius:3px;display:inline-block"></span>Grenache</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600"><span style="width:13px;height:13px;background:#4a6aaa;border-radius:3px;display:inline-block"></span>Syrah</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600"><span style="width:13px;height:13px;background:#aa6a2d;border-radius:3px;display:inline-block"></span>Merlot</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600"><span style="width:13px;height:13px;background:#aa4a4a;border-radius:3px;display:inline-block"></span>Carignan</div>
   </div>
-
-  <!-- LISTE PARCELLES -->
-  <div class="card" onclick="showM('mParc1')">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div><div style="font-weight:700;font-size:15px">P1 · Grenache Noir</div><div style="font-size:12px;color:var(--gris);margin-top:2px">1,8 ha · Combe Haute · Sol argilo-calcaire · N43.612° E3.921°</div></div>
-      <div style="text-align:right"><div class="badge bg" style="margin-bottom:4px">IFT 2,4</div><div style="font-size:11px;color:var(--gris)">Taillé ✓</div></div>
-    </div>
-    <div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gris);margin-bottom:3px"><span>Travaux 2025</span><span>4/7</span></div><div class="pbar"><div class="pfill" style="width:57%"></div></div></div>
-  </div>
-
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div><div style="font-weight:700;font-size:15px">P3 · Syrah Sud</div><div style="font-size:12px;color:var(--gris);margin-top:2px">2,0 ha · Terrasse alluviale · N43.610° E3.925°</div></div>
-      <div style="text-align:right"><div class="badge bo" style="margin-bottom:4px">IFT 3,6</div><div style="font-size:11px;color:var(--orange)">⚠️ Mildiou</div></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div><div style="font-weight:700;font-size:15px">Les Galets · Merlot</div><div style="font-size:12px;color:var(--gris);margin-top:2px">0,9 ha · Plan de Dieu · N44.012° E4.815°</div></div>
-      <div style="text-align:right"><div class="badge br" style="margin-bottom:4px">IFT 4,2 ⚠️</div><div style="font-size:11px;color:var(--rouge)">DAR bloqué</div></div>
-    </div>
-  </div>
-
-  <!-- RENDEMENTS -->
+  <div id="cartoList"></div>
   <div class="card">
     <div class="ch"><span class="ct">Rendements vendanges 2025</span><span class="badge bgold">Cave coop.</span></div>
     <div class="rrow"><div><div style="font-weight:600">P1 · Grenache</div><div style="font-size:12px;color:var(--gris)">1,8 ha</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--gris)">Estimé 7 200 kg</div><div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--vigne)">8 100 kg ✓</div></div></div>
     <div class="rrow"><div><div style="font-weight:600">P3 · Syrah</div><div style="font-size:12px;color:var(--gris)">2,0 ha</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--gris)">Estimé 9 000 kg</div><div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--vigne)">8 640 kg ✓</div></div></div>
     <div class="rrow"><div><div style="font-weight:600">Les Galets</div><div style="font-size:12px;color:var(--gris)">0,9 ha</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--gris)">Estimé 3 600 kg</div><div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--rouge)">3 150 kg ↓</div></div></div>
     <div class="sep"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700">Total domaine</span><span style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--vigne)">19 890 kg</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700">Total</span><span style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--vigne)">19 890 kg</span></div>
   </div>
 </section>
-
-<!-- ════════════ MÉTÉO ════════════ -->
+<!-- ══ MÉTÉO ══ -->
 <section id="sMeteo" class="sec">
   <div class="stitle">Météo & risques phyto</div>
   <div class="ssub">Station Montpellier-Nord · Modèle EPI mildiou</div>
-  <div class="al alr"><span class="al-i">🍄</span><div><b>Risque mildiou ÉLEVÉ J+1 à J+3</b>28 mm cumulés + T° 18°C. Seuil EPI atteint P3 & P4. Traiter avant jeudi.</div></div>
-  <div class="al alo"><span class="al-i">🌫️</span><div><b>Risque oïdium MOYEN</b>Températures 16–22°C favorables. Surveiller P3 et P4.</div></div>
+  <div class="al alr"><span class="al-i">🍄</span><div><b>Risque mildiou ÉLEVÉ J+1–J+3</b>28 mm + 18°C. Traitement préventif avant jeudi.</div></div>
+  <div class="al alo"><span class="al-i">🌫️</span><div><b>Risque oïdium MOYEN</b>16–22°C favorables. Surveiller P3 et P4.</div></div>
   <div class="card">
     <div class="ch"><span class="ct">Prévision 7 jours</span></div>
     <div class="ms">
@@ -564,705 +628,694 @@ textarea{resize:vertical;min-height:72px}
   </div>
   <div class="card">
     <div class="ch"><span class="ct">Créneaux traitement</span><span class="badge bb">Restriction horaire</span></div>
-    <div class="li"><div class="lic" style="background:#d4edda">✅</div><div class="lib"><div class="lit">Aujourd'hui 6h–11h</div><div class="lim">Vent 8 km/h · Pas de gel · Conditions optimales</div></div><span class="badge bg">Idéal</span></div>
-    <div class="li"><div class="lic" style="background:#fde8c8">⚠️</div><div class="lib"><div class="lit">Lundi — Pluie 18 mm</div><div class="lim">Pas de traitement foliaire. Lessivage.</div></div><span class="badge bo">Déconseillé</span></div>
-    <div class="li"><div class="lic" style="background:#d4e8f4">🌤️</div><div class="lib"><div class="lit">Jeudi–Vendredi — Fenêtre 3 j.</div><div class="lim">Sans pluie · Vent faible · Optimal</div></div><span class="badge bb">Traitement</span></div>
+    <div class="li"><div class="lic" style="background:#d4edda">✅</div><div class="lib"><div class="lit">Aujourd'hui 6h–11h</div><div class="lim">Vent 8 km/h · Conditions optimales</div></div><span class="badge bg">Idéal</span></div>
+    <div class="li"><div class="lic" style="background:#fde8c8">⚠️</div><div class="lib"><div class="lit">Lundi — Pluie 18 mm</div><div class="lim">Pas de traitement foliaire</div></div><span class="badge bo">Déconseillé</span></div>
+    <div class="li"><div class="lic" style="background:#d4e8f4">🌤️</div><div class="lib"><div class="lit">Jeudi–Vendredi</div><div class="lim">Fenêtre 3 jours sans pluie</div></div><span class="badge bb">Traitement</span></div>
   </div>
 </section>
-
-<!-- ════════════ REGISTRE ════════════ -->
+<!-- ══ REGISTRE ══ -->
 <section id="sRegistre" class="sec">
   <div class="stitle">Registre phytosanitaire</div>
   <div class="ssub">Conforme arrêté décembre 2025 · Format DDT/OC</div>
-  <div class="al alg"><span class="al-i">✅</span><div><b>Registre à jour — 23 interventions</b>Conformité vérifiée. Dernier traitement il y a 3 jours.</div></div>
+  <div class="al alg"><span class="al-i">✅</span><div><b>Registre à jour — <span id="regCount">13</span> interventions</b>Conformité vérifiée.</div></div>
   <div class="card">
     <div class="ch"><span class="ct">Export 1-clic</span><span class="badge bgold">Certifié 2026</span></div>
-    <div class="exrow"><span style="font-size:22px">📄</span><div class="exinfo"><div class="exname">Registre complet — PDF</div><div class="exdesc">Format lisible · Toutes parcelles · Signé</div></div><button class="btn btgold btsm" onclick="doExport('PDF')">PDF</button></div>
+    <div class="exrow"><span style="font-size:22px">📄</span><div class="exinfo"><div class="exname">Registre complet — PDF</div><div class="exdesc">Toutes parcelles · Signé numériquement</div></div><button class="btn btgold btsm" onclick="doExport('PDF')">PDF</button></div>
     <div class="exrow"><span style="font-size:22px">🗂️</span><div class="exinfo"><div class="exname">Format machine — DDT (XML)</div><div class="exdesc">Lisible par contrôle réglementaire</div></div><button class="btn btgold btsm" onclick="doExport('XML DDT')">XML</button></div>
-    <div class="exrow"><span style="font-size:22px">🍷</span><div class="exinfo"><div class="exname">Bilan IFT — Cave / acheteur</div><div class="exdesc">Synthèse annuelle pour coopérative</div></div><button class="btn btgold btsm" onclick="doExport('IFT')">Export</button></div>
+    <div class="exrow"><span style="font-size:22px">🍷</span><div class="exinfo"><div class="exname">Bilan IFT — Cave / acheteur</div><div class="exdesc">Synthèse annuelle pour coopérative</div></div><button class="btn btgold btsm" onclick="doExport('IFT Cave')">Export</button></div>
     <div class="exrow"><span style="font-size:22px">🏅</span><div class="exinfo"><div class="exname">Certificat HVE / AB</div><div class="exdesc">Auto-évaluation indicateurs</div></div><button class="btn btgold btsm" onclick="doExport('HVE')">Export</button></div>
   </div>
   <div class="card">
-    <div class="ch"><span class="ct">Historique 2025</span><select style="width:auto;padding:5px 9px;font-size:12px"><option>Toutes parcelles</option><option>P1 Grenache</option></select></div>
-    <div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">Soufre Micronisé</div><div class="lim">12/03 · P3 · BBCH 53 · 3 kg/ha · AMM FR-2019-0847</div></div><span class="dar dar-ok">✓</span></div>
-    <div class="li"><div class="lic" style="background:#fde8e6">🍄</div><div class="lib"><div class="lit">Cuivre Hydroxyde</div><div class="lim">18/02 · Galets · BBCH 09 · 2,5 kg/ha · AMM FR-2020-1234</div></div><span class="dar dar-x">🚫</span></div>
-    <div class="li"><div class="lic" style="background:#fde8c8">🌱</div><div class="lib"><div class="lit">Folpet 80 WG</div><div class="lim">10/02 · P1+P2 · BBCH 09 · 1,5 kg/ha · AMM FR-2018-0556</div></div><span class="dar dar-ok">✓</span></div>
-    <div style="text-align:center;margin-top:12px"><button class="btn btghost btsm">Voir 23 interventions →</button></div>
+    <div class="ch"><span class="ct">Historique 2025</span></div>
+    <div id="registreList"></div>
   </div>
   <div class="card">
     <div class="ch"><span class="ct">Alertes renouvellement</span><span class="badge bo">3 ans</span></div>
-    <div class="al alo" style="margin-bottom:8px"><span class="al-i">⏰</span><div><b>Folpet 80 WG — Usage limité</b>3ème année. Renouvellement AMM avant campagne 2026.</div></div>
+    <div class="al alo" style="margin-bottom:8px"><span class="al-i">⏰</span><div><b>Folpet 80 WG — Usage limité</b>3ème année. Renouvellement AMM avant 2026.</div></div>
     <div class="al alb" style="margin-bottom:0"><span class="al-i">ℹ️</span><div><b>Cuivre — Plafond 5 ans</b>Cumul : 11,5/28 kg/ha. Marge : 16,5 kg/ha.</div></div>
   </div>
 </section>
-
-<!-- ════════════ CAVE & NÉGOCE ════════════ -->
+<!-- ══ CAVE ══ -->
 <section id="sCave" class="sec">
   <div class="stitle">Cave & Négoce</div>
   <div class="ssub">Vinification · Cuves · Ventes particulier → négoce</div>
-
-  <!-- RÉSUMÉ CA -->
-  <div class="card" style="background:linear-gradient(135deg,#1c1008 0%,#3d1a0a 100%);color:#fff;border:none">
-    <div style="font-size:12px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:4px">Chiffre d'affaires 2025</div>
-    <div class="rev-big">68 400 €</div>
-    <div style="display:flex;gap:20px;margin-top:10px">
-      <div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--or)">42 500 €</div><div style="font-size:11px;color:rgba(255,255,255,.6)">Négoce (62%)</div></div>
-      <div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--or)">25 900 €</div><div style="font-size:11px;color:rgba(255,255,255,.6)">Vente directe (38%)</div></div>
+  <div class="card" style="background:linear-gradient(135deg,#1c1008,#3d1a0a);color:#fff;border:none">
+    <div style="font-size:11px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Chiffre d'affaires 2025</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;color:#fff;line-height:1;margin-bottom:8px">68 400 €</div>
+    <div style="display:flex;gap:20px">
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--or)">42 500 €</div><div style="font-size:11px;color:rgba(255,255,255,.55)">Négoce (62%)</div></div>
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--or)">25 900 €</div><div style="font-size:11px;color:rgba(255,255,255,.55)">Vente directe (38%)</div></div>
     </div>
   </div>
-
-  <!-- ÉTAT CUVES -->
   <div class="card">
     <div class="ch"><span class="ct">État des cuves</span><span class="badge braisin">6 cuves</span></div>
     <div class="tank-wrap">
-      <div>
-        <div class="tank" style="height:70px" onclick="showM('mCuve1')"><div class="tank-fill" style="height:85%;background:var(--raisin)"><div class="tank-label">85%</div></div></div>
-        <div class="tank-name">C1 · 50 hL</div>
-      </div>
-      <div>
-        <div class="tank" style="height:60px" onclick="showM('mCuve1')"><div class="tank-fill" style="height:60%;background:#7a2040"><div class="tank-label">60%</div></div></div>
-        <div class="tank-name">C2 · 30 hL</div>
-      </div>
-      <div>
-        <div class="tank" style="height:75px" onclick="showM('mCuve1')"><div class="tank-fill" style="height:40%;background:var(--or)"><div class="tank-label" style="color:var(--noir)">40%</div></div></div>
-        <div class="tank-name">C3 · 25 hL (Rosé)</div>
-      </div>
-      <div>
-        <div class="tank" style="height:65px" onclick="showM('mCuve1')"><div class="tank-fill" style="height:90%;background:#3d1a2a"><div class="tank-label">90%</div></div></div>
-        <div class="tank-name">C4 · 40 hL</div>
-      </div>
-      <div>
-        <div class="tank" style="height:50px" onclick="showM('mCuve1')"><div class="tank-fill" style="height:20%;background:var(--raisin)"><div class="tank-label">20%</div></div></div>
-        <div class="tank-name">C5 · 20 hL</div>
-      </div>
-      <div>
-        <div class="tank" style="height:70px"><div class="tank-fill" style="height:0%;background:var(--raisin)"></div></div>
-        <div class="tank-name" style="color:var(--gris)">C6 · Vide</div>
-      </div>
-    </div>
-    <div style="font-size:12px;color:var(--gris);margin-top:4px">Total disponible : <b style="color:var(--terre)">147 hL</b> sur 165 hL capacité</div>
-  </div>
-
-  <!-- CUVÉES -->
-  <div class="ch" style="margin-bottom:8px"><span class="ct">Mes cuvées</span><button class="btn btgold btsm" onclick="showM('mNewCuvee')">+ Nouvelle cuvée</button></div>
-
-  <div class="cuvee-card" onclick="showM('mCuvee1')">
-    <div class="cuvee-header">
-      <div class="cuvee-name">"Combe Haute"<br><span style="font-size:13px;font-weight:400;opacity:.8">Grenache Noir</span></div>
-      <div class="cuvee-vintage">2024</div>
-    </div>
-    <div class="cuvee-stats">
-      <div class="cuvee-stat"><div class="cuvee-stat-val">3 200 L</div><div class="cuvee-stat-lbl">Volume</div></div>
-      <div class="cuvee-stat"><div class="cuvee-stat-val">5,20 €/L</div><div class="cuvee-stat-lbl">Prix négoce</div></div>
-      <div class="cuvee-stat"><div class="cuvee-stat-val">16 640 €</div><div class="cuvee-stat-lbl">Valeur totale</div></div>
+      <div><div class="tank" style="height:68px"><div class="tank-fill" style="height:85%;background:var(--raisin)"><div class="tank-lbl">85%</div></div></div><div class="tank-name">C1·50hL</div></div>
+      <div><div class="tank" style="height:58px"><div class="tank-fill" style="height:60%;background:#7a2040"><div class="tank-lbl">60%</div></div></div><div class="tank-name">C2·30hL</div></div>
+      <div><div class="tank" style="height:68px"><div class="tank-fill" style="height:40%;background:var(--or)"><div class="tank-lbl" style="color:var(--noir)">40%</div></div></div><div class="tank-name">C3·25hL</div></div>
+      <div><div class="tank" style="height:62px"><div class="tank-fill" style="height:90%;background:#3d1a2a"><div class="tank-lbl">90%</div></div></div><div class="tank-name">C4·40hL</div></div>
+      <div><div class="tank" style="height:50px"><div class="tank-fill" style="height:20%;background:var(--raisin)"><div class="tank-lbl">20%</div></div></div><div class="tank-name">C5·20hL</div></div>
+      <div><div class="tank" style="height:60px"></div><div class="tank-name" style="color:var(--gris)">C6·Vide</div></div>
     </div>
   </div>
-
-  <div class="cuvee-card" style="background:linear-gradient(135deg,#1a3a6a 0%,#0a1a4a 100%);box-shadow:0 4px 20px rgba(26,58,106,.3)" onclick="showM('mCuvee2')">
-    <div class="cuvee-header">
-      <div class="cuvee-name">"Les Galets"<br><span style="font-size:13px;font-weight:400;opacity:.8">Merlot · Assemblage</span></div>
-      <div class="cuvee-vintage">2024</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--vigne)">Mes cuvées</div>
+    <button class="btn btgold btsm" onclick="showM('mNewCuvee')">+ Nouvelle</button>
+  </div>
+  <div class="cuvee-card" style="background:linear-gradient(135deg,var(--raisin),#5a1030);box-shadow:0 4px 20px rgba(122,32,64,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700">"Combe Haute"<br><span style="font-size:13px;font-weight:400;opacity:.8">Grenache Noir 2024</span></div>
+      <div style="background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">2024</div>
     </div>
-    <div class="cuvee-stats">
-      <div class="cuvee-stat"><div class="cuvee-stat-val">1 800 L</div><div class="cuvee-stat-lbl">Volume</div></div>
-      <div class="cuvee-stat"><div class="cuvee-stat-val">6,80 €/L</div><div class="cuvee-stat-lbl">Prix négoce</div></div>
-      <div class="cuvee-stat"><div class="cuvee-stat-val">12 240 €</div><div class="cuvee-stat-lbl">Valeur totale</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600">3 200 L</div><div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.06em">Volume</div></div>
+      <div style="text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600">5,20 €/L</div><div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.06em">Prix négoce</div></div>
+      <div style="text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600">16 640 €</div><div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.06em">Valeur</div></div>
     </div>
   </div>
-
-  <div class="cuvee-card" style="background:linear-gradient(135deg,#c8a04a 0%,#8a6020 100%);box-shadow:0 4px 20px rgba(200,160,74,.3)" onclick="showM('mCuvee3')">
-    <div class="cuvee-header">
-      <div class="cuvee-name">"Rosé d'Été"<br><span style="font-size:13px;font-weight:400;opacity:.8">Grenache · Syrah</span></div>
-      <div class="cuvee-vintage">2025</div>
-    </div>
-    <div class="cuvee-stats">
-      <div class="cuvee-stat"><div class="cuvee-stat-val">800 L</div><div class="cuvee-stat-lbl">Volume</div></div>
-      <div class="cuvee-stat"><div class="cuvee-stat-val">4,20 €/L</div><div class="cuvee-stat-lbl">Prix négoce</div></div>
-      <div class="cuvee-stat"><div class="cuvee-stat-val">3 360 €</div><div class="cuvee-stat-lbl">Valeur totale</div></div>
-    </div>
-  </div>
-
-  <!-- ACHETEURS / NÉGOCE -->
-  <div class="card" style="margin-top:4px">
+  <div class="card">
     <div class="ch"><span class="ct">Acheteurs & prix marché</span><button class="btn btghost btsm" onclick="showM('mNewVente')">+ Vente</button></div>
-    <div class="negoce-row">
-      <div><div class="negoce-acheteur">🏢 Cellier des Princes</div><div class="negoce-detail">Contrat Grenache · Livraison mars</div></div>
-      <div class="negoce-right">
-        <div class="negoce-prix">5,20 €/L</div>
-        <div class="negoce-vol">1 200 L · 6 240 €</div>
-        <div class="prix-trend trend-up">▲ +0,20</div>
-      </div>
-    </div>
-    <div class="negoce-row">
-      <div><div class="negoce-acheteur">🍷 Négociant Bontemps</div><div class="negoce-detail">Contrat Merlot · Livraison avril</div></div>
-      <div class="negoce-right">
-        <div class="negoce-prix">6,80 €/L</div>
-        <div class="negoce-vol">1 800 L · 12 240 €</div>
-        <div class="prix-trend trend-up">▲ +0,50</div>
-      </div>
-    </div>
-    <div class="negoce-row">
-      <div><div class="negoce-acheteur">👤 Vente directe cave</div><div class="negoce-detail">Particuliers · Bouteilles · En-primeur</div></div>
-      <div class="negoce-right">
-        <div class="negoce-prix">9,50 €/L</div>
-        <div class="negoce-vol">860 L · 8 170 €</div>
-        <div class="prix-trend trend-up">▲ Marge ×1,8</div>
-      </div>
-    </div>
-    <div class="negoce-row">
-      <div><div class="negoce-acheteur">🏨 Restaurant La Garrigue</div><div class="negoce-detail">HCR · Commande régulière</div></div>
-      <div class="negoce-right">
-        <div class="negoce-prix">8,20 €/L</div>
-        <div class="negoce-vol">240 L · 1 968 €</div>
-        <div class="prix-trend trend-dn">▼ − 0,10</div>
-      </div>
-    </div>
+    <div class="negoce-row"><div><div style="font-weight:600;font-size:14px">🏢 Cellier des Princes</div><div style="font-size:12px;color:var(--gris)">Grenache · Livraison mars</div></div><div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--raisin);font-weight:600">5,20 €/L</div><div style="font-size:11px;color:var(--gris)">1 200 L · 6 240 €</div><div class="trend-up">▲ +0,20</div></div></div>
+    <div class="negoce-row"><div><div style="font-weight:600;font-size:14px">🍷 Négociant Bontemps</div><div style="font-size:12px;color:var(--gris)">Merlot · Livraison avril</div></div><div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--raisin);font-weight:600">6,80 €/L</div><div style="font-size:11px;color:var(--gris)">1 800 L · 12 240 €</div><div class="trend-up">▲ +0,50</div></div></div>
+    <div class="negoce-row"><div><div style="font-weight:600;font-size:14px">👤 Vente directe cave</div><div style="font-size:12px;color:var(--gris)">Particuliers · Bouteilles</div></div><div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--raisin);font-weight:600">9,50 €/L</div><div style="font-size:11px;color:var(--gris)">860 L · 8 170 €</div><div class="trend-up">▲ Marge ×1,8</div></div></div>
   </div>
-
-  <!-- ANALYSE PRIX -->
   <div class="card">
-    <div class="ch"><span class="ct">Analyse & stratégie prix</span><span class="badge braisin">IA</span></div>
-    <div class="al alb" style="margin-bottom:10px">
-      <span class="al-i">💡</span>
-      <div><b>Optimisation négoce détectée</b>Votre "Combe Haute" 2024 à 5,20 €/L est 12% sous le cours régional actuel (5,85 €/L). Renégocier à renouvellement contrat.</div>
-    </div>
-    <div class="al alg">
-      <span class="al-i">📈</span>
-      <div><b>Vente directe = +73% marge vs négoce</b>Développer circuit court : +800 L en direct = +3 600 € de CA additionnel.</div>
-    </div>
-    <button class="btn btraisin" style="width:100%;margin-top:10px" onclick="showM('mCertifPhyto')">📄 Générer certificat phyto pour acheteur</button>
-  </div>
-
-  <!-- DÉCLARATIONS RÉGLEMENTAIRES -->
-  <div class="card">
-    <div class="ch"><span class="ct">Déclarations & documents</span></div>
-    <div class="exrow"><span style="font-size:22px">📋</span><div class="exinfo"><div class="exname">Déclaration de récolte (DREV)</div><div class="exdesc">À déposer avant 25 nov. — InterRhône / FranceAgriMer</div></div><button class="btn btgold btsm" onclick="doExport('DREV')">Générer</button></div>
-    <div class="exrow"><span style="font-size:22px">🏅</span><div class="exinfo"><div class="exname">Certificat traçabilité vigne</div><div class="exdesc">Historique phyto + IFT pour négoce / cave</div></div><button class="btn btgold btsm" onclick="doExport('Traçabilité')">PDF</button></div>
-    <div class="exrow"><span style="font-size:22px">📱</span><div class="exinfo"><div class="exname">QR Code traçabilité bouteille</div><div class="exdesc">e-label 2023 · Ingrédients + historique vigne</div></div><button class="btn btgold btsm" onclick="doExport('QR')">Générer</button></div>
+    <div class="ch"><span class="ct">Documents & déclarations</span></div>
+    <div class="exrow"><span style="font-size:22px">📋</span><div class="exinfo"><div class="exname">Déclaration de récolte (DREV)</div><div class="exdesc">À déposer avant 25 nov.</div></div><button class="btn btgold btsm" onclick="doExport('DREV')">Générer</button></div>
+    <div class="exrow"><span style="font-size:22px">🏅</span><div class="exinfo"><div class="exname">Certificat traçabilité vigne</div><div class="exdesc">Historique phyto + IFT pour négoce</div></div><button class="btn btgold btsm" onclick="doExport('Traçabilité')">PDF</button></div>
+    <div class="exrow"><span style="font-size:22px">📱</span><div class="exinfo"><div class="exname">QR Code traçabilité bouteille</div><div class="exdesc">e-label 2023 · Ingrédients + vigne</div></div><button class="btn btgold btsm" onclick="doExport('QR')">Générer</button></div>
   </div>
 </section>
-
-<!-- ════════════ OBSERVATIONS ════════════ -->
+<!-- ══ OBSERVATIONS ══ -->
 <section id="sObs" class="sec">
   <div class="stitle">Observations terrain</div>
   <div class="ssub">Photos géotaggées · Analyse IA maladies · Notes</div>
   <div class="card">
     <div class="ch"><span class="ct">Nouvelle observation</span></div>
-    <div class="ophoto" onclick="doPhoto()">
-      <span style="font-size:38px" id="ophIcon">📸</span>
-      <div class="ophoto-lbl" id="ophLbl">Appuyer pour photographier</div>
+    <div style="width:100%;height:140px;background:linear-gradient(135deg,#8ab88a,#5a8a5a);border-radius:10px;margin-bottom:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px dashed rgba(61,43,31,.2);transition:all .2s" onclick="obsPhoto()">
+      <span style="font-size:36px" id="obsIcon">📸</span>
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.9);margin-top:5px" id="obsLbl">Appuyer pour photographier</div>
     </div>
-    <div id="aiResult" style="display:none" class="al alo">
-      <span class="al-i">🤖</span>
-      <div><b>IA : Mildiou détecté (82% confiance)</b>Taches huileuses face supérieure. Traitement préventif sous 48h.</div>
-    </div>
+    <div id="obsAI" style="display:none" class="al alo"><span class="al-i">🤖</span><div><b>IA : Mildiou détecté (82% confiance)</b>Taches huileuses. Traitement préventif sous 48h.</div></div>
     <div class="fg"><label>Type</label><select><option>🍄 Maladie fongique</option><option>🐛 Ravageur</option><option>💧 Stress hydrique</option><option>⚠️ Dégâts divers</option></select></div>
-    <div class="fg"><label>Parcelle (GPS auto)</label><select><option>P3 · Syrah Sud (GPS auto)</option><option>P1 · Grenache</option></select></div>
-    <div class="fg"><label>Notes</label><textarea>Taches huileuses rangs 12–15. Pression forte après pluies.</textarea></div>
+    <div class="fg"><label>Parcelle</label><select><option>P3 · Syrah Sud (GPS auto)</option><option>P1 · Grenache</option><option>Les Galets</option></select></div>
+    <div class="fg"><label>Notes</label><textarea placeholder="Décrire l'observation…"></textarea></div>
     <button class="btn btp">📍 Sauvegarder avec GPS</button>
   </div>
   <div class="card">
-    <div class="ch"><span class="ct">Récentes observations</span></div>
-    <div class="li"><div class="lic" style="background:#d4e8f4">🍄</div><div class="lib"><div class="lit">Mildiou P3 — débutant</div><div class="lim">12 mars · 3 photos · GPS auto</div></div><span class="badge bo">Moyen</span></div>
+    <div class="ch"><span class="ct">Récentes</span></div>
+    <div class="li"><div class="lic" style="background:#d4e8f4">🍄</div><div class="lib"><div class="lit">Mildiou P3 — débutant</div><div class="lim">12 mars · GPS auto · 3 photos</div></div><span class="badge bo">Moyen</span></div>
     <div class="li"><div class="lic" style="background:#d4edda">🐛</div><div class="lib"><div class="lit">Cicadelles P1 — faible</div><div class="lim">5 mars · 2 photos</div></div><span class="badge bg">Faible</span></div>
   </div>
 </section>
 </div><!-- /main -->
-
-<!-- FAB -->
 <button class="fab" onclick="showM('mNewInterv')">+</button>
-
-<!-- ══════════════════ MODALS ══════════════════ -->
-
-<!-- Nouvelle intervention -->
+<!-- ══ MODALS ══ -->
 <div class="overlay" id="mNewInterv" onclick="closeM(event,'mNewInterv')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle">Nouvelle intervention</div>
+    <div class="mhandle"></div><div class="mtitle">Nouvelle intervention</div>
     <div class="qa">
       <div class="qab" onclick="closeM(null,'mNewInterv');go('sTrait',document.querySelectorAll('.tab')[1])"><div class="qai">💊</div><div class="qal">Traitement phyto</div><div class="qas">Saisie complète</div></div>
-      <div class="qab" onclick="closeM(null,'mNewInterv');toggleVoice()"><div class="qai">🎙️</div><div class="qal">Saisie vocale</div><div class="qas">Parler = remplir</div></div>
+      <div class="qab" onclick="closeM(null,'mNewInterv');go('sScan',document.querySelectorAll('.tab')[3])"><div class="qai">📷</div><div class="qal">Scan étiquette IA</div><div class="qas">Photo → fiche auto</div></div>
       <div class="qab"><div class="qai">✂️</div><div class="qal">Travaux verts</div><div class="qas">Taille, effeuillage</div></div>
       <div class="qab"><div class="qai">🌾</div><div class="qal">Fertilisation</div><div class="qas">Organique / minérale</div></div>
     </div>
     <button class="btn btghost" style="width:100%" onclick="closeM(null,'mNewInterv')">Fermer</button>
   </div>
 </div>
-
-<!-- Add stock -->
-<div class="overlay" id="mAddStock" onclick="closeM(event,'mAddStock')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle">Entrée stock produit</div>
-    <div class="fg"><label>Produit</label><input type="text" placeholder="Nom commercial" value=""></div>
-    <div class="fg"><label>N° AMM</label><input type="text" placeholder="FR-20XX-XXXX"></div>
-    <div class="row2">
-      <div class="fg"><label>Quantité reçue</label><div class="ig"><input type="number" placeholder="25"><span class="isuf">kg/L</span></div></div>
-      <div class="fg"><label>Seuil alerte</label><div class="ig"><input type="number" placeholder="5"><span class="isuf">kg/L</span></div></div>
-    </div>
-    <div class="row2">
-      <div class="fg"><label>Date réception</label><input type="date" value="2026-03-15"></div>
-      <div class="fg"><label>Date péremption</label><input type="date" value="2027-12-31"></div>
-    </div>
-    <div class="fg"><label>Fournisseur</label><input type="text" placeholder="Phyteurop / De Sangosse…"></div>
-    <div class="fg"><label>N° BL / Facture</label><input type="text" placeholder="BL-2026-XXXX"></div>
-    <button class="btn btp" onclick="addStock()">💾 Enregistrer entrée stock</button>
-    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddStock')">Annuler</button>
-  </div>
-</div>
-
-<!-- Export -->
 <div class="overlay" id="mExport" onclick="closeM(event,'mExport')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle">Export registre</div>
+    <div class="mhandle"></div><div class="mtitle">📤 Export registre</div>
     <div class="exrow"><span style="font-size:22px">📄</span><div class="exinfo"><div class="exname">PDF complet</div><div class="exdesc">Toutes parcelles · 2025</div></div><button class="btn btgold btsm" onclick="doExport('PDF')">PDF</button></div>
     <div class="exrow"><span style="font-size:22px">🗂️</span><div class="exinfo"><div class="exname">DDT (XML machine)</div><div class="exdesc">Contrôle réglementaire</div></div><button class="btn btgold btsm" onclick="doExport('XML')">XML</button></div>
     <button class="btn btghost" style="width:100%;margin-top:12px" onclick="closeM(null,'mExport')">Fermer</button>
   </div>
 </div>
-
-<!-- Nouvelle vente négoce -->
 <div class="overlay" id="mNewVente" onclick="closeM(event,'mNewVente')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle">🍷 Enregistrer une vente</div>
-    <div class="fg"><label>Cuvée</label><select><option>Combe Haute 2024 — Grenache</option><option>Les Galets 2024 — Merlot</option><option>Rosé d'Été 2025</option></select></div>
+    <div class="mhandle"></div><div class="mtitle">🍷 Nouvelle vente</div>
+    <div class="fg"><label>Cuvée</label><select><option>Combe Haute 2024 — Grenache</option><option>Les Galets 2024 — Merlot</option></select></div>
     <div class="fg"><label>Acheteur</label><input type="text" placeholder="Négociant, particulier, restaurant…"></div>
-    <div class="fg"><label>Type de circuit</label><select><option>🏢 Négoce en vrac</option><option>👤 Vente directe particulier</option><option>🏨 CHR (restaurant, hôtel)</option><option>🛒 Grande distribution</option></select></div>
     <div class="row2">
       <div class="fg"><label>Volume (L)</label><input type="number" placeholder="500"></div>
       <div class="fg"><label>Prix (€/L)</label><input type="number" placeholder="5.20" step="0.05"></div>
     </div>
     <div class="fg"><label>Date livraison</label><input type="date" value="2026-04-01"></div>
-    <div class="fg"><label>Notes / conditions</label><textarea placeholder="Conditions de paiement, transport…"></textarea></div>
-    <button class="btn btraisin" style="width:100%" onclick="saveVente()">💾 Enregistrer la vente</button>
+    <button class="btn btraisin" style="width:100%" onclick="toast('✅ Vente enregistrée');closeM(null,'mNewVente')">💾 Enregistrer</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mNewVente')">Annuler</button>
   </div>
 </div>
-
-<!-- Nouvelle cuvée -->
 <div class="overlay" id="mNewCuvee" onclick="closeM(event,'mNewCuvee')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle">🍇 Nouvelle cuvée</div>
-    <div class="fg"><label>Nom de la cuvée</label><input type="text" placeholder="Ex : Combe Haute, La Sieste…"></div>
-    <div class="fg"><label>Millésime</label><input type="number" value="2025"></div>
-    <div class="fg"><label>Cépage(s) principaux</label><input type="text" placeholder="Grenache 80% + Syrah 20%"></div>
-    <div class="fg"><label>Parcelle(s) source</label><select><option>P1 · Grenache Noir</option><option>P3 · Syrah Sud</option><option>Les Galets · Merlot</option></select></div>
+    <div class="mhandle"></div><div class="mtitle">🍇 Nouvelle cuvée</div>
+    <div class="fg"><label>Nom de la cuvée</label><input type="text" placeholder="Ex : Combe Haute…"></div>
     <div class="row2">
+      <div class="fg"><label>Millésime</label><input type="number" value="2025"></div>
       <div class="fg"><label>Volume (hL)</label><input type="number" placeholder="30"></div>
-      <div class="fg"><label>Cuve</label><select><option>C1 · 50 hL</option><option>C2 · 30 hL</option><option>C4 · 40 hL</option></select></div>
     </div>
-    <div class="fg"><label>Date de mise en cuve</label><input type="date" value="2026-03-15"></div>
-    <button class="btn btraisin" style="width:100%" onclick="toast('✅ Cuvée créée et liée aux parcelles');closeM(null,'mNewCuvee')">💾 Créer la cuvée</button>
+    <div class="fg"><label>Cépage(s)</label><input type="text" placeholder="Grenache 80% + Syrah 20%"></div>
+    <div class="fg"><label>Parcelle source</label><select><option>P1 · Grenache</option><option>P3 · Syrah Sud</option><option>Les Galets</option></select></div>
+    <button class="btn btraisin" style="width:100%" onclick="toast('✅ Cuvée créée');closeM(null,'mNewCuvee')">💾 Créer</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mNewCuvee')">Annuler</button>
   </div>
 </div>
-
-<!-- Cuvée détail -->
-<div class="overlay" id="mCuvee1" onclick="closeM(event,'mCuvee1')">
+<div class="overlay" id="mParcDetail" onclick="closeM(event,'mParcDetail')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle">🍷 Combe Haute 2024</div>
-    <div style="background:var(--gris2);border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div><div style="font-size:11px;color:var(--gris);font-weight:600;text-transform:uppercase">Volume</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px">3 200 L</div></div>
-        <div><div style="font-size:11px;color:var(--gris);font-weight:600;text-transform:uppercase">Alcool</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px">13,5 %vol</div></div>
-        <div><div style="font-size:11px;color:var(--gris);font-weight:600;text-transform:uppercase">SO₂ libre</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px">28 mg/L</div></div>
-        <div><div style="font-size:11px;color:var(--gris);font-weight:600;text-transform:uppercase">pH</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px">3,62</div></div>
-      </div>
-    </div>
-    <div class="fg"><label>Analyses / notes d'élevage</label><textarea>Élevage cuve inox 6 mois. Filtration tangentielle. Mise en bouteille prévue juin 2026.</textarea></div>
-    <button class="btn btraisin" style="width:100%" onclick="doExport('Fiche cuvée');closeM(null,'mCuvee1')">📄 Fiche cuvée complète</button>
-    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mCuvee1')">Fermer</button>
+    <div class="mhandle"></div><div class="mtitle" id="mParcTitle">Parcelle</div>
+    <div id="mParcContent"></div>
+    <button class="btn btghost" style="width:100%;margin-top:14px" onclick="closeM(null,'mParcDetail')">Fermer</button>
   </div>
 </div>
-
-<!-- Profil -->
 <div class="overlay" id="mProfile" onclick="closeM(event,'mProfile')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle">Compte & paramètres</div>
+    <div class="mhandle"></div><div class="mtitle">Compte & paramètres</div>
     <div class="fg"><label>Exploitant</label><input type="text" value="Vincent Delort" readonly></div>
     <div class="fg"><label>CERTIPHYTO</label><input type="text" value="FR-CERTIPHYTO-2024-XXXXX"></div>
     <div class="sep"></div>
     <div class="srow"><span style="font-size:14px;font-weight:500">🔔 Alertes DAR</span><div class="swt on" onclick="this.classList.toggle('on')"></div></div>
-    <div class="srow"><span style="font-size:14px;font-weight:500">📡 Mode hors-ligne auto</span><div class="swt on" onclick="this.classList.toggle('on')"></div></div>
     <div class="srow"><span style="font-size:14px;font-weight:500">🧪 Alerte stock critique</span><div class="swt on" onclick="this.classList.toggle('on')"></div></div>
     <div class="srow"><span style="font-size:14px;font-weight:500">🍄 Alertes météo risque</span><div class="swt on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="srow"><span style="font-size:14px;font-weight:500">📡 Mode hors-ligne auto</span><div class="swt on" onclick="this.classList.toggle('on')"></div></div>
     <div class="srow"><span style="font-size:14px;font-weight:500">🍷 Alertes négoce / prix</span><div class="swt" onclick="this.classList.toggle('on')"></div></div>
     <button class="btn btghost" style="width:100%;margin-top:14px" onclick="closeM(null,'mProfile')">Fermer</button>
   </div>
 </div>
-
-<!-- Certificat phyto -->
-<div class="overlay" id="mCertifPhyto" onclick="closeM(event,'mCertifPhyto')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle">📄 Certificat traçabilité</div>
-    <div class="al alg" style="margin-bottom:12px"><span class="al-i">✅</span><div><b>Document prêt à transmettre</b>Certifié Domaine Delort · Campagne 2025</div></div>
-    <div class="fg"><label>Destinataire</label><select><option>Négociant Bontemps</option><option>Cellier des Princes</option><option>Certificateur HVE</option><option>DDT (contrôle)</option></select></div>
-    <div class="fg"><label>Inclure</label>
-      <div class="srow"><span style="font-size:13px">Registre phyto complet</span><div class="swt on" onclick="this.classList.toggle('on')"></div></div>
-      <div class="srow"><span style="font-size:13px">Bilan IFT par parcelle</span><div class="swt on" onclick="this.classList.toggle('on')"></div></div>
-      <div class="srow"><span style="font-size:13px">Analyse cuves + vinification</span><div class="swt" onclick="this.classList.toggle('on')"></div></div>
-      <div class="srow"><span style="font-size:13px">Rendements pesée cave</span><div class="swt on" onclick="this.classList.toggle('on')"></div></div>
-    </div>
-    <button class="btn btraisin" style="width:100%" onclick="doExport('Certificat');closeM(null,'mCertifPhyto')">📤 Générer &amp; envoyer</button>
-    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mCertifPhyto')">Annuler</button>
-  </div>
-</div>
-
-<!-- TOAST -->
 <div id="toast"></div>
-
-<!-- LEAFLET JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-// ═══ NAVIGATION ═══
-function go(id, btn) {
-  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
-  if (btn) btn.classList.add('on');
-  if (id === 'sCarto') initMap();
-  animBars();
-}
-
-// ═══ MODAL ═══
-function showM(id) { document.getElementById(id).classList.add('op'); }
-function closeM(e, id) {
-  if (!e || e.target.classList.contains('overlay'))
-    document.getElementById(id).classList.remove('op');
-}
-
-// ═══ TOAST ═══
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.opacity = '1';
-  t.style.transform = 'translateX(-50%) translateY(0)';
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => {
-    t.style.opacity = '0';
-    t.style.transform = 'translateX(-50%) translateY(16px)';
-  }, 2800);
-}
-
-// ═══ IFT BARS ANIMATION ═══
-function animBars() {
-  setTimeout(() => {
-    document.querySelectorAll('.if').forEach(bar => {
-      const w = bar.dataset.w || bar.style.width;
-      bar.dataset.w = w;
-      bar.style.width = '0%';
-      setTimeout(() => { bar.style.width = w; }, 80);
-    });
-  }, 100);
-}
-
-// ═══ STOCK DATA ═══
-const stockData = [
-  { id: 1, nom: 'Soufre Micronisé Wettable', amm: 'FR-2019-0847', categorie: 'Fongicide', qte: 8, unite: 'kg', seuil: 10, max: 30, perima: '2027-06-30', etat: 'low' },
-  { id: 2, nom: 'Cuivre Hydroxyde Champion 50 WG', amm: 'FR-2020-1234', categorie: 'Fongicide cuivre', qte: 24, unite: 'kg', seuil: 8, max: 30, perima: '2026-12-31', etat: 'ok' },
-  { id: 3, nom: 'Folpet 80 WG', amm: 'FR-2018-0556', categorie: 'Fongicide', qte: 5, unite: 'kg', seuil: 8, max: 25, perima: '2026-09-30', etat: 'low' },
-  { id: 4, nom: 'Mancozèbe 75 WG', amm: 'FR-2017-0892', categorie: 'Fongicide', qte: 0, unite: 'kg', seuil: 5, max: 20, perima: '2025-12-31', etat: 'zero' },
-  { id: 5, nom: 'Spinosad (Insecticide)', amm: 'FR-2021-1456', categorie: 'Insecticide', qte: 2.5, unite: 'L', seuil: 2, max: 5, perima: '2027-03-31', etat: 'ok' },
-  { id: 6, nom: 'Soufre Mouillable 80%', amm: 'FR-2016-0234', categorie: 'Fongicide', qte: 45, unite: 'kg', seuil: 10, max: 50, perima: '2028-01-31', etat: 'ok' },
+// ═══════════════════════════════════════════
+//  DONNÉES PARTAGÉES — SOURCE UNIQUE DE VÉRITÉ
+// ═══════════════════════════════════════════
+const PARCELLES = {
+  P1:{nom:'P1 · Grenache Noir',ha:1.8,cepage:'Grenache Noir',sol:'Argilo-calcaire',coords:[[44.057,4.828],[44.059,4.832],[44.058,4.836],[44.056,4.834],[44.055,4.830]],color:'#2d7d2d'},
+  P2:{nom:'P2 · Syrah',ha:1.2,cepage:'Syrah',sol:'Limoneux',coords:[[44.052,4.835],[44.054,4.839],[44.053,4.843],[44.051,4.840],[44.050,4.836]],color:'#4a6aaa'},
+  P3:{nom:'P3 · Syrah Sud',ha:2.0,cepage:'Syrah',sol:'Terrasse alluviale',coords:[[44.048,4.828],[44.050,4.833],[44.049,4.838],[44.047,4.836],[44.046,4.830]],color:'#7a9a3a'},
+  P4:{nom:'P4 · Carignan',ha:0.9,cepage:'Carignan',sol:'Schiste',coords:[[44.060,4.838],[44.062,4.841],[44.061,4.845],[44.059,4.843]],color:'#aa4a4a'},
+  LG:{nom:'Les Galets · Merlot',ha:0.9,cepage:'Merlot',sol:'Galets roulés',coords:[[44.054,4.820],[44.056,4.824],[44.055,4.828],[44.053,4.825]],color:'#aa6a2d'},
+};
+const DOSE_REF = {
+  soufre:  {ref:3.0, max:10.0,unit:'kg/ha',categ:'Fongicide',       label:'Soufre Micronisé',        amm:'FR-2019-0847',dar:28,znt:5},
+  cuivre:  {ref:2.5, max:4.0, unit:'kg/ha',categ:'Fongicide cuivre',label:'Cuivre Hydroxyde Champion',amm:'FR-2020-1234',dar:21,znt:20},
+  folpet:  {ref:1.5, max:2.5, unit:'kg/ha',categ:'Fongicide',       label:'Folpet 80 WG',             amm:'FR-2018-0556',dar:28,znt:5},
+  spinosad:{ref:0.25,max:0.375,unit:'L/ha', categ:'Biocontrôle',    label:'Spinosad',                 amm:'FR-2021-1456',dar:7, znt:20},
+  glypho:  {ref:1.44,max:2.16,unit:'L/ha', categ:'Herbicide',       label:'Glyphosate 360',           amm:'FR-2015-0334',dar:0, znt:5},
+};
+let stockData = [
+  {id:1,nom:'Soufre Micronisé Wettable',      amm:'FR-2019-0847',categ:'Fongicide',       qte:8,  seuil:10,unite:'kg',perima:'2027-06-30',etat:'low', prodKey:'soufre'},
+  {id:2,nom:'Cuivre Hydroxyde Champion 50 WG',amm:'FR-2020-1234',categ:'Fongicide cuivre',qte:24, seuil:8, unite:'kg',perima:'2026-12-31',etat:'ok',  prodKey:'cuivre'},
+  {id:3,nom:'Folpet 80 WG',                   amm:'FR-2018-0556',categ:'Fongicide',       qte:5,  seuil:8, unite:'kg',perima:'2026-09-30',etat:'low', prodKey:'folpet'},
+  {id:4,nom:'Spinosad (Biocontrôle)',          amm:'FR-2021-1456',categ:'Biocontrôle',     qte:2.5,seuil:1, unite:'L', perima:'2027-03-31',etat:'ok',  prodKey:'spinosad'},
+  {id:5,nom:'Glyphosate 360 g/L',             amm:'FR-2015-0334',categ:'Herbicide',       qte:10, seuil:3, unite:'L', perima:'2026-12-31',etat:'ok',  prodKey:'glypho'},
 ];
+let traitements = [
+  {id:1, parc:'P1',prod:'soufre',   dose:2.5,date:'2025-04-15',bbch:'09'},
+  {id:2, parc:'P1',prod:'cuivre',   dose:2.5,date:'2025-05-10',bbch:'53'},
+  {id:3, parc:'P2',prod:'soufre',   dose:3.0,date:'2025-04-18',bbch:'09'},
+  {id:4, parc:'P2',prod:'folpet',   dose:1.5,date:'2025-05-20',bbch:'53'},
+  {id:5, parc:'P3',prod:'soufre',   dose:3.0,date:'2025-04-20',bbch:'09'},
+  {id:6, parc:'P3',prod:'cuivre',   dose:2.5,date:'2025-05-12',bbch:'53'},
+  {id:7, parc:'P3',prod:'folpet',   dose:1.5,date:'2025-06-02',bbch:'65'},
+  {id:8, parc:'P4',prod:'soufre',   dose:3.0,date:'2025-05-05',bbch:'53'},
+  {id:9, parc:'P4',prod:'spinosad', dose:0.25,date:'2025-06-15',bbch:'71'},
+  {id:10,parc:'LG',prod:'cuivre',   dose:2.5,date:'2025-02-18',bbch:'09'},
+  {id:11,parc:'LG',prod:'soufre',   dose:3.0,date:'2025-05-08',bbch:'53'},
+  {id:12,parc:'LG',prod:'folpet',   dose:1.6,date:'2025-06-10',bbch:'65'},
+  {id:13,parc:'P1',prod:'soufre',   dose:3.0,date:'2026-03-12',bbch:'53'},
+].map(t=>({...t,ift:calcIFT(t.dose,DOSE_REF[t.prod]?.ref||1)}));
 
-function renderStock(filter = 'all') {
-  const list = document.getElementById('stockList');
-  const filtered = filter === 'all' ? stockData : stockData.filter(s => s.etat === filter);
-  list.innerHTML = filtered.map(s => {
-    const pct = Math.round((s.qte / s.max) * 100);
-    const barClass = s.etat === 'ok' ? 'sbok' : s.etat === 'low' ? 'sbow' : 'sbcrit';
-    const icon = s.categorie.includes('Insect') ? '🐛' : s.categorie.includes('cuivre') ? '🟤' : '🌿';
-    const etatBadge = s.etat === 'ok' ? '<span class="badge bg">✓ OK</span>' : s.etat === 'low' ? '<span class="badge bo">⚠️ Faible</span>' : '<span class="badge br">🚫 Épuisé</span>';
-    return `
-      <div class="stock-item" onclick="showM('mStockDetail');loadStockDetail(${s.id})">
-        <div class="stock-icon" style="background:${s.etat==='ok'?'#d4edda':s.etat==='low'?'#fde8c8':'#fde8e6'}">${icon}</div>
-        <div class="stock-body">
-          <div class="stock-name">${s.nom}</div>
-          <div class="stock-amm">${s.amm} · ${s.categorie} · Pér. ${s.perima}</div>
-          <div class="stock-bar"><div class="stock-bar-fill ${barClass}" style="width:${pct}%"></div></div>
-          <div class="stock-alerte" style="color:${s.etat==='ok'?'var(--vert)':s.etat==='low'?'var(--orange)':'var(--rouge)'}">${s.etat==='zero'?'ÉPUISÉ — Commander':s.etat==='low'?'Sous seuil — '+s.seuil+' kg alerte':''}</div>
-        </div>
-        <div class="stock-qty-wrap">
-          <div class="stock-qty" style="color:${s.etat==='ok'?'var(--vigne)':s.etat==='low'?'var(--orange)':'var(--rouge)'}">${s.qte}</div>
-          <div class="stock-unit">${s.unite}</div>
-          ${etatBadge}
-        </div>
-      </div>`;
+// ═══════════════════════════════════════════
+//  MOTEUR IFT — CALCUL AUTOMATIQUE
+// ═══════════════════════════════════════════
+function calcIFT(dose,ref){if(!dose||!ref)return 0;return Math.round((dose/ref)*100)/100;}
+function iftParc(id){return traitements.filter(t=>t.parc===id).reduce((s,t)=>s+t.ift,0);}
+function iftDomaine(){
+  let ha=0,ixha=0;
+  Object.entries(PARCELLES).forEach(([id,p])=>{ha+=p.ha;ixha+=iftParc(id)*p.ha;});
+  return ha?Math.round((ixha/ha)*100)/100:0;
+}
+function iftByCateg(categ){
+  let ha=0,ixha=0;
+  Object.entries(PARCELLES).forEach(([id,p])=>{
+    const v=traitements.filter(t=>t.parc===id&&DOSE_REF[t.prod]?.categ===categ).reduce((s,t)=>s+t.ift,0);
+    ha+=p.ha;ixha+=v*p.ha;
+  });
+  return ha?Math.round((ixha/ha)*100)/100:0;
+}
+function iftStatus(v,ref=4.0){return v<=ref*0.75?'ok':v<=ref?'warn':'danger';}
+function iftColor(st){return{ok:'var(--vert2)',warn:'var(--orange)',danger:'var(--rouge)'}[st];}
+
+// ═══════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════
+function go(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  if(id==='sDash')renderDash();
+  if(id==='sIFT')renderIFT();
+  if(id==='sStock')renderStock('all');
+  if(id==='sCarto')initMap();
+  if(id==='sRegistre')renderRegistre();
+}
+
+// ═══════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════
+function renderDash(){
+  const ift=iftDomaine();
+  const el=document.getElementById('dIFT');
+  el.textContent=ift.toFixed(1).replace('.',',');
+  el.className='sv '+(ift>4?'d':ift>3.2?'w':'');
+  const cont=document.getElementById('dashIFTBars');
+  cont.innerHTML=Object.entries(PARCELLES).map(([id,p])=>{
+    const v=iftParc(id),st=iftStatus(v),col=iftColor(st);
+    const pct=Math.min(100,(v/4.8)*100),refPct=(4.0/4.8)*100;
+    return`<div class="ib"><div class="ibh"><span class="ibn">${p.nom.split('·')[0].trim()}<span style="font-size:11px;color:var(--gris);font-weight:400"> · ${p.cepage}</span></span><span class="ibv" style="color:${col}">${v.toFixed(1).replace('.',',')}</span></div><div class="ibar"><div class="if" style="width:${pct}%;background:${col}"></div><div class="ibar-ref" style="left:${refPct}%"></div></div></div>`;
   }).join('');
 }
 
-function filterStock(f, btn) {
-  document.querySelectorAll('#sStock .btn').forEach(b => { b.className = 'btn btghost btsm'; b.onclick = b.onclick; });
-  btn.className = 'btn btgold btsm';
-  renderStock(f);
-}
-
-function addStock() {
-  toast('✅ Entrée stock enregistrée — Mouvement tracé');
-  closeM(null, 'mAddStock');
-}
-
-// Stock detail modal (dynamique)
-function loadStockDetail(id) {
-  const s = stockData.find(x => x.id === id);
-  if (!s) return;
-  document.getElementById('sdName').textContent = s.nom;
-  document.getElementById('sdQte').textContent = s.qte + ' ' + s.unite;
-  document.getElementById('sdAMM').textContent = s.amm;
-  document.getElementById('sdSeuil').textContent = s.seuil + ' ' + s.unite;
-  document.getElementById('sdPerima').textContent = s.perima;
-}
-
-// ═══ MAP LEAFLET ═══
-let mapInited = false, leafMap = null, tileOSM, tileSat;
-
-function initMap() {
-  if (mapInited) return;
-  mapInited = true;
-
-  // Centré sur Châteauneuf-du-Pape / Vallée du Rhône (exemple région viticole)
-  leafMap = L.map('map', { zoomControl: false, attributionControl: false }).setView([44.054, 4.833], 14);
-
-  tileOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-  }).addTo(leafMap);
-
-  tileSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 19,
-    attribution: '© Esri'
+// ═══════════════════════════════════════════
+//  IFT SECTION COMPLÈTE
+// ═══════════════════════════════════════════
+function renderIFT(){
+  const ift=iftDomaine(),ref=4.0,st=iftStatus(ift);
+  const gauge=document.getElementById('iftGauge');
+  gauge.className='ift-gauge ift-'+st;
+  document.getElementById('iftGaugeVal').textContent=ift.toFixed(1).replace('.',',');
+  const subs={ok:`✓ ${(ref-ift).toFixed(1)} sous la référence — trajectoire conforme HVE`,warn:`⚠️ ${(ift/ref*100).toFixed(0)}% de la référence atteint — surveiller`,danger:`🚨 Dépassement de ${(ift-ref).toFixed(1)} point — réduire les doses`};
+  document.getElementById('iftGaugeSub').textContent=subs[st];
+  const fill=document.getElementById('iftGaugeFill');
+  fill.style.width='0%';
+  setTimeout(()=>{fill.style.width=Math.min(100,(ift/(ref*1.4))*100)+'%';},80);
+  const marks=document.getElementById('iftGaugeMarks');
+  const rp=(ref/(ref*1.4))*100;
+  marks.innerHTML=[0,1,2,3,4,5,6].map(v=>{const p=(v/(ref*1.4))*100;return`<div class="igt-mk" style="left:${p}%"><div class="igt-mk-line"></div>${v}</div>`;}).join('')+
+    `<div class="igt-ref-line" style="left:${rp}%"></div><div class="igt-ref-lbl" style="left:${rp}%">Réf. ${ref}</div>`;
+  const fongi=iftByCateg('Fongicide')+iftByCateg('Fongicide cuivre');
+  document.getElementById('iftCatFongi').textContent=fongi.toFixed(1).replace('.',',');
+  document.getElementById('iftCatInsect').textContent=iftByCateg('Insecticide').toFixed(1).replace('.',',');
+  document.getElementById('iftCatHerbi').textContent=iftByCateg('Herbicide').toFixed(1).replace('.',',');
+  document.getElementById('iftCatBio').textContent=iftByCateg('Biocontrôle').toFixed(1).replace('.',',');
+  // Alertes
+  const al=document.getElementById('iftAlertes');al.innerHTML='';
+  Object.entries(PARCELLES).forEach(([id,p])=>{
+    const v=iftParc(id);
+    if(v>ref)al.innerHTML+=`<div class="al alr"><span class="al-i">🚨</span><div><b>${p.nom} — IFT ${v.toFixed(1)} · Référence dépassée</b>Réduire les doses ou différer les prochains traitements.</div></div>`;
+    else if(v>ref*0.85)al.innerHTML+=`<div class="al alo"><span class="al-i">⚠️</span><div><b>${p.nom} — IFT ${v.toFixed(1)} (${(v/ref*100).toFixed(0)}%)</b>Capacité presque atteinte — max ${(ref-v).toFixed(1)} d'IFT restant.</div></div>`;
   });
-
-  // Parcelles fictives mais réalistes (polygones GeoJSON)
-  const parcelles = [
-    {
-      nom: 'P1 · Grenache Noir', ha: '1,8 ha', ift: '2,4', etat: 'ok',
-      color: '#2d7d2d',
-      coords: [[44.057, 4.828],[44.059, 4.832],[44.058, 4.836],[44.056, 4.834],[44.055, 4.830]]
-    },
-    {
-      nom: 'P2 · Syrah', ha: '1,2 ha', ift: '2,8', etat: 'ok',
-      color: '#4a6aaa',
-      coords: [[44.052, 4.835],[44.054, 4.839],[44.053, 4.843],[44.051, 4.840],[44.050, 4.836]]
-    },
-    {
-      nom: 'P3 · Syrah Sud', ha: '2,0 ha', ift: '3,6', etat: 'warn',
-      color: '#7a9a3a',
-      coords: [[44.048, 4.828],[44.050, 4.833],[44.049, 4.838],[44.047, 4.836],[44.046, 4.830]]
-    },
-    {
-      nom: 'P4 · Carignan', ha: '0,9 ha', ift: '3,0', etat: 'ok',
-      color: '#aa4a4a',
-      coords: [[44.060, 4.838],[44.062, 4.841],[44.061, 4.845],[44.059, 4.843]]
-    },
-    {
-      nom: 'Les Galets · Merlot', ha: '0,9 ha', ift: '4,2', etat: 'alert',
-      color: '#aa6a2d',
-      coords: [[44.054, 4.820],[44.056, 4.824],[44.055, 4.828],[44.053, 4.825]]
-    }
-  ];
-
-  parcelles.forEach(p => {
-    const fillColor = p.etat === 'alert' ? '#c0392b' : p.etat === 'warn' ? '#d4751a' : p.color;
-    const poly = L.polygon(p.coords, {
-      color: '#1a1410',
-      weight: 2,
-      fillColor: fillColor,
-      fillOpacity: 0.55
-    }).addTo(leafMap);
-
-    // Centre label
-    const center = poly.getBounds().getCenter();
-    L.marker(center, {
-      icon: L.divIcon({
-        className: '',
-        html: `<div style="background:rgba(255,255,255,0.92);border-radius:6px;padding:3px 7px;font-family:Outfit,sans-serif;font-size:11px;font-weight:700;color:#1a1410;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2)">${p.nom.split('·')[0].trim()}</div>`,
-        iconAnchor: [30, 10]
-      })
-    }).addTo(leafMap);
-
-    poly.bindPopup(`
-      <div class="parcelle-popup">
-        <b>${p.nom}</b><br>
-        Surface : ${p.ha}<br>
-        IFT : <b style="color:${p.etat==='alert'?'#c0392b':p.etat==='warn'?'#d4751a':'#2d5a27'}">${p.ift}</b><br>
-        ${p.etat==='alert'?'<span style="color:#c0392b;font-weight:700">⚠️ DAR non respecté</span>':p.etat==='warn'?'<span style="color:#d4751a;font-weight:700">⚠️ Risque mildiou</span>':'<span style="color:#2d5a27;font-weight:700">✓ OK</span>'}
+  // Par parcelle
+  const pl=document.getElementById('iftParcList');
+  pl.innerHTML=Object.entries(PARCELLES).map(([id,p])=>{
+    const v=iftParc(id),pst=iftStatus(v),col=iftColor(pst);
+    const pct=Math.min(100,(v/4.8)*100),refPct=(ref/4.8)*100,nb=traitements.filter(t=>t.parc===id).length;
+    return`<div class="parc-card ${pst}" onclick="showParcDetail('${id}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <div><div style="font-weight:700;font-size:15px;color:var(--terre)">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:1px">${p.ha} ha · ${p.cepage} · ${nb} traitement(s)</div></div>
+        <div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:${col};line-height:1">${v.toFixed(1).replace('.',',')} <span style="font-size:13px;color:var(--gris);font-family:'Outfit',sans-serif;font-weight:400">/ ${ref}</span></div><div style="font-size:11px;color:var(--gris)">${(v/ref*100).toFixed(0)}% atteint</div></div>
       </div>
-    `);
-  });
-
-  // Position GPS fictive (exploitant)
-  const gpsIcon = L.divIcon({
-    className: '',
-    html: `<div style="width:14px;height:14px;background:#e74c3c;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 4px rgba(231,76,60,.35),0 2px 8px rgba(0,0,0,.3)"></div>`,
-    iconAnchor: [7, 7]
-  });
-  L.marker([44.053, 4.832], { icon: gpsIcon }).addTo(leafMap).bindPopup('📍 Votre position');
-
-  // Attribution minimale
-  L.control.attribution({ position: 'bottomright', prefix: '© OpenStreetMap' }).addTo(leafMap);
+      <div class="parc-bar"><div class="parc-bar-fill" style="width:${pct}%;background:${col}"></div><div class="parc-bar-ref" style="left:${refPct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10.5px">
+        <span style="color:${col};font-weight:700">${(v/ref*100).toFixed(0)}% de la référence utilisé</span>
+        <span style="color:var(--gris)">${v<=ref?'Reste : '+(ref-v).toFixed(1)+' IFT':'⚠️ Dépassé de '+(v-ref).toFixed(1)}</span>
+      </div>
+    </div>`;
+  }).join('');
+  // Objectifs certifications
+  document.getElementById('iftObjectifs').innerHTML=[['Agriculture Biologique',2.5],['Terra Vitis',3.5],['HVE Niveau 3',4.0],['Référence nationale',4.2]].map(([nom,r])=>{
+    const ok=ift<=r;
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gris2)"><div style="font-size:13px;font-weight:600">${nom}</div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--gris)">≤ ${r}</span><span class="badge ${ok?'bg':'br'}">${ok?'✓ Conforme':'✗ Non conforme'}</span></div></div>`;
+  }).join('');
+  // Graphe mensuel
+  const months=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep'];
+  const vals=[0,0,0.6,1.0,1.8,2.4,2.8,3.1,ift];
+  const maxV=5,refPct2=(ref/maxV)*100;
+  document.getElementById('iftChart').innerHTML=`<div class="hc-ref" style="bottom:${refPct2}%"><div class="hc-ref-l" style="bottom:2px">Réf. 4,0</div></div><div class="hc-bars">${months.map((m,i)=>{const v=vals[i],h=(v/maxV)*100,c=v===0?'var(--gris2)':v>4?'var(--rouge)':v>3.2?'var(--orange)':'var(--vert2)';return`<div class="hc-bw"><div class="hc-b" style="height:${Math.max(h,v>0?2:0)}%;background:${c}">${v>0?`<div class="hc-bv" style="color:${c}">${v.toFixed(1).replace('.',',')}</div>`:''}</div><div class="hc-bl">${m}</div></div>`;}).join('')}</div>`;
+  // Projection
+  const proj=Math.round((ift+(ift/9)*4)*100)/100,okP=proj<=ref;
+  document.getElementById('iftProjection').innerHTML=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px"><div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris);margin-bottom:3px">IFT actuel</div><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--vigne)">${ift.toFixed(1).replace('.',',')}</div></div><div style="font-size:20px;color:var(--gris)">→</div><div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris);margin-bottom:3px">Fin campagne</div><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:${okP?'var(--vert2)':'var(--rouge)'}">${proj.toFixed(1).replace('.',',')}</div></div><div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris);margin-bottom:3px">Objectif HVE</div><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--or)">4,0</div></div></div><div class="al ${okP?'alg':'alr'}"><span class="al-i">${okP?'✅':'🚨'}</span><div>${okP?`<b>Trajectoire conforme HVE</b>À ce rythme l'IFT fin de campagne reste sous 4,0. Vous pouvez encore réaliser environ ${Math.floor((4.0-ift)/(ift/9))} traitement(s) à pleine dose.`:`<b>Dépassement probable fin de campagne</b>Réduire les doses à 60–70% sur les prochains traitements ou utiliser des produits biocontrôle.`}</div></div>`;
 }
 
-function mapSatellite() {
-  if (!leafMap) return;
-  leafMap.removeLayer(tileOSM);
-  tileSat.addTo(leafMap);
-  toast('🛰️ Vue satellite activée');
-}
-function mapOSM() {
-  if (!leafMap) return;
-  leafMap.removeLayer(tileSat);
-  tileOSM.addTo(leafMap);
-  toast('🗺️ Vue plan activée');
-}
-function centerGPS() {
-  if (!leafMap) return;
-  leafMap.setView([44.053, 4.832], 15);
-  toast('📍 Centré sur votre position');
+function showParcDetail(id){
+  const p=PARCELLES[id],v=iftParc(id),col=iftColor(iftStatus(v));
+  const traits=traitements.filter(t=>t.parc===id).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('mParcTitle').textContent=p.nom;
+  document.getElementById('mParcContent').innerHTML=`
+    <div style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);border-radius:12px;padding:14px;color:#fff;text-align:center;margin-bottom:14px">
+      <div style="font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">IFT cumulé campagne</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;color:${col};line-height:1">${v.toFixed(2).replace('.',',')}</div>
+      <div style="font-size:13px;opacity:.7">sur 4,0 référence · ${(v/4*100).toFixed(0)}%</div>
+    </div>
+    ${traits.map(t=>{const dr=DOSE_REF[t.prod];return`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${dr?.label||t.prod}</div><div class="lim">${t.date} · ${t.dose} ${dr?.unit} · BBCH ${t.bbch}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">${t.dose} ÷ ${dr?.ref} = <b style="color:var(--vigne)">IFT ${t.ift.toFixed(2)}</b></div></div><div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--vigne)">${t.ift.toFixed(2).replace('.',',')}</div><button onclick="deleteTrait(${t.id})" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gris);padding:2px 4px;display:block">🗑️</button></div></div>`;}).join('')}`;
+  showM('mParcDetail');
 }
 
-// ═══ TRAITEMENT ═══
-function updateFromStock() {
-  const sel = document.getElementById('tProd').value;
-  const alerts = {
-    soufre: '⚠️ Stock disponible : <b>8 kg</b> · Besoin P3 (2 ha) à 3 kg/ha = <b>6 kg</b> · Reste : 2 kg — Commander rapidement',
-    cuivre: '✅ Stock disponible : <b>24 kg</b> · Besoin P3 = 5 kg · Reste : 19 kg',
-    folpet: '⚠️ Stock : <b>5 kg</b> · Usage 3ème année — Vérifier renouvellement AMM',
-    mancoz: '🚫 Stock <b>épuisé</b> · Traitement impossible · Commander avant usage'
+function deleteTrait(id){
+  traitements=traitements.filter(t=>t.id!==id);
+  renderIFT();renderDash();
+  document.getElementById('regCount').textContent=traitements.length;
+  toast('🗑️ Traitement supprimé · IFT recalculé automatiquement');
+}
+</script>
+<script>
+// ═══════════════════════════════════════════
+//  TRAITEMENT — SAISIE + IFT EN DIRECT
+// ═══════════════════════════════════════════
+function selectProd(){
+  const val=document.getElementById('tProd').value;if(!val)return;
+  const dr=DOSE_REF[val];
+  if(dr){
+    document.getElementById('tDoseRef').value=dr.ref;
+    document.getElementById('tDoseUnit').textContent=dr.unit;
+    document.getElementById('tAMM').value=dr.amm;
+    const s=stockData.find(x=>x.prodKey===val);
+    const alertEl=document.getElementById('stockAlert');
+    if(s){
+      alertEl.style.display='flex';
+      alertEl.className='al '+(s.qte<=0?'alr':s.qte<=s.seuil?'alo':'alb');
+      document.getElementById('stockAlertTxt').innerHTML=`Stock disponible : <b>${s.qte} ${s.unite}</b>${s.qte<=0?' — <b>ÉPUISÉ, commander avant traitement</b>':s.qte<=s.seuil?' — <b>Sous le seuil, commander rapidement</b>':''}`;
+    }
+    const dar=dr.dar;
+    const darEl=document.getElementById('darDisplay');
+    darEl.className='al '+(dar>0?'alg':'alb');
+    const d=new Date();d.setDate(d.getDate()+dar);
+    darEl.innerHTML=`<span class="al-i">${dar>0?'✅':'ℹ️'}</span><div><b>DAR ${dar} jours</b>${dar>0?'Récolte possible à partir du '+d.toLocaleDateString('fr-FR')+'.' :'Pas de DAR pour ce produit.'}</div>`;
+  }
+  updateTraitPreview();
+}
+
+function updateTraitPreview(){
+  const parc=document.getElementById('tParc').value;
+  const prod=document.getElementById('tProd').value;
+  const dose=parseFloat(document.getElementById('tDose').value);
+  const doseRef=parseFloat(document.getElementById('tDoseRef').value);
+  const btn=document.getElementById('btnSaveTrait');
+  const prev=document.getElementById('iftPrev'),prevV=document.getElementById('iftPrevVal'),prevD=document.getElementById('iftPrevDetail');
+  const formula=document.getElementById('iftFormula'),impact=document.getElementById('impactBox');
+  if(!prod||!dose||!doseRef){
+    prevV.textContent='—';prevV.classList.remove('has');prev.classList.remove('has');
+    formula.style.display='none';impact.style.display='none';btn.disabled=true;return;
+  }
+  const ift=calcIFT(dose,doseRef);
+  prevV.textContent=ift.toFixed(2).replace('.',',');prevV.classList.add('has');prev.classList.add('has');
+  prevD.textContent=`${DOSE_REF[prod]?.label} · ${dose} ÷ ${doseRef} = IFT ${ift.toFixed(2)}`;
+  formula.style.display='flex';
+  document.getElementById('iftFormulaTxt').innerHTML=`<b>IFT = ${dose} ÷ ${doseRef} = ${ift.toFixed(2)}</b> (${((dose/doseRef)*100).toFixed(0)}% de la dose référence ANSES)`;
+  if(parc){
+    const before=iftParc(parc),after=before+ift;
+    impact.style.display='block';
+    const bel=document.getElementById('impBefore'),ael=document.getElementById('impAfter');
+    bel.textContent=before.toFixed(1).replace('.',',');bel.style.color=iftColor(iftStatus(before));
+    ael.textContent=after.toFixed(1).replace('.',',');ael.style.color=iftColor(iftStatus(after));
+    document.getElementById('impFill').style.width=Math.min(100,(after/4.8)*100)+'%';
+    document.getElementById('impFill').style.background=iftColor(iftStatus(after));
+    document.getElementById('impRef').style.left=(4.0/4.8*100)+'%';
+  }
+  btn.disabled=!(parc&&prod&&dose);
+}
+
+function saveTrait(){
+  const parc=document.getElementById('tParc').value,prod=document.getElementById('tProd').value;
+  const dose=parseFloat(document.getElementById('tDose').value),doseRef=parseFloat(document.getElementById('tDoseRef').value);
+  const date=document.getElementById('tDate').value,bbch=document.getElementById('tBBCH').value;
+  if(!parc||!prod||!dose)return;
+  const ift=calcIFT(dose,doseRef);
+  traitements.push({id:Date.now(),parc,prod,dose,date,bbch,ift});
+  // Déduire stock automatiquement
+  const s=stockData.find(x=>x.prodKey===prod);
+  if(s){const ha=PARCELLES[parc]?.ha||1;s.qte=Math.max(0,Math.round((s.qte-dose*ha)*100)/100);s.etat=s.qte<=0?'zero':s.qte<=s.seuil?'low':'ok';}
+  document.getElementById('regCount').textContent=traitements.length;
+  renderDash();renderRegistre();
+  toast(`✅ Traitement enregistré · IFT +${ift.toFixed(2)} · Stock déduit · ${PARCELLES[parc].nom} → ${iftParc(parc).toFixed(2)}`);
+  // Reset form
+  ['tProd','tDose','tDoseRef','tAMM'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('iftPrevVal').textContent='—';document.getElementById('iftPrevVal').classList.remove('has');
+  document.getElementById('iftPrev').classList.remove('has');document.getElementById('iftFormula').style.display='none';
+  document.getElementById('impactBox').style.display='none';document.getElementById('stockAlert').style.display='none';
+  document.getElementById('btnSaveTrait').disabled=true;
+}
+
+// ═══════════════════════════════════════════
+//  VOICE
+// ═══════════════════════════════════════════
+let vActive=false;
+function toggleVoice(){
+  const btn=document.getElementById('vBtn'),lbl=document.getElementById('vLabel'),res=document.getElementById('vResult');
+  if(!vActive){
+    vActive=true;btn.classList.add('rec');btn.textContent='⏹️';lbl.textContent='🔴 Écoute… parlez maintenant';res.textContent='';
+    setTimeout(()=>{res.textContent='"Soufre 3 kg parcelle 3 BBCH 53 ce matin…"';},1200);
+    setTimeout(()=>{res.textContent='🔄 Analyse vocale en cours…';},2600);
+    setTimeout(()=>{
+      res.textContent='✅ Soufre Micronisé · 3 kg/ha · P3 Syrah · 08h30 · BBCH 53 — Formulaire pré-rempli';
+      btn.classList.remove('rec');btn.textContent='🎙️';lbl.textContent='Appuyer pour dicter';vActive=false;
+      document.getElementById('tProd').value='soufre';document.getElementById('tParc').value='P3';
+      document.getElementById('tDose').value='3';selectProd();updateTraitPreview();
+      toast('✅ Saisie vocale — formulaire pré-rempli automatiquement');
+    },4200);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  SCAN IA — CLAUDE VISION
+// ═══════════════════════════════════════════
+let imgBase64=null,imgType='image/jpeg';
+function triggerUpload(){document.getElementById('fileInput').click();}
+function handleFile(input){
+  const file=input.files[0];if(!file)return;
+  imgType=file.type||'image/jpeg';
+  const r=new FileReader();
+  r.onload=e=>{
+    imgBase64=e.target.result.split(',')[1];
+    const prev=document.getElementById('prevImg'),zone=document.getElementById('dropZone');
+    prev.src=e.target.result;prev.style.display='block';
+    document.getElementById('uploadContent').style.display='none';
+    document.getElementById('imgOv').style.display='flex';
+    zone.classList.add('has-img');
+    document.getElementById('analyseBtn').disabled=false;
+    document.getElementById('scanBeam').style.display='block';
+    toast('✅ Image chargée — prête à analyser');
+  };r.readAsDataURL(file);
+}
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/')){const dt=new DataTransfer();dt.items.add(f);document.getElementById('fileInput').files=dt.files;handleFile(document.getElementById('fileInput'));}
+});
+
+async function lancerAnalyse(){
+  if(!imgBase64){toast('⚠️ Charger une image d\'abord');return;}
+  document.getElementById('loadingCard').classList.add('show');
+  document.getElementById('scanResult').style.display='none';
+  document.getElementById('analyseBtn').disabled=true;
+  const lsIds=['ls1','ls2','ls3','ls4','ls5','ls6'];
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i>0){const p=document.getElementById(lsIds[i-1]);p.classList.remove('active');p.classList.add('done');p.querySelector('.lstep-i').textContent='✓';}
+    if(i<lsIds.length){document.getElementById(lsIds[i]).classList.add('active');i++;}else clearInterval(iv);
+  },600);
+  const prompt=`Tu es un expert en produits phytosanitaires français (réglementation ANSES/DGAL). Analyse cette étiquette et extrais toutes les informations visibles.
+Réponds UNIQUEMENT en JSON strict sans balises markdown :
+{"nom":"nom commercial","fabricant":"fabricant/titulaire AMM","amm":"n° AMM FR-XXXX-XXXX","categorie":"Fongicide|Insecticide|Herbicide|Fongicide cuivre|Biocontrôle|Autre","formulation":"ex WG 80%","substance_active":"matière active + %","dose_vigne":"dose max vigne","dose_unite":"kg/ha ou L/ha","nb_applications":"nb max/an","dar":jours_entier,"znt":metres_entier,"restriction_horaire":"texte ou vide","cibles":"maladies/ravageurs ciblés vigne","bbch_min":"BBCH min","bbch_max":"BBCH max","pictogrammes":["GHS07"],"classe_danger":"Attention|Danger","epi":"EPI requis","phrases_h":"phrases H visibles","numero_lot":"lot si visible","date_peremption":"YYYY-MM-DD si visible","confiance":0_a_100}
+Si info non visible : chaine vide ou 0. Ne devine pas.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:imgType,data:imgBase64}},{type:'text',text:prompt}]}]})
+    });
+    clearInterval(iv);lsIds.forEach(id=>{const el=document.getElementById(id);el.classList.remove('active');el.classList.add('done');el.querySelector('.lstep-i').textContent='✓';});
+    await new Promise(r=>setTimeout(r,400));
+    const data=await res.json();
+    let txt=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    fillScanResult(JSON.parse(txt));
+  }catch(e){clearInterval(iv);fillScanResult(demoScanData());toast('⚠️ Mode démo — API Claude requise pour la vraie lecture');}
+}
+
+function fillScanResult(d){
+  document.getElementById('loadingCard').classList.remove('show');
+  document.getElementById('scanResult').style.display='block';
+  document.getElementById('confBadge').textContent=`conf. ${d.confiance||88}%`;
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  sv('rNom',d.nom);sv('rFab',d.fabricant);sv('rAMM',d.amm);
+  sv('rDose',d.dose_vigne);sv('rNbA',d.nb_applications);
+  sv('rDAR',d.dar);sv('rZNT',d.znt);sv('rCibles',d.cibles);sv('rHoraire',d.restriction_horaire);
+  if(d.date_peremption)sv('rPerima',d.date_peremption);
+  document.getElementById('rDoseU').textContent=d.dose_unite||'kg/ha';
+  document.getElementById('rQteU').textContent=(d.dose_unite||'kg/ha').replace('/ha','');
+  if(parseFloat(d.dose_vigne)>0){
+    document.getElementById('scanIFTRes').style.display='flex';
+    document.getElementById('scanIFTTxt').innerHTML=`<b>IFT à pleine dose = 1,0</b> (par définition : dose appliquée = dose référence)<br>Si vous appliquez 50% de la dose → IFT 0,50. Ce produit sera intégré automatiquement dans le calcul IFT dès le premier traitement saisi.`;
+  }
+  document.getElementById('scanResult').scrollIntoView({behavior:'smooth'});
+  toast(`✅ Extraction IA terminée · Confiance ${d.confiance||88}%`);
+}
+
+function saveScan(){
+  const nom=document.getElementById('rNom').value,amm=document.getElementById('rAMM').value;
+  const qte=parseFloat(document.getElementById('rQte').value)||0,seuil=parseFloat(document.getElementById('rSeuil').value)||5;
+  const unite=(document.getElementById('rDoseU').textContent||'kg/ha').replace('/ha','');
+  stockData.push({id:Date.now(),nom,amm,categ:document.getElementById('rCateg').value,qte,seuil,unite,perima:document.getElementById('rPerima').value||'—',etat:qte<=0?'zero':qte<=seuil?'low':'ok',prodKey:'custom'+Date.now()});
+  toast('✅ Produit enregistré dans le stock phytosanitaire');resetScan();
+}
+function saveScanAndTreat(){saveScan();go('sTrait',document.querySelectorAll('.tab')[1]);toast('✅ Produit enregistré · Aller dans Traitement pour l\'utiliser');}
+function resetScan(){
+  imgBase64=null;
+  document.getElementById('prevImg').style.display='none';document.getElementById('uploadContent').style.display='block';
+  document.getElementById('imgOv').style.display='none';document.getElementById('dropZone').classList.remove('has-img');
+  document.getElementById('analyseBtn').disabled=true;document.getElementById('loadingCard').classList.remove('show');
+  document.getElementById('scanResult').style.display='none';document.getElementById('scanBeam').style.display='none';
+  document.getElementById('fileInput').value='';
+  ['ls1','ls2','ls3','ls4','ls5','ls6'].forEach((id,i)=>{const el=document.getElementById(id);el.className='lstep';el.querySelector('.lstep-i').textContent=i+1;});
+}
+function demoScanData(){return{nom:"Cuivrol Extra 49 WG",fabricant:"Manica S.p.A.",amm:"FR-2021-0983",categorie:"Fongicide cuivre",formulation:"WG 49%",substance_active:"Hydroxyde de cuivre 49%",dose_vigne:"2,8",dose_unite:"kg/ha",nb_applications:"4 fois/an",dar:21,znt:20,restriction_horaire:"Ne pas appliquer si abeilles actives",cibles:"Mildiou, Black-rot",bbch_min:"05",bbch_max:"79",pictogrammes:["GHS05","GHS09"],classe_danger:"Attention",epi:"Gants EN374, lunettes, masque FFP2",phrases_h:"H318 H400",numero_lot:"BL-2025-4418",date_peremption:"2027-09-30",confiance:91};}
+
+// ═══════════════════════════════════════════
+//  IMPORT PARCELLAIRE IA
+// ═══════════════════════════════════════════
+let currentImportType=null,importImgBase64=null,importImgType='image/jpeg';
+function selectImport(el,type){
+  document.querySelectorAll('.import-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');currentImportType=type;
+  const zone=document.getElementById('importZone');zone.style.display='block';
+  const icons={cvi:'📋',pac:'🌾',ecocert:'🏅',photo:'📷'};
+  const titles={cvi:'Déposer votre fichier CVI (PDF ou XLSX)',pac:'Déposer votre relevé PAC / RPG',ecocert:'Déposer votre certificat Ecocert',photo:'Photographier ou déposer le document'};
+  const descs={cvi:'FranceAgriMer · Toutes vos parcelles et cépages',pac:'Télépac · Shapefile GeoJSON ou PDF',ecocert:'PDF certificat avec liste des parcelles AB',photo:"L'IA lira et extraira les parcelles automatiquement"};
+  document.getElementById('importIcon').textContent=icons[type];
+  document.getElementById('importTitle').textContent=titles[type];
+  document.getElementById('importDesc').textContent=descs[type];
+  document.getElementById('importResult').style.display='none';
+  document.getElementById('btnImportAnalyse').style.display='none';
+}
+function handleImportFile(input){
+  const file=input.files[0];if(!file)return;
+  importImgType=file.type||'image/jpeg';
+  const r=new FileReader();
+  r.onload=e=>{
+    if(file.type.startsWith('image/')){importImgBase64=e.target.result.split(',')[1];}
+    document.getElementById('btnImportAnalyse').style.display='flex';
+    document.getElementById('importTitle').textContent=`✅ ${file.name} chargé`;
+    toast(`✅ Fichier chargé : ${file.name}`);
   };
-  const el = document.getElementById('stockAlert');
-  el.className = 'al ' + (sel === 'mancoz' ? 'alr' : sel === 'soufre' || sel === 'folpet' ? 'alo' : 'alb');
-  el.innerHTML = `<span class="al-i">${sel==='mancoz'?'🚫':sel==='soufre'||sel==='folpet'?'⚠️':'ℹ️'}</span><div>${alerts[sel]}</div>`;
+  if(file.type.startsWith('image/'))r.readAsDataURL(file);else{r.readAsText(file);importImgBase64=null;}
+}
+async function analyseImport(){
+  toast('🤖 Analyse IA du document parcellaire…');
+  document.getElementById('btnImportAnalyse').textContent='🔄 Analyse en cours…';
+  await new Promise(r=>setTimeout(r,2000));
+  // Demo résultat (en production : appel Claude Vision)
+  const parcelles=[
+    {ref:'BL-01-0001',nom:'Combe Haute',surface:1.80,commune:'Saint-Victor-la-Coste',cepage:'Grenache N',section:'B',parcelle:'12',rang:'AB'},
+    {ref:'BL-01-0002',nom:'Les Terrasses',surface:1.20,commune:'Saint-Victor-la-Coste',cepage:'Syrah N',section:'B',parcelle:'14',rang:'AB'},
+    {ref:'BL-01-0003',nom:'Plan de Dieu',surface:2.00,commune:'Sérignan-du-Comtat',cepage:'Syrah N',section:'A',parcelle:'8',rang:'—'},
+    {ref:'BL-01-0004',nom:'Galets Roulés',surface:0.90,commune:'Châteauneuf-du-Pape',cepage:'Merlot N',section:'C',parcelle:'3',rang:'—'},
+  ];
+  document.getElementById('btnImportAnalyse').textContent='🤖 Analyser avec l\'IA';
+  document.getElementById('importResultTxt').innerHTML=`<b>${parcelles.length} parcelles détectées dans le document</b>Vérifier les données extraites avant importation.`;
+  document.getElementById('importParcList').innerHTML=parcelles.map(p=>`
+    <div style="background:var(--gris3);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div style="font-weight:700;font-size:14px">${p.nom}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--vigne)">${p.surface} ha</div>
+      </div>
+      <div style="font-size:12px;color:var(--gris)">${p.commune} · Section ${p.section} n°${p.parcelle} · ${p.cepage}</div>
+      ${p.rang!=='—'?`<span class="badge bg" style="margin-top:5px;display:inline-block">🏅 AB certifiée</span>`:''}
+      <div style="font-size:11px;color:var(--gris);margin-top:3px">Réf. CVI : ${p.ref}</div>
+    </div>`).join('');
+  document.getElementById('importResult').style.display='block';
+  toast(`✅ ${parcelles.length} parcelles extraites du document`);
+}
+function confirmImport(){
+  toast('✅ Parcelles importées dans VitiTrace — Plan parcellaire mis à jour');
+  document.getElementById('importResult').style.display='none';
+  document.querySelectorAll('.import-option').forEach(o=>o.classList.remove('selected'));
+  document.getElementById('importZone').style.display='none';
+  document.getElementById('dParcN').textContent='9';
+  setTimeout(()=>initMap(),500);
 }
 
-function calcStock() {
-  const dose = parseFloat(document.getElementById('tDose').value) || 0;
-  const besoin = dose * 2; // P3 = 2 ha
-  const reste = 8 - besoin;
-  const dar = document.getElementById('darDisplay');
-  if (document.getElementById('tProd').value === 'mancoz') {
-    dar.className = 'al alr';
-    dar.innerHTML = '<span class="al-i">🚫</span><div><b>Traitement impossible — stock épuisé</b>Commander le produit avant toute application.</div>';
-  } else {
-    dar.className = 'al alg';
-    dar.innerHTML = '<span class="al-i">✅</span><div><b>DAR respecté — 28 jours</b>Récolte possible à partir du 12 avril 2026.</div>';
-  }
+// ═══════════════════════════════════════════
+//  STOCK
+// ═══════════════════════════════════════════
+function renderStock(filter){
+  const list=document.getElementById('stockList');
+  const items=filter==='all'?stockData:stockData.filter(s=>s.etat===filter);
+  list.innerHTML=items.map(s=>{
+    const pct=Math.min(100,Math.round((s.qte/(s.seuil*3||1))*100));
+    const col=s.etat==='ok'?'var(--vert2)':s.etat==='low'?'var(--orange)':'var(--rouge)';
+    const bg=s.etat==='ok'?'#d4edda':s.etat==='low'?'#fde8c8':'#fde8e6';
+    const icon=s.categ?.includes('Bio')?'🌱':s.categ?.includes('cuivre')?'🟤':'🌿';
+    const badgeCls=s.etat==='ok'?'bg':s.etat==='low'?'bo':'br';
+    const badgeLbl=s.etat==='ok'?'✓ OK':s.etat==='low'?'⚠️ Faible':'🚫 Épuisé';
+    return`<div class="stock-item"><div class="si-icon" style="background:${bg}">${icon}</div><div class="si-body"><div class="si-name">${s.nom}</div><div class="si-amm">${s.amm||''} · ${s.categ||''} · Pér. ${s.perima||'—'}</div><div class="si-bar"><div class="si-bar-fill" style="width:${pct}%;background:${col}"></div></div>${s.etat!=='ok'?`<div style="font-size:10px;font-weight:700;color:${col};text-transform:uppercase;margin-top:3px">${s.etat==='zero'?'ÉPUISÉ — Commander':'Sous seuil — '+s.seuil+' '+s.unite+' alerte'}</div>`:''}</div><div class="si-qty"><div class="si-q" style="color:${col}">${s.qte}</div><div class="si-u">${s.unite}</div><span class="badge ${badgeCls}" style="margin-top:4px;display:inline-block">${badgeLbl}</span></div></div>`;
+  }).join('');
+}
+function filterStock(f,btn){
+  document.querySelectorAll('#sStock .btn').forEach(b=>{b.className='btn btghost btsm';});
+  btn.className='btn btgold btsm';renderStock(f);
 }
 
-function saveTraitement() {
-  const prod = document.getElementById('tProd');
-  const opt = prod.options[prod.selectedIndex].text;
-  const dose = document.getElementById('tDose').value;
-  const parc = document.getElementById('tParc').value.split('·')[0].trim();
-  // Update stock
-  const s = stockData.find(x => x.id === 1);
-  const besoin = parseFloat(dose) * 2;
-  if (s) s.qte = Math.max(0, s.qte - besoin);
-  renderStock();
-  toast(`💾 Traitement enregistré · Stock déduit (−${besoin} kg)`);
+// ═══════════════════════════════════════════
+//  MAP LEAFLET
+// ═══════════════════════════════════════════
+let mapInited=false,leafMap=null,tileOSM,tileSat;
+function initMap(){
+  if(mapInited)return;mapInited=true;
+  leafMap=L.map('map',{zoomControl:false,attributionControl:false}).setView([44.054,4.833],14);
+  tileOSM=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(leafMap);
+  tileSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
+  Object.entries(PARCELLES).forEach(([id,p])=>{
+    const v=iftParc(id),st=iftStatus(v),fc=st==='danger'?'#c0392b':st==='warn'?'#d4751a':p.color;
+    const poly=L.polygon(p.coords,{color:'#1a1410',weight:2,fillColor:fc,fillOpacity:.55}).addTo(leafMap);
+    const center=poly.getBounds().getCenter();
+    L.marker(center,{icon:L.divIcon({className:'',html:`<div style="background:rgba(255,255,255,.92);border-radius:6px;padding:3px 7px;font-family:Outfit,sans-serif;font-size:11px;font-weight:700;color:#1a1410;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2)">${id} · IFT ${v.toFixed(1)}</div>`,iconAnchor:[30,10]})}).addTo(leafMap);
+    poly.bindPopup(`<b>${p.nom}</b><br>${p.ha} ha · ${p.cepage}<br>IFT : <b style="color:${fc}">${v.toFixed(2)}</b><br>${st==='danger'?'<b style="color:#c0392b">⚠️ Référence dépassée</b>':st==='warn'?'<b style="color:#d4751a">⚠️ Proche référence</b>':'<b style="color:#2d5a27">✓ OK</b>'}`);
+  });
+  L.marker([44.053,4.832],{icon:L.divIcon({className:'',html:'<div style="width:13px;height:13px;background:#e74c3c;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 4px rgba(231,76,60,.35)"></div>',iconAnchor:[6,6]})}).addTo(leafMap);
+  // Carto list
+  document.getElementById('cartoList').innerHTML=Object.entries(PARCELLES).map(([id,p])=>{
+    const v=iftParc(id),st=iftStatus(v),col=iftColor(st);
+    return`<div class="card" onclick="showParcDetail('${id}')"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.ha} ha · ${p.cepage} · ${p.sol}</div></div><div style="text-align:right"><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div></div></div>`;
+  }).join('');
+}
+function mapSat(){if(!leafMap)return;try{leafMap.removeLayer(tileOSM);}catch(e){}tileSat.addTo(leafMap);toast('🛰️ Vue satellite activée');}
+function mapOSM(){if(!leafMap)return;try{leafMap.removeLayer(tileSat);}catch(e){}tileOSM.addTo(leafMap);toast('🗺️ Vue plan activée');}
+function mapCenter(){if(!leafMap)return;leafMap.setView([44.053,4.832],15);toast('📍 Centré sur votre position');}
+
+// ═══════════════════════════════════════════
+//  REGISTRE
+// ═══════════════════════════════════════════
+function renderRegistre(){
+  const list=document.getElementById('registreList');
+  const sorted=[...traitements].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  list.innerHTML=sorted.map(t=>{const dr=DOSE_REF[t.prod],p=PARCELLES[t.parc];return`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${dr?.label||t.prod}</div><div class="lim">${t.date} · ${p?.nom?.split('·')[0].trim()} · BBCH ${t.bbch} · ${t.dose} ${dr?.unit} · AMM ${dr?.amm||'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">IFT = <b style="color:var(--vigne)">${t.ift.toFixed(2)}</b></div></div><span class="dar dar-ok">✓</span></div>`;}).join('');
+  document.getElementById('regCount').textContent=traitements.length;
 }
 
-// ═══ VOICE ═══
-let vActive = false;
-function toggleVoice() {
-  const btn = document.getElementById('vBtn');
-  const lbl = document.getElementById('vLabel');
-  const res = document.getElementById('vResult');
-  if (!vActive) {
-    vActive = true;
-    btn.classList.add('rec');
-    btn.textContent = '⏹️';
-    lbl.textContent = '🔴 Écoute… parlez maintenant';
-    res.textContent = '';
-    setTimeout(() => { res.textContent = '"Soufre 10 kg parcelle 3 ce matin BBCH 53…"'; }, 1300);
-    setTimeout(() => { res.textContent = '🔄 Analyse vocale en cours…'; }, 2600);
-    setTimeout(() => {
-      res.textContent = '✅ Produit : Soufre Micronisé · Dose : 10 kg/ha · P3 Syrah · 08h30 · BBCH 53\nFormulaire pré-rempli !';
-      btn.classList.remove('rec'); btn.textContent = '🎙️';
-      lbl.textContent = 'Appuyer pour dicter';
-      vActive = false;
-      document.getElementById('tProd').value = 'soufre';
-      document.getElementById('tDose').value = '10';
-      document.getElementById('tBBCH').selectedIndex = 1;
-      updateFromStock();
-      go('sTrait', document.querySelectorAll('.tab')[1]);
-      toast('✅ Saisie vocale — formulaire pré-rempli');
-    }, 4200);
-  }
+// ═══════════════════════════════════════════
+//  OBS PHOTO
+// ═══════════════════════════════════════════
+function obsPhoto(){
+  document.getElementById('obsIcon').textContent='⏳';document.getElementById('obsLbl').textContent='Analyse IA…';
+  setTimeout(()=>{document.getElementById('obsIcon').textContent='🍄';document.getElementById('obsLbl').textContent='Mildiou détecté (IA 82%)';document.getElementById('obsAI').style.display='flex';toast('🤖 IA : Mildiou détecté — voir recommandation');},2000);
 }
 
-// ═══ SCAN ═══
-function doScan() {
-  toast('📷 Lecture étiquette…');
-  setTimeout(() => {
-    document.getElementById('tProd').value = 'cuivre';
-    document.getElementById('tAMM').value = 'FR-2020-1234';
-    document.getElementById('tDose').value = '2.5';
-    updateFromStock();
-    toast('✅ Étiquette lue — AMM + dose remplis');
-  }, 1600);
+// ═══════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════
+function doExport(type){toast(`📤 Export ${type} en cours…`);setTimeout(()=>toast(`✅ ${type} exporté et prêt`),1500);}
+function showM(id){document.getElementById(id).classList.add('op');}
+function closeM(e,id){if(!e||e.target.classList.contains('overlay'))document.getElementById(id).classList.remove('op');}
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(14px)';},3200);
 }
 
-// ═══ EXPORT ═══
-function doExport(type) {
-  toast(`📤 Export ${type} en cours…`);
-  setTimeout(() => toast(`✅ ${type} exporté`), 1500);
-}
-
-function saveVente() {
-  toast('✅ Vente enregistrée — stock cave mis à jour');
-  closeM(null, 'mNewVente');
-}
-
-// ═══ PHOTO OBS ═══
-function doPhoto() {
-  document.getElementById('ophIcon').textContent = '⏳';
-  document.getElementById('ophLbl').textContent = 'Analyse IA…';
-  setTimeout(() => {
-    document.getElementById('ophIcon').textContent = '🍄';
-    document.getElementById('ophLbl').textContent = 'Mildiou détecté (IA 82%)';
-    document.getElementById('aiResult').style.display = 'flex';
-    toast('🤖 IA : Mildiou détecté — voir recommandation');
-  }, 2100);
-}
-
-// ═══ STOCK DETAIL MODAL (inject) ═══
-// On crée dynamiquement
-const sdModal = document.createElement('div');
-sdModal.className = 'overlay';
-sdModal.id = 'mStockDetail';
-sdModal.innerHTML = `
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle" id="sdName">Produit</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div class="st"><div class="sv" id="sdQte">—</div><div class="sl">En stock</div></div>
-      <div class="st"><div class="sv" id="sdSeuil" style="font-size:18px">—</div><div class="sl">Seuil alerte</div></div>
-    </div>
-    <div class="fg"><label>N° AMM</label><input type="text" id="sdAMM" readonly></div>
-    <div class="fg"><label>Date de péremption</label><input type="text" id="sdPerima" readonly></div>
-    <div class="row2">
-      <div class="fg"><label>Entrée (+ kg/L)</label><div class="ig"><input type="number" id="sdEntree" placeholder="0"><span class="isuf">kg/L</span></div></div>
-      <div class="fg"><label>Sortie (− kg/L)</label><div class="ig"><input type="number" id="sdSortie" placeholder="0"><span class="isuf">kg/L</span></div></div>
-    </div>
-    <button class="btn btp" onclick="toast('✅ Mouvement stock enregistré');closeM(null,'mStockDetail')">💾 Enregistrer mouvement</button>
-    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mStockDetail')">Fermer</button>
-  </div>`;
-sdModal.onclick = e => closeM(e, 'mStockDetail');
-document.body.appendChild(sdModal);
-
-// ═══ INIT ═══
-window.addEventListener('load', () => {
-  renderStock();
-  animBars();
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+window.addEventListener('load',()=>{
+  renderDash();renderStock('all');renderRegistre();
 });
 </script>
 </body>
