@@ -303,14 +303,14 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
 <!-- ══ ACCUEIL ══ -->
 <section id="sDash" class="sec on">
   <div class="stitle">Bonjour, Vincent 👋</div>
-  <div class="ssub">Campagne 2025–26 · Domaine Delort · 6,8 ha</div>
+  <div class="ssub">Campagne 2025–26 · Domaine Delort · 7,53 ha</div>
   <div class="al alr"><span class="al-i">🚨</span><div><b>DAR non respecté — Les Galets</b>Cuivre du 18 fév. DAR = 21 j. Récolte bloquée.</div></div>
   <div class="al alo"><span class="al-i">🧪</span><div><b>Stock critique — Soufre Micronisé</b>Reste 8 kg / seuil 10 kg.</div></div>
   <div class="al alo"><span class="al-i">🍄</span><div><b>Risque mildiou élevé J+1 à J+3</b>28 mm + 18°C. Traitement avant jeudi.</div></div>
   <div class="sg">
     <div class="st"><div class="sv" id="dIFT">—</div><div class="sl">IFT moyen</div></div>
-    <div class="st"><div class="sv" id="dParcN">5</div><div class="sl">Parcelles</div></div>
-    <div class="st"><div class="sv g" id="dHa">6,8 ha</div><div class="sl">Surface</div></div>
+    <div class="st"><div class="sv" id="dParcN">9</div><div class="sl">Parcelles</div></div>
+    <div class="st"><div class="sv g" id="dHa">7,53 ha</div><div class="sl">Surface</div></div>
     <div class="st"><div class="sv d">2</div><div class="sl">Alertes stock</div></div>
   </div>
   <div class="card">
@@ -363,11 +363,15 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
     <div class="fg"><label>📍 Parcelle</label>
       <select id="tParc" onchange="updateTraitPreview()">
         <option value="">— Choisir —</option>
-        <option value="P1">P1 · Grenache Noir (1,8 ha)</option>
-        <option value="P2">P2 · Syrah (1,2 ha)</option>
-        <option value="P3" selected>P3 · Syrah Sud (2,0 ha)</option>
-        <option value="P4">P4 · Carignan (0,9 ha)</option>
-        <option value="LG">Les Galets · Merlot (0,9 ha)</option>
+        <option value="P1">P1 · Mairan — Chardonnay (1,48 ha)</option>
+        <option value="P2">P2 · La Trente — Chardonnay (1,05 ha)</option>
+        <option value="P3">P3 · Les Pélisses — Chardonnay (1,03 ha)</option>
+        <option value="P4">P4 · Malamort — Viognier+Sauvignon (1,85 ha)</option>
+        <option value="P5">P5 · La Combe — Syrah (0,81 ha)</option>
+        <option value="P6">P6 · Sainte Brune — Viognier (0,69 ha)</option>
+        <option value="P7">P7 · Puech Baquiaud — Viognier (0,33 ha)</option>
+        <option value="P8">P8 · Moulin Antoure — Sauvignon (0,22 ha)</option>
+        <option value="P9">P9 · Syrah parcelle (0,05 ha)</option>
       </select>
     </div>
     <div class="fg"><label>🧪 Produit</label>
@@ -565,7 +569,7 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
 <!-- ══ PARCELLES / CARTO ══ -->
 <section id="sCarto" class="sec">
   <div class="stitle">Cartographie parcelles</div>
-  <div class="ssub">Plan parcellaire GPS · Import CVI / PAC / Ecocert · OSM / Satellite</div>
+  <div class="ssub">Puisserguier (34225) + Capestang (34052) · 9 blocs · 22 parcelles cadastrales</div>
   <!-- IMPORT PARCELLAIRE -->
   <div class="card">
     <div class="ch"><span class="ct">Importer le parcellaire</span><span class="badge bgold">Multi-sources</span></div>
@@ -635,11 +639,11 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
   <div id="cartoList"></div>
   <div class="card">
     <div class="ch"><span class="ct">Rendements vendanges 2025</span><span class="badge bgold">Cave coop.</span></div>
-    <div class="rrow"><div><div style="font-weight:600">P1 · Grenache</div><div style="font-size:12px;color:var(--gris)">1,8 ha</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--gris)">Estimé 7 200 kg</div><div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--vigne)">8 100 kg ✓</div></div></div>
-    <div class="rrow"><div><div style="font-weight:600">P3 · Syrah</div><div style="font-size:12px;color:var(--gris)">2,0 ha</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--gris)">Estimé 9 000 kg</div><div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--vigne)">8 640 kg ✓</div></div></div>
-    <div class="rrow"><div><div style="font-weight:600">Les Galets</div><div style="font-size:12px;color:var(--gris)">0,9 ha</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--gris)">Estimé 3 600 kg</div><div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--rouge)">3 150 kg ↓</div></div></div>
+    <div class="rrow"><div><div style="font-weight:600">P1 · Mairan</div><div style="font-size:12px;color:var(--gris)">1,48 ha · Chardonnay</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--gris)">À saisir</div><div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gris)">— kg</div></div></div>
+    <div class="rrow"><div><div style="font-weight:600">P4 · Malamort</div><div style="font-size:12px;color:var(--gris)">1,85 ha · Viognier+Sauvignon</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--gris)">À saisir</div><div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gris)">— kg</div></div></div>
+    <div class="rrow"><div><div style="font-weight:600">P5 · La Combe</div><div style="font-size:12px;color:var(--gris)">0,81 ha · Syrah</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--gris)">À saisir</div><div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gris)">— kg</div></div></div>
     <div class="sep"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700">Total</span><span style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--vigne)">19 890 kg</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700">Total domaine</span><span style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--vigne)">7,53 ha</span></div>
   </div>
 </section>
 <!-- ══ MÉTÉO ══ -->
@@ -989,12 +993,17 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
 //  DONNÉES PARTAGÉES — SOURCE UNIQUE DE VÉRITÉ
 // ═══════════════════════════════════════════
 const PARCELLES = {
-  P1:{nom:'P1 · Grenache Noir',ha:1.8,cepage:'Grenache Noir',sol:'Argilo-calcaire',coords:[[44.057,4.828],[44.059,4.832],[44.058,4.836],[44.056,4.834],[44.055,4.830]],color:'#2d7d2d'},
-  P2:{nom:'P2 · Syrah',ha:1.2,cepage:'Syrah',sol:'Limoneux',coords:[[44.052,4.835],[44.054,4.839],[44.053,4.843],[44.051,4.840],[44.050,4.836]],color:'#4a6aaa'},
-  P3:{nom:'P3 · Syrah Sud',ha:2.0,cepage:'Syrah',sol:'Terrasse alluviale',coords:[[44.048,4.828],[44.050,4.833],[44.049,4.838],[44.047,4.836],[44.046,4.830]],color:'#7a9a3a'},
-  P4:{nom:'P4 · Carignan',ha:0.9,cepage:'Carignan',sol:'Schiste',coords:[[44.060,4.838],[44.062,4.841],[44.061,4.845],[44.059,4.843]],color:'#aa4a4a'},
-  LG:{nom:'Les Galets · Merlot',ha:0.9,cepage:'Merlot',sol:'Galets roulés',coords:[[44.054,4.820],[44.056,4.824],[44.055,4.828],[44.053,4.825]],color:'#aa6a2d'},
+  P1:{nom:'P1 · Mairan',commune:'PUISSERGUIER',ha:1.4835,cepage:'Chardonnay B',couleur:'Blanc',produit:'Pays d\'Oc Blanc',lieudit:'Mairan',ref_cad:'G0203,G0204,G0206,G0207',plantation:'2000–2003',sol:'Argilo-calcaire',coords:[[43.372,3.055],[43.374,3.059],[43.373,3.063],[43.371,3.061],[43.370,3.057]],color:'#c8a84c'},
+  P2:{nom:'P2 · La Trente',commune:'PUISSERGUIER',ha:1.054,cepage:'Chardonnay B',couleur:'Blanc',produit:'Pays d\'Oc Blanc',lieudit:'La Trente',ref_cad:'B0107–B0112',plantation:'1989–1990',sol:'Argilo-calcaire',coords:[[43.369,3.062],[43.371,3.066],[43.370,3.070],[43.368,3.068],[43.367,3.064]],color:'#d4a840'},
+  P3:{nom:'P3 · Les Pélisses',commune:'PUISSERGUIER',ha:1.033,cepage:'Chardonnay B',couleur:'Blanc',produit:'Pays d\'Oc Blanc',lieudit:'Les Pélisses',ref_cad:'N0887,N0888,N0889',plantation:'1992–2005',sol:'Argilo-calcaire',coords:[[43.366,3.070],[43.368,3.074],[43.367,3.077],[43.365,3.075],[43.364,3.072]],color:'#e0b840'},
+  P4:{nom:'P4 · Malamort',commune:'CAPESTANG',ha:1.853,cepage:'Viognier + Sauvignon',couleur:'Blanc',produit:'Pays d\'Oc Blanc',lieudit:'Malamort',ref_cad:'B0001,B0007,B0215,B0216',plantation:'1963–2008',sol:'Argilo-calcaire',coords:[[43.329,3.042],[43.332,3.047],[43.331,3.051],[43.328,3.049],[43.327,3.045]],color:'#4a8a42'},
+  P5:{nom:'P5 · La Combe',commune:'PUISSERGUIER',ha:0.811,cepage:'Syrah N',couleur:'Noir',produit:'Languedoc Rouge',lieudit:'La Combe',ref_cad:'N0510',plantation:'2005',sol:'Argilo-calcaire',coords:[[43.373,3.072],[43.375,3.075],[43.374,3.078],[43.372,3.076],[43.371,3.073]],color:'#7a3060'},
+  P6:{nom:'P6 · Sainte Brune',commune:'PUISSERGUIER',ha:0.6925,cepage:'Viognier B',couleur:'Blanc',produit:'Pays d\'Oc Blanc',lieudit:'Sainte Brune',ref_cad:'A0133',plantation:'2006',sol:'Argilo-calcaire',coords:[[43.364,3.060],[43.366,3.063],[43.365,3.066],[43.363,3.064],[43.362,3.061]],color:'#a08030'},
+  P7:{nom:'P7 · Puech Baquiaud',commune:'PUISSERGUIER',ha:0.333,cepage:'Viognier B',couleur:'Blanc',produit:'Pays d\'Oc Blanc',lieudit:'Puech Baquiaud',ref_cad:'H0406',plantation:'2008',sol:'Argilo-calcaire',coords:[[43.375,3.066],[43.3765,3.068],[43.3755,3.070],[43.374,3.068]],color:'#b09030'},
+  P8:{nom:'P8 · Moulin Antoure',commune:'PUISSERGUIER',ha:0.223,cepage:'Sauvignon B',couleur:'Blanc',produit:'Pays d\'Oc Blanc',lieudit:'Moulin Antoure',ref_cad:'A0046',plantation:'2008',sol:'Argilo-calcaire',coords:[[43.367,3.054],[43.3685,3.056],[43.3675,3.058],[43.366,3.056]],color:'#80a030'},
+  P9:{nom:'P9 · Syrah parcelle',commune:'PUISSERGUIER',ha:0.0502,cepage:'Syrah N',couleur:'Noir',produit:'Saint-Chinian Rouge',lieudit:'—',ref_cad:'M0913',plantation:'2002',sol:'Argilo-calcaire',coords:[[43.368,3.059],[43.3688,3.060],[43.3683,3.061],[43.3675,3.060]],color:'#602040'},
 };
+
 const DOSE_REF = {
   soufre:  {ref:3.0, max:10.0,unit:'kg/ha',categ:'Fongicide',       label:'Soufre Micronisé',        amm:'FR-2019-0847',dar:28,znt:5},
   cuivre:  {ref:2.5, max:4.0, unit:'kg/ha',categ:'Fongicide cuivre',label:'Cuivre Hydroxyde Champion',amm:'FR-2020-1234',dar:21,znt:20},
@@ -1010,19 +1019,11 @@ let stockData = [
   {id:5,nom:'Glyphosate 360 g/L',             amm:'FR-2015-0334',categ:'Herbicide',       qte:10, seuil:3, unite:'L', perima:'2026-12-31',etat:'ok',  prodKey:'glypho'},
 ];
 let traitements = [
-  {id:1, parc:'P1',prod:'soufre',   dose:2.5,date:'2025-04-15',bbch:'09'},
-  {id:2, parc:'P1',prod:'cuivre',   dose:2.5,date:'2025-05-10',bbch:'53'},
-  {id:3, parc:'P2',prod:'soufre',   dose:3.0,date:'2025-04-18',bbch:'09'},
-  {id:4, parc:'P2',prod:'folpet',   dose:1.5,date:'2025-05-20',bbch:'53'},
-  {id:5, parc:'P3',prod:'soufre',   dose:3.0,date:'2025-04-20',bbch:'09'},
-  {id:6, parc:'P3',prod:'cuivre',   dose:2.5,date:'2025-05-12',bbch:'53'},
-  {id:7, parc:'P3',prod:'folpet',   dose:1.5,date:'2025-06-02',bbch:'65'},
-  {id:8, parc:'P4',prod:'soufre',   dose:3.0,date:'2025-05-05',bbch:'53'},
-  {id:9, parc:'P4',prod:'spinosad', dose:0.25,date:'2025-06-15',bbch:'71'},
-  {id:10,parc:'LG',prod:'cuivre',   dose:2.5,date:'2025-02-18',bbch:'09'},
-  {id:11,parc:'LG',prod:'soufre',   dose:3.0,date:'2025-05-08',bbch:'53'},
-  {id:12,parc:'LG',prod:'folpet',   dose:1.6,date:'2025-06-10',bbch:'65'},
-  {id:13,parc:'P1',prod:'soufre',   dose:3.0,date:'2026-03-12',bbch:'53'},
+  // Campagne 2025 — à remplir au fil de la saison
+  // Les exemples ci-dessous sont à supprimer et remplacer par vos vrais traitements
+  {id:1, parc:'P1',prod:'soufre',   dose:3.0,date:'2025-05-10',bbch:'53'},
+  {id:2, parc:'P4',prod:'cuivre',   dose:2.5,date:'2025-05-12',bbch:'53'},
+  {id:3, parc:'P5',prod:'soufre',   dose:3.0,date:'2025-05-08',bbch:'53'},
 ].map(t=>({...t,ift:calcIFT(t.dose,DOSE_REF[t.prod]?.ref||1)}));
 
 // ═══════════════════════════════════════════
@@ -1443,7 +1444,7 @@ function filterStock(f,btn){
 let mapInited=false,leafMap=null,tileOSM,tileSat;
 function initMap(){
   if(mapInited)return;mapInited=true;
-  leafMap=L.map('map',{zoomControl:false,attributionControl:false}).setView([44.054,4.833],14);
+  leafMap=L.map('map',{zoomControl:false,attributionControl:false}).setView([43.365,3.063],13);
   tileOSM=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(leafMap);
   tileSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
   Object.entries(PARCELLES).forEach(([id,p])=>{
@@ -1453,7 +1454,7 @@ function initMap(){
     L.marker(center,{icon:L.divIcon({className:'',html:`<div style="background:rgba(255,255,255,.92);border-radius:6px;padding:3px 7px;font-family:Outfit,sans-serif;font-size:11px;font-weight:700;color:#1a1410;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2)">${id} · IFT ${v.toFixed(1)}</div>`,iconAnchor:[30,10]})}).addTo(leafMap);
     poly.bindPopup(`<b>${p.nom}</b><br>${p.ha} ha · ${p.cepage}<br>IFT : <b style="color:${fc}">${v.toFixed(2)}</b><br>${st==='danger'?'<b style="color:#c0392b">⚠️ Référence dépassée</b>':st==='warn'?'<b style="color:#d4751a">⚠️ Proche référence</b>':'<b style="color:#2d5a27">✓ OK</b>'}`);
   });
-  L.marker([44.053,4.832],{icon:L.divIcon({className:'',html:'<div style="width:13px;height:13px;background:#e74c3c;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 4px rgba(231,76,60,.35)"></div>',iconAnchor:[6,6]})}).addTo(leafMap);
+  L.marker([43.370,3.063],{icon:L.divIcon({className:'',html:'<div style="width:13px;height:13px;background:#e74c3c;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 4px rgba(231,76,60,.35)"></div>',iconAnchor:[6,6]})}).addTo(leafMap);
   // Carto list
   document.getElementById('cartoList').innerHTML=Object.entries(PARCELLES).map(([id,p])=>{
     const v=iftParc(id),st=iftStatus(v),col=iftColor(st);
@@ -1462,7 +1463,7 @@ function initMap(){
 }
 function mapSat(){if(!leafMap)return;try{leafMap.removeLayer(tileOSM);}catch(e){}tileSat.addTo(leafMap);toast('🛰️ Vue satellite activée');}
 function mapOSM(){if(!leafMap)return;try{leafMap.removeLayer(tileSat);}catch(e){}tileOSM.addTo(leafMap);toast('🗺️ Vue plan activée');}
-function mapCenter(){if(!leafMap)return;leafMap.setView([44.053,4.832],15);toast('📍 Centré sur votre position');}
+function mapCenter(){if(!leafMap)return;leafMap.setView([43.365,3.063],14);toast('📍 Centré sur votre position');}
 
 // ═══════════════════════════════════════════
 //  REGISTRE
