@@ -295,6 +295,7 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
   <button class="tab"     onclick="go('sMeteo',this)">🌤️ Météo</button>
   <button class="tab"     onclick="go('sRegistre',this)">📋 Registre</button>
   <button class="tab"     onclick="go('sCave',this)">🍷 Cave</button>
+  <button class="tab"     onclick="go('sHVE',this)">🏅 HVE / AB</button>
   <button class="tab"     onclick="go('sObs',this)">👁️ Obs.</button>
   <button class="tab"     onclick="go('sDiag',this)">🔬 Diagnostic IA</button>
 </nav>
@@ -909,7 +910,7 @@ input.ai-unc{border-color:rgba(212,117,26,.5);background:#fff8f0}
   </div>
 </section>
 
-</div><!-- /main -->
+
 <button class="fab" onclick="showM('mNewInterv')">+</button>
 <!-- ══ MODALS ══ -->
 <div class="overlay" id="mNewInterv" onclick="closeM(event,'mNewInterv')">
@@ -1688,3 +1689,377 @@ function demoDiagData(parcId){
 </script>
 </body>
 </html>
+
+<!-- ══ HVE / AB ══ -->
+<section id="sHVE" class="sec">
+  <div class="stitle">HVE & Agriculture Bio</div>
+  <div class="ssub">Suivi indicateurs · Calcul automatique · Dossier de certification</div>
+
+  <!-- SCORE GLOBAL -->
+  <div id="hveScoreCard" style="background:linear-gradient(135deg,#1c3d1c,#0f2a0f);border-radius:18px;padding:18px;color:#fff;margin-bottom:12px;box-shadow:0 6px 24px rgba(28,61,28,.35)">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px">Score HVE — Campagne 2025</div>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:700;line-height:1" id="hveScore">—</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.55)">/ 100 points</div>
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:14px" id="hveSub">Calcul en cours…</div>
+    <!-- Barre score -->
+    <div style="height:12px;background:rgba(255,255,255,.15);border-radius:6px;overflow:hidden;margin-bottom:6px">
+      <div id="hveScoreFill" style="height:100%;border-radius:6px;transition:width 1.2s ease;background:linear-gradient(90deg,#4a8a42,#6db865);width:0%"></div>
+    </div>
+    <!-- Seuils -->
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.45);margin-bottom:14px">
+      <span>0</span><span style="color:var(--or2)">N1 · 25</span><span style="color:var(--or2)">N2 · 50</span><span style="color:var(--or2)">N3 · 75</span><span>100</span>
+    </div>
+    <!-- Niveau atteint -->
+    <div id="hveNiveauBadge" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700">
+      🏅 Calcul en cours…
+    </div>
+    <!-- Split 4 domaines -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+      <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;text-align:center">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;line-height:1;margin-bottom:2px" id="hveA">—</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em">A · Stratégie phyto</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;text-align:center">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;line-height:1;margin-bottom:2px" id="hveB">—</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em">B · Gestion fertilisation</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;text-align:center">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;line-height:1;margin-bottom:2px" id="hveC">—</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em">C · Irrigation</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;text-align:center">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;line-height:1;margin-bottom:2px" id="hveD">—</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em">D · Biodiversité</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTES HVE -->
+  <div id="hveAlertes"></div>
+
+  <!-- DOMAINE A — STRATÉGIE PHYTO -->
+  <div class="card">
+    <div class="ch"><span class="ct">A · Stratégie phytosanitaire</span><span id="hveABadge" class="badge bg">— pts</span></div>
+    <!-- IFT vs référence -->
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:600">A1 · IFT domaine vs référence nationale</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:15px" id="hveA1score">—</span>
+      </div>
+      <div style="height:8px;background:var(--gris2);border-radius:4px;overflow:hidden;margin-bottom:4px">
+        <div id="hveA1bar" style="height:100%;border-radius:4px;background:var(--vert2);transition:width 1s ease;width:0%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--gris)" id="hveA1detail">IFT domaine : — · Référence : 4,2</div>
+    </div>
+    <!-- Part biocontrôle -->
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:600">A2 · Part biocontrôle / IFT total</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:15px" id="hveA2score">—</span>
+      </div>
+      <div style="height:8px;background:var(--gris2);border-radius:4px;overflow:hidden;margin-bottom:4px">
+        <div id="hveA2bar" style="height:100%;border-radius:4px;background:var(--bleu);transition:width 1s ease;width:0%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--gris)" id="hveA2detail">Biocontrôle : — % de l'IFT total</div>
+    </div>
+    <!-- Registre phyto -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--gris2)">
+      <div>
+        <div style="font-size:13px;font-weight:600">A3 · Registre phyto numérique à jour</div>
+        <div style="font-size:11px;color:var(--gris);margin-top:2px" id="hveA3detail">—</div>
+      </div>
+      <span class="badge bg" id="hveA3badge">✓ Conforme</span>
+    </div>
+    <!-- Respect DAR -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--gris2)">
+      <div>
+        <div style="font-size:13px;font-weight:600">A4 · Respect DAR sur toutes parcelles</div>
+        <div style="font-size:11px;color:var(--gris);margin-top:2px" id="hveA4detail">—</div>
+      </div>
+      <span class="badge" id="hveA4badge">—</span>
+    </div>
+  </div>
+
+  <!-- DOMAINE B — FERTILISATION -->
+  <div class="card">
+    <div class="ch"><span class="ct">B · Gestion de la fertilisation</span><span id="hveBBadge" class="badge bgold">— pts</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gris2)">
+      <div><div style="font-size:13px;font-weight:600">B1 · Plan de fumure prévisionnel</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Réalisé avant campagne</div></div>
+      <div class="swt on" id="hveB1sw" onclick="this.classList.toggle('on');calcHVE()"></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gris2)">
+      <div><div style="font-size:13px;font-weight:600">B2 · Analyse de sol &lt; 5 ans</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Dernière analyse</div></div>
+      <div class="swt on" id="hveB2sw" onclick="this.classList.toggle('on');calcHVE()"></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+      <div><div style="font-size:13px;font-weight:600">B3 · Enregistrement des apports</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Registre fertilisation tenu</div></div>
+      <div class="swt on" id="hveB3sw" onclick="this.classList.toggle('on');calcHVE()"></div>
+    </div>
+  </div>
+
+  <!-- DOMAINE C — IRRIGATION -->
+  <div class="card">
+    <div class="ch"><span class="ct">C · Gestion de l'irrigation</span><span id="hveCBadge" class="badge bgold">— pts</span></div>
+    <div class="al alb" style="margin-bottom:10px"><span class="al-i">ℹ️</span><div>Si non irrigant (vigne en sec) : points accordés automatiquement pour ce domaine.</div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gris2)">
+      <div><div style="font-size:13px;font-weight:600">Exploitation non irrigante</div><div style="font-size:11px;color:var(--gris)">Vigne cultivée sans irrigation</div></div>
+      <div class="swt on" id="hveCIrrig" onclick="this.classList.toggle('on');calcHVE()"></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+      <div><div style="font-size:13px;font-weight:600">C1 · Compteur volumétrique</div><div style="font-size:11px;color:var(--gris)">Si irrigant : compteur installé</div></div>
+      <div class="swt" id="hveC1sw" onclick="this.classList.toggle('on');calcHVE()"></div>
+    </div>
+  </div>
+
+  <!-- DOMAINE D — BIODIVERSITÉ -->
+  <div class="card">
+    <div class="ch"><span class="ct">D · Biodiversité & paysage</span><span id="hveDBadge" class="badge bgold">— pts</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gris2)">
+      <div><div style="font-size:13px;font-weight:600">D1 · % SIE (Surface Intérêt Écologique)</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Haies, bandes enherbées, couverts…</div></div>
+      <div style="width:80px"><div class="ig"><input type="number" id="hveSIE" value="8" min="0" max="30" style="padding:7px 10px;font-size:13px" oninput="calcHVE()"><span class="isuf">%</span></div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gris2)">
+      <div><div style="font-size:13px;font-weight:600">D2 · Enherbement inter-rangs</div><div style="font-size:11px;color:var(--gris)">Spontané ou semé</div></div>
+      <div class="swt on" id="hveD2sw" onclick="this.classList.toggle('on');calcHVE()"></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+      <div><div style="font-size:13px;font-weight:600">D3 · Démarche agroécologique</div><div style="font-size:11px;color:var(--gris)">Haies, corridors biologiques</div></div>
+      <div class="swt" id="hveD3sw" onclick="this.classList.toggle('on');calcHVE()"></div>
+    </div>
+  </div>
+
+  <!-- AB SECTION -->
+  <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--vigne);margin:4px 0 10px">Agriculture Biologique</div>
+  <div class="card" style="border:2px solid #a8d5b5">
+    <div class="ch"><span class="ct">🌿 Statut AB</span><span id="abStatusBadge" class="badge bg">Éligible</span></div>
+    <div id="abChecklist"></div>
+    <div class="sep"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gris2)">
+      <div><div style="font-size:13px;font-weight:600">Conversion AB en cours</div><div style="font-size:11px;color:var(--gris)">Année de conversion</div></div>
+      <select style="width:auto;padding:6px 10px;font-size:13px" id="abConversion" onchange="calcHVE()">
+        <option value="0">Non concerné</option>
+        <option value="1">Année 1 (C1)</option>
+        <option value="2">Année 2 (C2)</option>
+        <option value="3" selected>Certifié AB</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+      <div><div style="font-size:13px;font-weight:600">Organisme certificateur</div></div>
+      <select style="width:auto;padding:6px 10px;font-size:13px">
+        <option>Ecocert</option><option>Bureau Veritas</option><option>Certisud</option><option>Agrocert</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- DOCUMENTS & EXPORT -->
+  <div class="card">
+    <div class="ch"><span class="ct">Documents de certification</span></div>
+    <div class="exrow"><span style="font-size:22px">🏅</span><div class="exinfo"><div class="exname">Dossier HVE complet</div><div class="exdesc">Score par domaine + justificatifs</div></div><button class="btn btgold btsm" onclick="doExport('Dossier HVE')">PDF</button></div>
+    <div class="exrow"><span style="font-size:22px">🌿</span><div class="exinfo"><div class="exname">Bilan annuel AB</div><div class="exdesc">IFT, produits utilisés, conformité</div></div><button class="btn btgold btsm" onclick="doExport('Bilan AB')">PDF</button></div>
+    <div class="exrow"><span style="font-size:22px">📊</span><div class="exinfo"><div class="exname">Auto-évaluation HVE</div><div class="exdesc">Tableau de bord indicateurs</div></div><button class="btn btgold btsm" onclick="doExport('Auto-éval HVE')">Export</button></div>
+    <div class="exrow"><span style="font-size:22px">🍷</span><div class="exinfo"><div class="exname">Certificat traçabilité négoce</div><div class="exdesc">Pour cave coopérative ou acheteur</div></div><button class="btn btgold btsm" onclick="doExport('Certificat négoce')">PDF</button></div>
+  </div>
+
+  <!-- CONSEILS IA -->
+  <div class="card" style="background:linear-gradient(135deg,#1c3d1c,#0f2a0f);color:#fff;border:none">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;margin-bottom:10px;color:var(--or2)">💡 Recommandations pour progresser</div>
+    <div id="hveConseils" style="font-size:13px;line-height:1.7;opacity:.85"></div>
+  </div>
+</section>
+</div><!-- /main -->
+<script>
+// ═══════════════════════════════════════════
+//  MOTEUR HVE / AB — CALCUL AUTOMATIQUE
+// ═══════════════════════════════════════════
+
+const HVE_CONFIG = {
+  // Domaine A — Stratégie phytosanitaire (30 pts max)
+  A: {
+    A1_max: 15,   // IFT vs référence nationale (vigne : 4,2)
+    A2_max: 10,   // Part biocontrôle
+    A3_max: 2.5,  // Registre phyto numérique
+    A4_max: 2.5,  // Respect DAR
+  },
+  // Domaine B — Fertilisation (20 pts max)
+  B: { max: 20 },
+  // Domaine C — Irrigation (20 pts max)
+  C: { max: 20 },
+  // Domaine D — Biodiversité (30 pts max)
+  D: {
+    D1_max: 15,   // % SIE
+    D2_max: 10,   // Enherbement inter-rangs
+    D3_max: 5,    // Démarche agroécologique
+  },
+  REF_IFT_NATIONAL: 4.2,
+  NIVEAUX: { N1: 25, N2: 50, N3: 75 }
+};
+
+function calcHVE() {
+  const ift = typeof iftDomaine === 'function' ? iftDomaine() : 3.2;
+  const iftBio = typeof iftByCateg === 'function' ? iftByCateg('Biocontrôle') : 0.1;
+  const ref = HVE_CONFIG.REF_IFT_NATIONAL;
+
+  // ── DOMAINE A ──
+  // A1 : IFT vs référence (plus c'est bas, plus de points)
+  const ratioIFT = ift / ref;
+  let ptsA1 = 0;
+  if (ratioIFT <= 0.5)      ptsA1 = HVE_CONFIG.A.A1_max;
+  else if (ratioIFT <= 0.7) ptsA1 = Math.round(HVE_CONFIG.A.A1_max * 0.85);
+  else if (ratioIFT <= 0.85)ptsA1 = Math.round(HVE_CONFIG.A.A1_max * 0.65);
+  else if (ratioIFT <= 1.0) ptsA1 = Math.round(HVE_CONFIG.A.A1_max * 0.45);
+  else                       ptsA1 = 0;
+
+  // A2 : Part biocontrôle
+  const partBio = ift > 0 ? (iftBio / ift) * 100 : 0;
+  let ptsA2 = 0;
+  if (partBio >= 30)      ptsA2 = HVE_CONFIG.A.A2_max;
+  else if (partBio >= 20) ptsA2 = Math.round(HVE_CONFIG.A.A2_max * 0.7);
+  else if (partBio >= 10) ptsA2 = Math.round(HVE_CONFIG.A.A2_max * 0.4);
+  else if (partBio >= 5)  ptsA2 = Math.round(HVE_CONFIG.A.A2_max * 0.2);
+
+  // A3 : Registre phyto (toujours OK dans notre app)
+  const ptsA3 = HVE_CONFIG.A.A3_max;
+  // A4 : DAR (1 infraction = 0 point)
+  const darInfrac = (typeof traitements !== 'undefined') ? traitements.filter(t => t.darViolation).length : 1;
+  const ptsA4 = darInfrac === 0 ? HVE_CONFIG.A.A4_max : 0;
+
+  const ptsA = Math.round(ptsA1 + ptsA2 + ptsA3 + ptsA4);
+
+  // Update A indicators
+  const pctA1 = (ptsA1 / HVE_CONFIG.A.A1_max) * 100;
+  document.getElementById('hveA1bar').style.width = pctA1 + '%';
+  document.getElementById('hveA1bar').style.background = pctA1 >= 80 ? 'var(--vert2)' : pctA1 >= 50 ? 'var(--orange)' : 'var(--rouge)';
+  document.getElementById('hveA1score').textContent = ptsA1 + '/' + HVE_CONFIG.A.A1_max + ' pts';
+  document.getElementById('hveA1detail').textContent = `IFT domaine : ${ift.toFixed(2)} · Référence nationale : ${ref} · Ratio : ${(ratioIFT*100).toFixed(0)}%`;
+  document.getElementById('hveA2bar').style.width = Math.min(100, (ptsA2 / HVE_CONFIG.A.A2_max) * 100) + '%';
+  document.getElementById('hveA2score').textContent = ptsA2 + '/' + HVE_CONFIG.A.A2_max + ' pts';
+  document.getElementById('hveA2detail').textContent = `Biocontrôle : ${partBio.toFixed(1)}% de l'IFT total (IFT bio : ${iftBio.toFixed(2)})`;
+  document.getElementById('hveA3detail').textContent = `${typeof traitements !== 'undefined' ? traitements.length : 13} interventions enregistrées · Registre numérique conforme arrêté déc. 2025`;
+  const a4badge = document.getElementById('hveA4badge');
+  a4badge.textContent = darInfrac === 0 ? '✓ OK' : `⚠️ ${darInfrac} infraction(s)`;
+  a4badge.className = 'badge ' + (darInfrac === 0 ? 'bg' : 'br');
+  document.getElementById('hveA4detail').textContent = darInfrac === 0 ? 'Aucun dépassement DAR détecté' : `${darInfrac} parcelle(s) avec DAR non respecté`;
+  document.getElementById('hveABadge').textContent = ptsA + '/30 pts';
+  document.getElementById('hveABadge').className = 'badge ' + (ptsA >= 24 ? 'bg' : ptsA >= 15 ? 'bo' : 'br');
+
+  // ── DOMAINE B ──
+  const b1 = document.getElementById('hveB1sw')?.classList.contains('on') ? 1 : 0;
+  const b2 = document.getElementById('hveB2sw')?.classList.contains('on') ? 1 : 0;
+  const b3 = document.getElementById('hveB3sw')?.classList.contains('on') ? 1 : 0;
+  const ptsB = Math.round((b1 * 8 + b2 * 7 + b3 * 5));
+  document.getElementById('hveBBadge').textContent = ptsB + '/20 pts';
+  document.getElementById('hveBBadge').className = 'badge ' + (ptsB >= 16 ? 'bg' : ptsB >= 10 ? 'bo' : 'br');
+
+  // ── DOMAINE C ──
+  const nonIrrig = document.getElementById('hveCIrrig')?.classList.contains('on');
+  const c1 = document.getElementById('hveC1sw')?.classList.contains('on') ? 1 : 0;
+  const ptsC = nonIrrig ? HVE_CONFIG.C.max : Math.round(c1 * 15);
+  document.getElementById('hveCBadge').textContent = ptsC + '/20 pts';
+  document.getElementById('hveCBadge').className = 'badge ' + (ptsC >= 16 ? 'bg' : ptsC >= 10 ? 'bo' : 'br');
+
+  // ── DOMAINE D ──
+  const sie = parseFloat(document.getElementById('hveSIE')?.value) || 0;
+  let ptsD1 = 0;
+  if (sie >= 10)     ptsD1 = HVE_CONFIG.D.D1_max;
+  else if (sie >= 7) ptsD1 = Math.round(HVE_CONFIG.D.D1_max * 0.75);
+  else if (sie >= 5) ptsD1 = Math.round(HVE_CONFIG.D.D1_max * 0.5);
+  else if (sie >= 3) ptsD1 = Math.round(HVE_CONFIG.D.D1_max * 0.25);
+  const d2 = document.getElementById('hveD2sw')?.classList.contains('on') ? HVE_CONFIG.D.D2_max : 0;
+  const d3 = document.getElementById('hveD3sw')?.classList.contains('on') ? HVE_CONFIG.D.D3_max : 0;
+  const ptsD = Math.round(ptsD1 + d2 + d3);
+  document.getElementById('hveDBadge').textContent = ptsD + '/30 pts';
+  document.getElementById('hveDBadge').className = 'badge ' + (ptsD >= 24 ? 'bg' : ptsD >= 15 ? 'bo' : 'br');
+
+  // ── SCORE GLOBAL ──
+  const total = ptsA + ptsB + ptsC + ptsD;
+  document.getElementById('hveScore').textContent = total;
+  document.getElementById('hveA').textContent = ptsA + ' pts';
+  document.getElementById('hveB').textContent = ptsB + ' pts';
+  document.getElementById('hveC').textContent = ptsC + ' pts';
+  document.getElementById('hveD').textContent = ptsD + ' pts';
+
+  const fill = document.getElementById('hveScoreFill');
+  fill.style.width = '0%';
+  setTimeout(() => { fill.style.width = total + '%'; }, 80);
+  if (total >= 75) fill.style.background = 'linear-gradient(90deg,#4a8a42,#6db865)';
+  else if (total >= 50) fill.style.background = 'linear-gradient(90deg,#c9a84c,#f0d878)';
+  else fill.style.background = 'linear-gradient(90deg,#d4751a,#f0a040)';
+
+  // Niveau
+  let niveau, niveauTxt, niveauColor;
+  if (total >= 75)     { niveau = 'N3'; niveauTxt = '🏅 Niveau 3 — HVE certifiable'; niveauColor = '#6db865'; }
+  else if (total >= 50){ niveau = 'N2'; niveauTxt = '🌿 Niveau 2 — HVE intermédiaire'; niveauColor = '#f0d878'; }
+  else if (total >= 25){ niveau = 'N1'; niveauTxt = '🌱 Niveau 1 — HVE débutant'; niveauColor = '#f0a040'; }
+  else                 { niveau = '—';  niveauTxt = '⚠️ En dessous du Niveau 1'; niveauColor = '#e05040'; }
+
+  document.getElementById('hveNiveauBadge').textContent = niveauTxt;
+  document.getElementById('hveNiveauBadge').style.color = niveauColor;
+
+  const sub = total >= 75
+    ? `Félicitations — certification HVE N3 accessible · ${100 - total} points restants avant 100%`
+    : total >= 50
+    ? `HVE N2 atteint · ${75 - total} points nécessaires pour le Niveau 3`
+    : `${50 - total} points nécessaires pour le Niveau 2`;
+  document.getElementById('hveSub').textContent = sub;
+
+  // Alertes
+  const al = document.getElementById('hveAlertes');
+  al.innerHTML = '';
+  if (ift > ref) al.innerHTML += `<div class="al alr"><span class="al-i">🚨</span><div><b>IFT domaine dépasse la référence nationale</b>IFT ${ift.toFixed(2)} > ${ref} · Indicateur A1 à 0 point · Impact direct sur le score HVE.</div></div>`;
+  if (partBio < 10) al.innerHTML += `<div class="al alo"><span class="al-i">🌱</span><div><b>Part biocontrôle insuffisante (${partBio.toFixed(1)}%)</b>Viser ≥ 20% pour maximiser l'indicateur A2. Utiliser Spinosad, soufre micronisé ou cuivre autorisé AB.</div></div>`;
+  if (total >= 75) al.innerHTML += `<div class="al alg"><span class="al-i">🏆</span><div><b>Score HVE N3 atteint — certification accessible</b>Vous pouvez déposer votre dossier auprès de votre organisme certificateur.</div></div>`;
+
+  // AB Checklist
+  renderABChecklist(ift);
+
+  // Conseils IA
+  renderHVEConseils(total, ift, partBio, sie, niveau);
+}
+
+function renderABChecklist(ift) {
+  const items = [
+    { ok: ift <= 2.5, label: 'IFT ≤ 2,5 (référence AB vigne)', detail: `Votre IFT : ${ift.toFixed(2)}`, pts: 'Obligatoire' },
+    { ok: true,  label: 'Absence de produits non autorisés AB', detail: 'Tous les produits saisis sont autorisés AB', pts: 'Obligatoire' },
+    { ok: true,  label: 'Registre de traitements tenu', detail: 'Registre numérique conforme', pts: 'Obligatoire' },
+    { ok: true,  label: 'Traçabilité parcellaire complète', detail: 'Toutes les parcelles renseignées', pts: 'Obligatoire' },
+    { ok: ift <= 2.0, label: 'IFT ≤ 2,0 (niveau exemplaire)', detail: 'Critère non obligatoire mais valorisant', pts: 'Bonus' },
+  ];
+  document.getElementById('abChecklist').innerHTML = items.map(item => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gris2)">
+      <div style="width:24px;height:24px;border-radius:50%;background:${item.ok ? '#d4edda' : '#fde8c8'};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">${item.ok ? '✓' : '○'}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:${item.ok ? 'var(--terre)' : 'var(--gris)'}">${item.label}</div>
+        <div style="font-size:11px;color:var(--gris);margin-top:1px">${item.detail}</div>
+      </div>
+      <span class="badge ${item.ok ? 'bg' : 'bo'}" style="font-size:10px">${item.pts}</span>
+    </div>`).join('');
+
+  const allOk = items.filter(i => i.pts === 'Obligatoire').every(i => i.ok);
+  const badge = document.getElementById('abStatusBadge');
+  badge.textContent = allOk ? '✓ Critères AB remplis' : '○ Critères incomplets';
+  badge.className = 'badge ' + (allOk ? 'bg' : 'bo');
+}
+
+function renderHVEConseils(total, ift, partBio, sie, niveau) {
+  const conseils = [];
+  if (ift > 3.5) conseils.push('🎯 <b>Priorité 1 :</b> Réduire l\'IFT sous 3,5 en appliquant 70–80% des doses de référence. Gain potentiel : +8 points domaine A.');
+  if (partBio < 20) conseils.push('🌱 <b>Priorité 2 :</b> Augmenter la part biocontrôle à ≥ 20% (Spinosad pour tordeuses, soufre mouillable, cuivre AB). Gain : +6 points A2.');
+  if (sie < 7) conseils.push('🌿 <b>Priorité 3 :</b> Porter les SIE à 7% via enherbement inter-rangs ou plantation de haies. Gain : +8 points domaine D.');
+  if (total >= 50 && total < 75) conseils.push(`📈 <b>Objectif N3 :</b> Il vous manque ${75 - total} points. En combinant réduction IFT + SIE + biocontrôle, le Niveau 3 est atteignable en 1 campagne.`);
+  if (total >= 75) conseils.push('🏆 <b>Score N3 atteint !</b> Contactez votre organisme certificateur (Ecocert, Bureau Veritas, Certisud) pour déposer le dossier. Pensez à valoriser votre démarche HVE sur vos étiquettes bouteilles et supports de vente.');
+  if (conseils.length === 0) conseils.push('✅ Excellent profil HVE — maintenir les pratiques actuelles pour la prochaine campagne.');
+  document.getElementById('hveConseils').innerHTML = conseils.join('<br><br>');
+}
+
+// Initialiser HVE quand on arrive sur l'onglet
+const origGo = window.go || function(){};
+window.go = function(id, btn) {
+  origGo(id, btn);
+  if (id === 'sHVE') {
+    setTimeout(calcHVE, 150);
+  }
+};
+</script>
+</body></html>
