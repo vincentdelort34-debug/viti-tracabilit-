@@ -376,11 +376,11 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <div id="shpDrop" style="border:2.5px dashed var(--gris2);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:all .25s;background:var(--blanc);position:relative" onclick="document.getElementById('shpFile').click()">
       <div id="shpDropContent">
         <div style="font-size:38px;margin-bottom:8px">🗂️</div>
-        <div style="font-size:14px;font-weight:700;color:var(--terre);margin-bottom:4px">Déposer le ZIP Télépac ici</div>
-        <div style="font-size:12px;color:var(--gris)">ou cliquer pour parcourir</div>
+        <div style="font-size:14px;font-weight:700;color:var(--terre);margin-bottom:4px">Déposer les fichiers Télépac ici</div>
+        <div style="font-size:12px;color:var(--gris)">Glisse les 3 fichiers ensemble (.shp + .dbf + .shx)<br>ou un ZIP, ou un GeoJSON</div>
         <div style="display:flex;justify-content:center;gap:6px;margin-top:10px">
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">.shp+.dbf</span>
           <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">.zip</span>
-          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">.shp</span>
           <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">GeoJSON</span>
         </div>
       </div>
@@ -389,7 +389,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
         <div style="font-size:13px;font-weight:600;color:var(--terre)" id="shpLoadingTxt">Lecture du fichier…</div>
       </div>
     </div>
-    <input type="file" id="shpFile" accept=".zip,.shp,.geojson,.json" style="display:none" onchange="handleShpFile(this)">
+    <input type="file" id="shpFile" accept=".zip,.shp,.dbf,.shx,.geojson,.json" style="display:none" multiple onchange="handleShpFile(this)">
 
     <!-- RÉSULTAT IMPORT -->
     <div id="shpResult" style="display:none;margin-top:12px">
@@ -702,6 +702,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 
 <div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/fflate@0.8.2/umd/index.js"></script>
 <script>
 // ══════════════════════════════════════════════════════
 //  LECTEUR SHAPEFILE NATIF — sans librairie externe
@@ -1664,12 +1665,66 @@ shpDrop.addEventListener('dragover', e => { e.preventDefault(); shpDrop.style.bo
 shpDrop.addEventListener('dragleave', () => { shpDrop.style.borderColor = ''; shpDrop.style.background = ''; });
 shpDrop.addEventListener('drop', e => {
   e.preventDefault(); shpDrop.style.borderColor = ''; shpDrop.style.background = '';
-  const f = e.dataTransfer.files[0];
-  if (f) { const dt = new DataTransfer(); dt.items.add(f); document.getElementById('shpFile').files = dt.files; handleShpFile(document.getElementById('shpFile')); }
+  const files = e.dataTransfer.files;
+  if (files.length) {
+    const dt = new DataTransfer();
+    for (let i = 0; i < files.length; i++) dt.items.add(files[i]);
+    document.getElementById('shpFile').files = dt.files;
+    handleShpFile(document.getElementById('shpFile'));
+  }
 });
 
 async function handleShpFile(input) {
-  const file = input.files[0];
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+
+  // Cas : plusieurs fichiers glissés ensemble (.shp + .dbf + .shx)
+  const shpFile = files.find(f => f.name.toLowerCase().endsWith('.shp'));
+  const dbfFile = files.find(f => f.name.toLowerCase().endsWith('.dbf'));
+
+  if (shpFile && files.length > 1) {
+    // Lecture directe multi-fichiers — pas besoin de ZIP
+    document.getElementById('shpDropContent').style.display = 'none';
+    document.getElementById('shpLoadingContent').style.display = 'block';
+    document.getElementById('shpResult').style.display = 'none';
+    shpParcelles = [];
+    try {
+      setShpLoading('Lecture des fichiers Télépac…');
+      const shpBuf = await shpFile.arrayBuffer();
+      const dbfBuf = dbfFile ? await dbfFile.arrayBuffer() : null;
+      setShpLoading('Extraction des polygones…');
+      const polys = parseShp(shpBuf);
+      let records = [];
+      if (dbfBuf) { setShpLoading('Lecture des attributs…'); records = parseDbf(dbfBuf); }
+      setShpLoading(`${polys.length} parcelle(s) trouvée(s)…`);
+      const COLORS = ['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040','#4a6aaa','#aa4a4a','#6aaa4a','#aa8a4a','#4aaa8a','#8a4aaa'];
+      const COMMUNES = {'34225':'Puisserguier','34052':'Capestang','34089':'Cessenon-sur-Orb'};
+      const TYPES = {'VRC':'Vigne','VRN':'Vigne','OLI':'Olivier','SNE':'Surface non exploitée','JAC':'Jachère','BTH':'Blé tendre','MIS':'Maïs','TRN':'Tournesol'};
+      shpParcelles = polys.map((coords, i) => {
+        const rec = records[i] || {};
+        const ilot = rec.NUMERO_I || `${i+1}`;
+        const parc = rec.NUMERO_P || '1';
+        const surf = parseFloat(rec.SURF || rec.SURF_TOT || 0);
+        const typeCode = rec.TYPE || '';
+        const communeCode = rec.COMMUNE || '';
+        return { code:`I${ilot}P${parc}`, nom:`Îlot ${ilot} · ${TYPES[typeCode]||typeCode||'Parcelle'}`, surface_ha:surf, commune:COMMUNES[communeCode]||communeCode||'', culture:TYPES[typeCode]||typeCode||'', coords, color:COLORS[i%COLORS.length] };
+      }).filter(p => p.coords.length >= 3);
+      if (!shpParcelles.length) throw new Error('Aucun polygone valide');
+      afficherShpResult();
+    } catch(e) {
+      document.getElementById('shpLoadingContent').style.display = 'none';
+      document.getElementById('shpDropContent').style.display = 'block';
+      document.getElementById('shpResult').style.display = 'block';
+      document.getElementById('shpResultMsg').className = 'al alr';
+      document.getElementById('shpResultTxt').innerHTML = `<b>Erreur</b> — ${e.message}`;
+      document.getElementById('shpParcList').innerHTML = '';
+      toast('❌ ' + e.message);
+    }
+    return;
+  }
+
+  // Cas fichier unique (ZIP, .shp seul, GeoJSON)
+  const file = files[0];
   if (!file) return;
   document.getElementById('shpDropContent').style.display = 'none';
   document.getElementById('shpLoadingContent').style.display = 'block';
