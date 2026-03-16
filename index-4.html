@@ -838,7 +838,6 @@ async function readZipEntries(arrayBuf) {
   }
   return entries;
 }
-<script>
 // ══════════════════════════════════════════
 //  SUPABASE
 // ══════════════════════════════════════════
@@ -1077,8 +1076,6 @@ async function delTrait(id) {
   const {error}=await sb.from('traitements').delete().eq('id',id);
   if(!error){TRAITS=TRAITS.filter(t=>t.id!==id);renderDash();renderIFT();renderRegistre();toast('🗑️ Supprimé · IFT recalculé');closeM(null,'mPD');}
 }
-</script>
-<script>
 // ══════════════════════════════════════════
 //  TRAITEMENT
 // ══════════════════════════════════════════
