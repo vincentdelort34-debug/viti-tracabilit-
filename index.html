@@ -702,7 +702,8 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 
 <div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/shpjs@4.0.4/dist/shp.js"></script>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://unpkg.com/shpjs@3.6.3/dist/shp.js"></script>
 <script>
 // ══════════════════════════════════════════
 //  SUPABASE
@@ -1489,26 +1490,76 @@ async function handleShpFile(input) {
   const file = input.files[0];
   if (!file) return;
 
-  // Afficher loading
   document.getElementById('shpDropContent').style.display = 'none';
   document.getElementById('shpLoadingContent').style.display = 'block';
   document.getElementById('shpResult').style.display = 'none';
   shpParcelles = [];
 
   try {
-    let geojson;
     const name = file.name.toLowerCase();
-
     setShpLoading('Lecture du fichier…');
     const buffer = await file.arrayBuffer();
+    let geojson = null;
 
-    if (name.endsWith('.zip')) {
-      setShpLoading('Décompression du ZIP…');
-      geojson = await shp(buffer);
-    } else if (name.endsWith('.geojson') || name.endsWith('.json')) {
+    if (name.endsWith('.geojson') || name.endsWith('.json')) {
+      // GeoJSON direct
       setShpLoading('Lecture GeoJSON…');
       const txt = new TextDecoder().decode(buffer);
       geojson = JSON.parse(txt);
+
+    } else if (name.endsWith('.zip')) {
+      setShpLoading('Décompression du ZIP…');
+
+      // Essai 1 : shpjs direct sur le buffer
+      try {
+        geojson = await shp(buffer);
+      } catch(e1) {
+        // Essai 2 : JSZip pour explorer le contenu et trouver les .shp
+        setShpLoading('Exploration du contenu ZIP…');
+        const zip = await JSZip.loadAsync(buffer);
+        const files = Object.keys(zip.files);
+
+        // Chercher tous les .shp dans le ZIP (même dans sous-dossiers)
+        const shpFiles = files.filter(f => f.toLowerCase().endsWith('.shp') && !zip.files[f].dir);
+
+        if (!shpFiles.length) throw new Error('Aucun fichier .shp trouvé dans le ZIP');
+
+        setShpLoading(`Lecture de ${shpFiles.length} shapefile(s)…`);
+        const allFeatures = [];
+
+        for (const shpPath of shpFiles) {
+          try {
+            const basePath = shpPath.replace(/\.shp$/i, '');
+            const dbfPath = files.find(f => f.toLowerCase() === basePath.toLowerCase() + '.dbf');
+            const prjPath = files.find(f => f.toLowerCase() === basePath.toLowerCase() + '.prj');
+
+            // Lire les buffers
+            const shpBuf = await zip.files[shpPath].async('arraybuffer');
+            const dbfBuf = dbfPath ? await zip.files[dbfPath].async('arraybuffer') : null;
+
+            // Reconstruire un ZIP minimal avec juste ce shapefile pour shpjs
+            const miniZip = new JSZip();
+            const fname = shpPath.split('/').pop().replace(/\.shp$/i, '');
+            miniZip.file(fname + '.shp', shpBuf);
+            if (dbfBuf) miniZip.file(fname + '.dbf', dbfBuf);
+            if (prjPath) {
+              const prjBuf = await zip.files[prjPath].async('arraybuffer');
+              miniZip.file(fname + '.prj', prjBuf);
+            }
+            const miniBuffer = await miniZip.generateAsync({type:'arraybuffer'});
+
+            const result = await shp(miniBuffer);
+            if (result && result.features) allFeatures.push(...result.features);
+            else if (Array.isArray(result)) result.forEach(r => r.features && allFeatures.push(...r.features));
+          } catch(e2) {
+            console.warn('Erreur lecture shapefile:', shpPath, e2);
+          }
+        }
+
+        if (!allFeatures.length) throw new Error('Impossible de lire les shapefiles — format non supporté');
+        geojson = { type: 'FeatureCollection', features: allFeatures };
+      }
+
     } else if (name.endsWith('.shp')) {
       setShpLoading('Lecture Shapefile…');
       geojson = await shp(buffer);
@@ -1518,45 +1569,62 @@ async function handleShpFile(input) {
 
     setShpLoading('Extraction des parcelles…');
 
-    // Normaliser en FeatureCollection
+    // Normaliser en tableau de features
     const features = [];
     if (Array.isArray(geojson)) {
-      geojson.forEach(g => { if (g.features) features.push(...g.features); });
-    } else if (geojson.type === 'FeatureCollection') {
+      geojson.forEach(g => {
+        if (g && g.features) features.push(...g.features);
+        else if (g && g.type === 'Feature') features.push(g);
+      });
+    } else if (geojson && geojson.type === 'FeatureCollection') {
       features.push(...(geojson.features || []));
-    } else if (geojson.type === 'Feature') {
+    } else if (geojson && geojson.type === 'Feature') {
       features.push(geojson);
     }
 
     if (!features.length) throw new Error('Aucune parcelle trouvée dans le fichier');
 
-    setShpLoading(`${features.length} parcelles détectées…`);
+    setShpLoading(`${features.length} parcelle(s) détectée(s)…`);
 
-    // Extraire les parcelles avec coordonnées
+    // Extraire les données de chaque parcelle
     shpParcelles = features.map((f, i) => {
-      const props = f.properties || {};
-      // Champs Télépac PAC courants
-      const nom = props.NOM_COM || props.nom_com || props.COMMUNE || props.commune ||
-                  props.LIBELLE || props.libelle || props.NOM || props.nom ||
-                  props.CULT_COD || props.cult_cod || `Parcelle ${i+1}`;
-      const code = props.NUM_ILOT || props.num_ilot || props.CODE || props.code ||
-                   props.REF_PARC || props.ref_parc || `P${i+1}`;
-      const surface = props.SURF_PARC || props.surf_parc || props.SURFACE ||
-                      props.surface || props.AREA || calcSurface(f.geometry) || 0;
-      const commune = props.NOM_COM || props.nom_com || props.COMMUNE || props.commune || '';
-      const culture = props.CULT_COD || props.cult_cod || props.CULTURE || props.culture || '';
+      const p = f.properties || {};
+      // Champs Télépac PAC (noms variables selon les exports)
+      const nom =
+        p.NOM_COM || p.nom_com || p.COMMUNE || p.commune ||
+        p.LIBELLE || p.libelle || p.LIB_CULT || p.lib_cult ||
+        p.CULT_COD || p.cult_cod || p.CODE_CULT || p.code_cult ||
+        p.NOM || p.nom || `Parcelle ${i+1}`;
+      const code =
+        p.NUM_ILOT || p.num_ilot || p.NUMERO_I || p.numero_i ||
+        p.REF_PARC || p.ref_parc || p.CODE || p.code ||
+        p.ID || p.id || `P${i+1}`;
+      const surface =
+        p.SURF_PARC || p.surf_parc || p.SUR_ADM || p.sur_adm ||
+        p.SURFACE || p.surface || p.AREA || p.area ||
+        calcSurface(f.geometry) || 0;
+      const commune =
+        p.NOM_COM || p.nom_com || p.COMMUNE || p.commune ||
+        p.LIB_COM || p.lib_com || '';
+      const culture =
+        p.CULT_COD || p.cult_cod || p.CODE_CULT || p.code_cult ||
+        p.LIB_CULT || p.lib_cult || p.CULTURE || p.culture || '';
 
-      // Extraire les coordonnées (convertir en [lat, lon] pour Leaflet)
       const coords = extractCoords(f.geometry);
 
-      return { code: code.toString().slice(0,10), nom: nom.toString().slice(0,50),
-               surface_ha: Math.round(parseFloat(surface) * 10000) / 10000,
-               commune, culture, coords, raw: props };
+      return {
+        code: String(code).slice(0, 10),
+        nom: String(nom).slice(0, 60),
+        surface_ha: Math.round(parseFloat(surface) * 10000) / 10000 || 0,
+        commune: String(commune),
+        culture: String(culture),
+        coords,
+        raw: p
+      };
     }).filter(p => p.coords && p.coords.length >= 3);
 
-    if (!shpParcelles.length) throw new Error('Aucune géométrie valide trouvée');
+    if (!shpParcelles.length) throw new Error('Aucune géométrie polygone valide trouvée');
 
-    // Afficher le résultat
     afficherShpResult();
 
   } catch(e) {
@@ -1566,6 +1634,7 @@ async function handleShpFile(input) {
     document.getElementById('shpResultMsg').className = 'al alr';
     document.getElementById('shpResultTxt').innerHTML = `<b>Erreur de lecture</b>${e.message}`;
     document.getElementById('shpParcList').innerHTML = '';
+    console.error('SHP import error:', e);
     toast('❌ ' + e.message);
   }
 }
