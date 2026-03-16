@@ -150,6 +150,11 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 .fab{position:fixed;bottom:22px;right:14px;width:56px;height:56px;border-radius:28px;background:var(--or);border:none;cursor:pointer;font-size:26px;box-shadow:0 4px 16px rgba(201,168,76,.55);display:flex;align-items:center;justify-content:center;z-index:180;color:var(--noir);transition:all .2s}.fab:active{transform:scale(.92)}
 #toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--noir);color:var(--creme);padding:11px 20px;border-radius:28px;font-size:13px;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.35);opacity:0;transition:all .3s;z-index:600;white-space:nowrap;pointer-events:none;max-width:92vw;text-align:center}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--gris2);border-radius:2px}
+.emoji-opt{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--gris3);border-radius:10px;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.emoji-opt:hover,.emoji-opt.sel{background:#fdf8e8;border-color:var(--or);transform:scale(1.1)}
+.theme-opt{border-radius:12px;padding:12px 10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;border:2px solid transparent}
+.theme-opt:hover{transform:scale(.97);border-color:rgba(255,255,255,.4)}
+.theme-opt:active{transform:scale(.94)}
 </style>
 </head>
 <body>
@@ -192,6 +197,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <button class="tab" onclick="go('sRegistre',this)">📋 Registre</button>
   <button class="tab" onclick="go('sCave',this)">🍷 Cave</button>
   <button class="tab" onclick="go('sHVE',this)">🏅 HVE/AB</button>
+  <button class="tab" onclick="go('sPerso',this)">⚙️ Perso.</button>
 </nav>
 <div class="main" id="am" style="display:none">
 <!-- ACCUEIL -->
@@ -361,9 +367,44 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 <!-- PARCELLES -->
 <section id="sCarto" class="sec">
   <div class="stitle">Mes parcelles</div><div class="ssub" id="cS">Cartographie · GPS · Plan parcellaire</div>
+
+  <!-- IMPORT SHAPEFILE PAC -->
+  <div class="card" id="shpImportCard">
+    <div class="ch"><span class="ct">📥 Importer depuis Télépac</span><span class="badge bb">Shapefile ZIP</span></div>
+    <div style="font-size:12px;color:var(--gris);margin-bottom:12px">Glisse ton fichier ZIP Télépac (contenant .shp .dbf .shx) — les parcelles avec leurs vraies coordonnées GPS sont extraites automatiquement.</div>
+
+    <div id="shpDrop" style="border:2.5px dashed var(--gris2);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:all .25s;background:var(--blanc);position:relative" onclick="document.getElementById('shpFile').click()">
+      <div id="shpDropContent">
+        <div style="font-size:38px;margin-bottom:8px">🗂️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--terre);margin-bottom:4px">Déposer le ZIP Télépac ici</div>
+        <div style="font-size:12px;color:var(--gris)">ou cliquer pour parcourir</div>
+        <div style="display:flex;justify-content:center;gap:6px;margin-top:10px">
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">.zip</span>
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">.shp</span>
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">GeoJSON</span>
+        </div>
+      </div>
+      <div id="shpLoadingContent" style="display:none">
+        <div style="width:36px;height:36px;border:3px solid var(--gris2);border-top-color:var(--or);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--terre)" id="shpLoadingTxt">Lecture du fichier…</div>
+      </div>
+    </div>
+    <input type="file" id="shpFile" accept=".zip,.shp,.geojson,.json" style="display:none" onchange="handleShpFile(this)">
+
+    <!-- RÉSULTAT IMPORT -->
+    <div id="shpResult" style="display:none;margin-top:12px">
+      <div class="al alg" id="shpResultMsg"><span class="al-i">✅</span><div id="shpResultTxt"></div></div>
+      <div id="shpParcList" style="margin-top:8px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+        <button class="btn btghost" onclick="resetShpImport()">↩ Annuler</button>
+        <button class="btn btp" onclick="confirmShpImport()">💾 Importer ces parcelles</button>
+      </div>
+    </div>
+  </div>
+
   <div id="mc"><div class="mo">📍 GPS</div><div class="mct"><button class="mcb" onclick="mSat()">🛰️</button><button class="mcb" onclick="mOSM()">🗺️</button><button class="mcb" onclick="mCenter()">◎</button></div><div id="map"></div></div>
-  <div id="cL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter</button></div></div>
-  <button class="btn btp" onclick="showM('mAP')" style="margin-top:4px">+ Ajouter une parcelle</button>
+  <div id="cL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter manuellement</button></div></div>
+  <button class="btn btp" onclick="showM('mAP')" style="margin-top:4px">+ Ajouter une parcelle manuellement</button>
 </section>
 <!-- MÉTÉO -->
 <section id="sMeteo" class="sec">
@@ -434,6 +475,126 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <div class="er"><span style="font-size:22px">🌿</span><div class="ei"><div class="en">Bilan annuel AB</div></div><button class="btn btgold btsm" onclick="doExport('Bilan AB')">PDF</button></div>
   </div>
   <div id="hCons"></div>
+</section>
+<!-- PERSONNALISATION -->
+<section id="sPerso" class="sec">
+  <div class="stitle">Personnalisation</div>
+  <div class="ssub">Modifiez l'apparence depuis l'app · Sauvegardé automatiquement</div>
+
+  <!-- APERÇU EN TEMPS RÉEL -->
+  <div id="persoPreview" style="background:var(--noir);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh2)">
+    <div id="pvLogo" style="width:40px;height:40px;border-radius:10px;background:var(--or);display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .3s">🍇</div>
+    <div>
+      <div id="pvNom" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--creme);line-height:1;transition:all .3s">VitiTrace</div>
+      <div id="pvSub" style="font-size:10px;color:var(--or);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;transition:all .3s">Mon domaine</div>
+    </div>
+    <div style="margin-left:auto;font-size:11px;color:rgba(255,255,255,.4)">Aperçu en direct</div>
+  </div>
+
+  <!-- IDENTITÉ -->
+  <div class="card">
+    <div class="ch"><span class="ct">🏷️ Identité de l'app</span></div>
+    <div class="fg">
+      <label>Nom affiché dans l'app</label>
+      <input type="text" id="pNomApp" placeholder="Ex : VitiTrace · Domaine Dupont" oninput="persoPreview()">
+    </div>
+    <div class="fg">
+      <label>Sous-titre (commune, appellation…)</label>
+      <input type="text" id="pSousNom" placeholder="Ex : Puisserguier · Pays d'Oc" oninput="persoPreview()">
+    </div>
+    <div class="fg">
+      <label>Emoji logo</label>
+      <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-top:6px">
+        <div class="emoji-opt" onclick="setEmoji('🍇')">🍇</div>
+        <div class="emoji-opt" onclick="setEmoji('🌿')">🌿</div>
+        <div class="emoji-opt" onclick="setEmoji('🍷')">🍷</div>
+        <div class="emoji-opt" onclick="setEmoji('🌾')">🌾</div>
+        <div class="emoji-opt" onclick="setEmoji('🫒')">🫒</div>
+        <div class="emoji-opt" onclick="setEmoji('🌻')">🌻</div>
+        <div class="emoji-opt" onclick="setEmoji('🏡')">🏡</div>
+        <div class="emoji-opt" onclick="setEmoji('⚜️')">⚜️</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COULEURS -->
+  <div class="card">
+    <div class="ch"><span class="ct">🎨 Couleurs</span><span class="badge bgold">Aperçu instantané</span></div>
+    <div style="font-size:12px;color:var(--gris);margin-bottom:12px">Les couleurs s'appliquent à toute l'app en temps réel.</div>
+
+    <!-- THÈMES PRÉDÉFINIS -->
+    <div class="fg">
+      <label>Thèmes prédéfinis</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+        <div class="theme-opt" onclick="applyTheme('vigne')" style="background:linear-gradient(135deg,#1c3d1c,#c9a84c)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🍇 Vigne classique</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('bordeaux')" style="background:linear-gradient(135deg,#4a0e1a,#c9a84c)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🍷 Bordeaux</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('provence')" style="background:linear-gradient(135deg,#7a5c2e,#e8c878)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🌿 Provence</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('moderne')" style="background:linear-gradient(135deg,#1a2a3d,#4a8abf)">
+          <span style="color:#fff;font-size:12px;font-weight:700">⚡ Moderne</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('bio')" style="background:linear-gradient(135deg,#2a4a1a,#7ab84a)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🌱 Bio / Nature</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('ardoise')" style="background:linear-gradient(135deg,#2a2a2a,#888)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🪨 Ardoise</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COULEURS PERSONNALISÉES -->
+    <div style="margin-top:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Ou personnaliser manuellement</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg" style="margin-bottom:0">
+          <label>Couleur principale</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input type="color" id="cVigne" value="#1c3d1c" style="width:44px;height:44px;padding:2px;border-radius:8px;cursor:pointer;border:2px solid var(--gris2)" oninput="applyCustomColor('vigne',this.value)">
+            <input type="text" id="cVigneHex" value="#1c3d1c" placeholder="#1c3d1c" style="flex:1;font-size:13px" oninput="syncColorInput('vigne',this.value)">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>Couleur accent (doré)</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input type="color" id="cOr" value="#c9a84c" style="width:44px;height:44px;padding:2px;border-radius:8px;cursor:pointer;border:2px solid var(--gris2)" oninput="applyCustomColor('or',this.value)">
+            <input type="text" id="cOrHex" value="#c9a84c" placeholder="#c9a84c" style="flex:1;font-size:13px" oninput="syncColorInput('or',this.value)">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>Fond général</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input type="color" id="cBg" value="#eee8dc" style="width:44px;height:44px;padding:2px;border-radius:8px;cursor:pointer;border:2px solid var(--gris2)" oninput="applyCustomColor('bg',this.value)">
+            <input type="text" id="cBgHex" value="#eee8dc" placeholder="#eee8dc" style="flex:1;font-size:13px" oninput="syncColorInput('bg',this.value)">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>Texte principal</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input type="color" id="cTerre" value="#3d2b1f" style="width:44px;height:44px;padding:2px;border-radius:8px;cursor:pointer;border:2px solid var(--gris2)" oninput="applyCustomColor('terre',this.value)">
+            <input type="text" id="cTerreHex" value="#3d2b1f" placeholder="#3d2b1f" style="flex:1;font-size:13px" oninput="syncColorInput('terre',this.value)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEXTES CLÉS -->
+  <div class="card">
+    <div class="ch"><span class="ct">✏️ Textes de l'app</span></div>
+    <div class="fg"><label>Titre onglet Accueil</label><input type="text" id="ptDash" placeholder="🏠 Accueil"></div>
+    <div class="fg"><label>Message de bienvenue</label><input type="text" id="ptBienvenue" placeholder="Bonjour 👋"></div>
+    <div class="fg"><label>Libellé campagne en cours</label><input type="text" id="ptCampagne" placeholder="Campagne 2025"></div>
+    <div class="fg"><label>Nom section Stock</label><input type="text" id="ptStock" placeholder="Stock phytosanitaire"></div>
+  </div>
+
+  <!-- ACTIONS -->
+  <button class="btn btp" onclick="savePerso()" style="margin-bottom:10px">💾 Sauvegarder dans Supabase</button>
+  <button class="btn btghost" style="width:100%;margin-bottom:20px" onclick="resetPerso()">↩ Réinitialiser les valeurs par défaut</button>
 </section>
 </div><!-- /main -->
 <button class="fab" id="aFab" style="display:none" onclick="showM('mNI')">+</button>
@@ -541,6 +702,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 
 <div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/shpjs@4.0.4/dist/shp.js"></script>
 <script>
 // ══════════════════════════════════════════
 //  SUPABASE
@@ -591,6 +753,7 @@ function showApp() {
   document.getElementById('avi').textContent = nom.charAt(0).toUpperCase();
   fillProfil();
   renderDash(); renderIFT(); renderStock('all'); renderRegistre(); fillSelects();
+  loadPerso();
 }
 
 // ══════════════════════════════════════════
@@ -1174,6 +1337,354 @@ function toast(msg){
 function syncSaving(){const p=document.getElementById('sp');p.className='sp sp-sv';document.getElementById('st').textContent='Sauvegarde…';}
 function syncOK(){const p=document.getElementById('sp');p.className='sp sp-ok';document.getElementById('st').textContent='Cloud ✓';}
 function syncErr(){const p=document.getElementById('sp');p.className='sp sp-er';document.getElementById('st').textContent='Erreur sync';}
+
+// ══════════════════════════════════════════
+//  PERSONNALISATION
+// ══════════════════════════════════════════
+const THEMES = {
+  vigne:   {vigne:'#1c3d1c',or:'#c9a84c',bg:'#eee8dc',terre:'#3d2b1f',noir:'#1a1410'},
+  bordeaux:{vigne:'#4a0e1a',or:'#c9a84c',bg:'#f0e8e0',terre:'#3d1a10',noir:'#1a0808'},
+  provence:{vigne:'#7a5c2e',or:'#e8c878',bg:'#f5eedd',terre:'#4a3820',noir:'#2a1a0a'},
+  moderne: {vigne:'#1a2a3d',or:'#4a8abf',bg:'#e8eef4',terre:'#1a2a3d',noir:'#0a1520'},
+  bio:     {vigne:'#2a4a1a',or:'#7ab84a',bg:'#eaf0e4',terre:'#1a3010',noir:'#0a1808'},
+  ardoise: {vigne:'#2a2a2a',or:'#888888',bg:'#e8e8e8',terre:'#222222',noir:'#111111'},
+};
+
+let currentEmoji = '🍇';
+let persoSettings = {};
+
+function setEmoji(e) {
+  currentEmoji = e;
+  document.querySelectorAll('.emoji-opt').forEach(el => el.classList.remove('sel'));
+  event.target.closest('.emoji-opt').classList.add('sel');
+  persoPreview();
+}
+
+function persoPreview() {
+  const nom = document.getElementById('pNomApp')?.value || 'VitiTrace';
+  const sub = document.getElementById('pSousNom')?.value || 'Mon domaine';
+  document.getElementById('pvLogo').textContent = currentEmoji;
+  document.getElementById('pvNom').textContent = nom;
+  document.getElementById('pvSub').textContent = sub;
+  // Mettre à jour le header live
+  document.getElementById('aN').textContent = sub || 'Mon domaine';
+}
+
+function applyTheme(name) {
+  const t = THEMES[name];
+  if (!t) return;
+  Object.entries(t).forEach(([k, v]) => {
+    document.documentElement.style.setProperty('--' + k, v);
+  });
+  // Sync les inputs couleur
+  if (t.vigne) { const el=document.getElementById('cVigne'); if(el){el.value=t.vigne;document.getElementById('cVigneHex').value=t.vigne;} }
+  if (t.or)    { const el=document.getElementById('cOr');    if(el){el.value=t.or;   document.getElementById('cOrHex').value=t.or;} }
+  if (t.bg)    { const el=document.getElementById('cBg');    if(el){el.value=t.bg;   document.getElementById('cBgHex').value=t.bg;} }
+  if (t.terre) { const el=document.getElementById('cTerre'); if(el){el.value=t.terre;document.getElementById('cTerreHex').value=t.terre;} }
+  toast('🎨 Thème appliqué · Cliquer Sauvegarder pour conserver');
+  persoSettings = {...persoSettings, theme: name, colors: t};
+}
+
+function applyCustomColor(key, value) {
+  document.documentElement.style.setProperty('--' + key, value);
+  // Sync text input
+  const hexId = {vigne:'cVigneHex',or:'cOrHex',bg:'cBgHex',terre:'cTerreHex'}[key];
+  if (hexId) document.getElementById(hexId).value = value;
+  persoSettings.colors = {...(persoSettings.colors||{}), [key]: value};
+}
+
+function syncColorInput(key, value) {
+  if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+    document.documentElement.style.setProperty('--' + key, value);
+    const pickId = {vigne:'cVigne',or:'cOr',bg:'cBg',terre:'cTerre'}[key];
+    if (pickId) document.getElementById(pickId).value = value;
+    persoSettings.colors = {...(persoSettings.colors||{}), [key]: value};
+  }
+}
+
+async function savePerso() {
+  const settings = {
+    nom_app: document.getElementById('pNomApp')?.value || '',
+    sous_nom: document.getElementById('pSousNom')?.value || '',
+    emoji: currentEmoji,
+    colors: persoSettings.colors || {},
+    textes: {
+      dash:      document.getElementById('ptDash')?.value || '',
+      bienvenue: document.getElementById('ptBienvenue')?.value || '',
+      campagne:  document.getElementById('ptCampagne')?.value || '',
+      stock:     document.getElementById('ptStock')?.value || '',
+    }
+  };
+  syncSaving();
+  try {
+    await sb.from('domaines').update({ settings }).eq('id', DOM_ID);
+    DOM.settings = settings;
+    // Appliquer les textes
+    applyPersoTextes(settings);
+    syncOK();
+    toast('✅ Personnalisation sauvegardée dans Supabase');
+  } catch(e) { syncErr(); toast('❌ Erreur : ' + e.message); }
+}
+
+function applyPersoTextes(s) {
+  if (!s) return;
+  if (s.nom_app) { document.getElementById('ltxt') && (document.getElementById('ltxt').textContent = s.nom_app); }
+  if (s.sous_nom) document.getElementById('aN').textContent = s.sous_nom;
+  if (s.emoji) { const lm = document.querySelector('.lmark'); if(lm) lm.textContent = s.emoji; document.getElementById('pvLogo').textContent = s.emoji; }
+  if (s.colors) Object.entries(s.colors).forEach(([k,v]) => document.documentElement.style.setProperty('--'+k, v));
+}
+
+function loadPerso() {
+  const s = DOM?.settings;
+  if (!s) return;
+  if (s.nom_app) { const el=document.getElementById('pNomApp'); if(el) el.value=s.nom_app; }
+  if (s.sous_nom) { const el=document.getElementById('pSousNom'); if(el) el.value=s.sous_nom; }
+  if (s.emoji) { currentEmoji=s.emoji; }
+  if (s.textes) {
+    if (s.textes.dash)      { const el=document.getElementById('ptDash');      if(el) el.value=s.textes.dash; }
+    if (s.textes.bienvenue) { const el=document.getElementById('ptBienvenue'); if(el) el.value=s.textes.bienvenue; }
+    if (s.textes.campagne)  { const el=document.getElementById('ptCampagne');  if(el) el.value=s.textes.campagne; }
+    if (s.textes.stock)     { const el=document.getElementById('ptStock');     if(el) el.value=s.textes.stock; }
+  }
+  if (s.colors) {
+    Object.entries(s.colors).forEach(([k,v]) => {
+      document.documentElement.style.setProperty('--'+k, v);
+      const ids = {vigne:'cVigne',or:'cOr',bg:'cBg',terre:'cTerre'};
+      const hexIds = {vigne:'cVigneHex',or:'cOrHex',bg:'cBgHex',terre:'cTerreHex'};
+      if(ids[k]){const el=document.getElementById(ids[k]);if(el)el.value=v;}
+      if(hexIds[k]){const el=document.getElementById(hexIds[k]);if(el)el.value=v;}
+    });
+  }
+  applyPersoTextes(s);
+}
+
+function resetPerso() {
+  applyTheme('vigne');
+  currentEmoji = '🍇';
+  ['pNomApp','pSousNom','ptDash','ptBienvenue','ptCampagne','ptStock'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('pvLogo').textContent = '🍇';
+  document.getElementById('pvNom').textContent = 'VitiTrace';
+  document.getElementById('pvSub').textContent = 'Mon domaine';
+  document.getElementById('aN').textContent = DOM?.commune || 'Mon domaine';
+  document.querySelectorAll('.emoji-opt').forEach(el => el.classList.remove('sel'));
+  toast('↩ Valeurs par défaut restaurées');
+}
+
+// ══════════════════════════════════════════
+//  IMPORT SHAPEFILE PAC
+// ══════════════════════════════════════════
+let shpParcelles = []; // parcelles extraites en attente de confirmation
+
+// Drag & drop sur la zone
+const shpDrop = document.getElementById('shpDrop');
+shpDrop.addEventListener('dragover', e => { e.preventDefault(); shpDrop.style.borderColor = 'var(--or)'; shpDrop.style.background = '#fdf8e8'; });
+shpDrop.addEventListener('dragleave', () => { shpDrop.style.borderColor = ''; shpDrop.style.background = ''; });
+shpDrop.addEventListener('drop', e => {
+  e.preventDefault(); shpDrop.style.borderColor = ''; shpDrop.style.background = '';
+  const f = e.dataTransfer.files[0];
+  if (f) { const dt = new DataTransfer(); dt.items.add(f); document.getElementById('shpFile').files = dt.files; handleShpFile(document.getElementById('shpFile')); }
+});
+
+async function handleShpFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // Afficher loading
+  document.getElementById('shpDropContent').style.display = 'none';
+  document.getElementById('shpLoadingContent').style.display = 'block';
+  document.getElementById('shpResult').style.display = 'none';
+  shpParcelles = [];
+
+  try {
+    let geojson;
+    const name = file.name.toLowerCase();
+
+    setShpLoading('Lecture du fichier…');
+    const buffer = await file.arrayBuffer();
+
+    if (name.endsWith('.zip')) {
+      setShpLoading('Décompression du ZIP…');
+      geojson = await shp(buffer);
+    } else if (name.endsWith('.geojson') || name.endsWith('.json')) {
+      setShpLoading('Lecture GeoJSON…');
+      const txt = new TextDecoder().decode(buffer);
+      geojson = JSON.parse(txt);
+    } else if (name.endsWith('.shp')) {
+      setShpLoading('Lecture Shapefile…');
+      geojson = await shp(buffer);
+    } else {
+      throw new Error('Format non supporté — utiliser .zip (Télépac) ou .geojson');
+    }
+
+    setShpLoading('Extraction des parcelles…');
+
+    // Normaliser en FeatureCollection
+    const features = [];
+    if (Array.isArray(geojson)) {
+      geojson.forEach(g => { if (g.features) features.push(...g.features); });
+    } else if (geojson.type === 'FeatureCollection') {
+      features.push(...(geojson.features || []));
+    } else if (geojson.type === 'Feature') {
+      features.push(geojson);
+    }
+
+    if (!features.length) throw new Error('Aucune parcelle trouvée dans le fichier');
+
+    setShpLoading(`${features.length} parcelles détectées…`);
+
+    // Extraire les parcelles avec coordonnées
+    shpParcelles = features.map((f, i) => {
+      const props = f.properties || {};
+      // Champs Télépac PAC courants
+      const nom = props.NOM_COM || props.nom_com || props.COMMUNE || props.commune ||
+                  props.LIBELLE || props.libelle || props.NOM || props.nom ||
+                  props.CULT_COD || props.cult_cod || `Parcelle ${i+1}`;
+      const code = props.NUM_ILOT || props.num_ilot || props.CODE || props.code ||
+                   props.REF_PARC || props.ref_parc || `P${i+1}`;
+      const surface = props.SURF_PARC || props.surf_parc || props.SURFACE ||
+                      props.surface || props.AREA || calcSurface(f.geometry) || 0;
+      const commune = props.NOM_COM || props.nom_com || props.COMMUNE || props.commune || '';
+      const culture = props.CULT_COD || props.cult_cod || props.CULTURE || props.culture || '';
+
+      // Extraire les coordonnées (convertir en [lat, lon] pour Leaflet)
+      const coords = extractCoords(f.geometry);
+
+      return { code: code.toString().slice(0,10), nom: nom.toString().slice(0,50),
+               surface_ha: Math.round(parseFloat(surface) * 10000) / 10000,
+               commune, culture, coords, raw: props };
+    }).filter(p => p.coords && p.coords.length >= 3);
+
+    if (!shpParcelles.length) throw new Error('Aucune géométrie valide trouvée');
+
+    // Afficher le résultat
+    afficherShpResult();
+
+  } catch(e) {
+    document.getElementById('shpLoadingContent').style.display = 'none';
+    document.getElementById('shpDropContent').style.display = 'block';
+    document.getElementById('shpResult').style.display = 'block';
+    document.getElementById('shpResultMsg').className = 'al alr';
+    document.getElementById('shpResultTxt').innerHTML = `<b>Erreur de lecture</b>${e.message}`;
+    document.getElementById('shpParcList').innerHTML = '';
+    toast('❌ ' + e.message);
+  }
+}
+
+function setShpLoading(txt) {
+  document.getElementById('shpLoadingTxt').textContent = txt;
+}
+
+function extractCoords(geometry) {
+  if (!geometry) return [];
+  try {
+    let ring;
+    if (geometry.type === 'Polygon') {
+      ring = geometry.coordinates[0];
+    } else if (geometry.type === 'MultiPolygon') {
+      // Prendre le plus grand polygone
+      ring = geometry.coordinates.reduce((a, b) => a[0].length > b[0].length ? a : b)[0];
+    } else return [];
+    // Convertir [lon, lat] → [lat, lon] pour Leaflet
+    return ring.map(c => [c[1], c[0]]);
+  } catch(e) { return []; }
+}
+
+function calcSurface(geometry) {
+  // Estimation simple de surface en ha depuis les coordonnées
+  try {
+    if (!geometry) return 0;
+    let ring;
+    if (geometry.type === 'Polygon') ring = geometry.coordinates[0];
+    else if (geometry.type === 'MultiPolygon') ring = geometry.coordinates[0][0];
+    else return 0;
+    // Formule de Shoelace en degrés → conversion approximative
+    let area = 0;
+    for (let i = 0; i < ring.length - 1; i++) {
+      area += ring[i][0] * ring[i+1][1];
+      area -= ring[i+1][0] * ring[i][1];
+    }
+    // Convertir deg² → m² (approximation lat ~44°)
+    const m2 = Math.abs(area / 2) * 111320 * 111320 * Math.cos(44 * Math.PI / 180);
+    return Math.round(m2 / 100) / 100; // en ha
+  } catch(e) { return 0; }
+}
+
+function afficherShpResult() {
+  document.getElementById('shpLoadingContent').style.display = 'none';
+  document.getElementById('shpDropContent').style.display = 'block';
+  document.getElementById('shpResult').style.display = 'block';
+  document.getElementById('shpResultMsg').className = 'al alg';
+  const totalHa = shpParcelles.reduce((s, p) => s + (p.surface_ha || 0), 0);
+  document.getElementById('shpResultTxt').innerHTML =
+    `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b>Vérifiez les données avant d'importer.`;
+
+  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p, i) => `
+    <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px">${p.nom}</div>
+        <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune||'—'} · ${p.culture||'—'}</div>
+        <div style="font-size:10px;color:var(--gris);margin-top:1px">Code : ${p.code} · ${p.coords.length} points GPS</div>
+      </div>
+      <div>
+        <input type="text" value="${p.code}" placeholder="Code" style="width:60px;padding:5px 7px;font-size:12px;margin-bottom:4px" onchange="shpParcelles[${i}].code=this.value">
+        <input type="text" value="${p.nom}" placeholder="Nom" style="width:120px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].nom=this.value">
+      </div>
+    </div>`).join('');
+
+  toast(`✅ ${shpParcelles.length} parcelles extraites du Shapefile`);
+}
+
+async function confirmShpImport() {
+  if (!shpParcelles.length) return;
+  syncSaving();
+  let imported = 0, errors = 0;
+  const colors = ['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040'];
+
+  for (let i = 0; i < shpParcelles.length; i++) {
+    const p = shpParcelles[i];
+    try {
+      const { data, error } = await sb.from('parcelles').insert({
+        domaine_id: DOM_ID,
+        code: p.code,
+        nom: p.nom,
+        commune: p.commune || '',
+        surface_ha: p.surface_ha || null,
+        cepage: p.culture || '',
+        coords: p.coords,
+        color: colors[i % colors.length],
+      }).select().single();
+      if (error) throw error;
+      PARCS.push(data);
+      imported++;
+    } catch(e) { errors++; console.error(e); }
+  }
+
+  // Mettre à jour surface totale
+  const totalHa = PARCS.reduce((s, p) => s + (p.surface_ha || 0), 0);
+  await sb.from('domaines').update({ surface_ha: Math.round(totalHa * 100) / 100 }).eq('id', DOM_ID);
+  DOM.surface_ha = Math.round(totalHa * 100) / 100;
+
+  syncOK();
+  fillSelects(); renderDash(); renderIFT();
+
+  // Recharger la carte
+  mI = false;
+  initMap();
+
+  toast(`✅ ${imported} parcelle(s) importées${errors ? ` · ${errors} erreur(s)` : ''} · Carte mise à jour`);
+
+  // Masquer le bloc import
+  resetShpImport();
+  document.getElementById('shpImportCard').style.display = 'none';
+}
+
+function resetShpImport() {
+  shpParcelles = [];
+  document.getElementById('shpDropContent').style.display = 'block';
+  document.getElementById('shpLoadingContent').style.display = 'none';
+  document.getElementById('shpResult').style.display = 'none';
+  document.getElementById('shpFile').value = '';
+}
 </script>
 </body>
 </html>
