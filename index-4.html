@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VitiTrace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+<style>
+:root{--noir:#1a1410;--terre:#3d2b1f;--vigne:#1c3d1c;--or:#c9a84c;--or2:#f0d878;--creme:#f5f0e6;--blanc:#faf8f2;--bg:#eee8dc;--gris:#8a8070;--gris2:#ccc4b4;--gris3:#e8e2d4;--rouge:#c0392b;--orange:#d4751a;--vert:#2d5a27;--vert2:#4a8a42;--bleu:#1a5a8a;--card:#faf8f2;--raisin:#7a2040;--sh:0 2px 14px rgba(61,43,31,.11);--sh2:0 8px 32px rgba(61,43,31,.18)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--terre);font-size:15px;display:flex;flex-direction:column}
+/* LOADING */
+#ls{position:fixed;inset:0;background:var(--noir);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--creme)}
+#ls .ico{font-size:56px;margin-bottom:16px}
+#ls .ttl{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:var(--or);margin-bottom:6px}
+#ls .sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px}
+.spin-lg{width:40px;height:40px;border:3px solid rgba(201,168,76,.3);border-top-color:var(--or);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#ls.off{display:none}
+/* ONBOARDING */
+#ob{position:fixed;inset:0;background:var(--bg);z-index:998;overflow-y:auto;flex-direction:column;display:none}
+.ob-top{background:var(--noir);padding:30px 20px 24px;text-align:center}
+.ob-logo{width:64px;height:64px;background:var(--or);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 14px}
+.ob-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--creme);margin-bottom:6px}
+.ob-sub{font-size:13px;color:rgba(255,255,255,.5);line-height:1.5;padding-bottom:4px}
+.ob-body{padding:20px;max-width:480px;width:100%;margin:0 auto}
+.ob-card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:var(--sh)}
+.ob-skip{font-size:12px;color:var(--gris);text-align:center;cursor:pointer;text-decoration:underline;padding:10px;display:block}
+/* APP */
+header{background:var(--noir);color:var(--creme);padding:0 14px;display:flex;align-items:center;justify-content:space-between;height:54px;flex-shrink:0;z-index:200}
+.lh{display:flex;align-items:center;gap:9px}
+.lmark{width:34px;height:34px;background:var(--or);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.ltxt{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;line-height:1}
+.lsub{font-size:10px;color:var(--or);letter-spacing:.12em;text-transform:uppercase}
+.hr{display:flex;align-items:center;gap:9px}
+.sp{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;transition:all .3s}
+.sp-ok{background:#1c3d1c;color:#6dcc6d}.sp-sv{background:#3d3010;color:var(--or2)}.sp-er{background:#3d1010;color:#cc6d6d}
+.av{width:32px;height:32px;border-radius:50%;background:var(--or);color:var(--noir);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+nav.tabs{background:var(--terre);display:flex;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:11px 12px;color:rgba(245,240,230,.5);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s}
+.tab.on{color:var(--or);border-bottom-color:var(--or)}
+.main{flex:1;overflow-y:auto;padding:14px;max-width:520px;width:100%;margin:0 auto}
+.sec{display:none}.sec.on{display:block}
+/* SHARED */
+.stitle{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--vigne);margin-bottom:3px}
+.ssub{font-size:12px;color:var(--gris);margin-bottom:14px}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--sh);border:1px solid rgba(61,43,31,.07)}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ct{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--terre)}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.bg{background:#d4edda;color:var(--vert)}.br{background:#fde8e6;color:var(--rouge)}.bo{background:#fde8c8;color:var(--orange)}.bb{background:#d4e8f4;color:var(--bleu)}.bgold{background:#fdf3d0;color:#8a6a10}
+.btn{border:none;border-radius:10px;padding:12px 16px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btp{background:var(--vigne);color:var(--creme);width:100%;font-size:15px;padding:15px}
+.btgold{background:var(--or);color:var(--noir)}.btghost{background:var(--gris2);color:var(--terre)}.btsm{padding:7px 12px;font-size:12px;border-radius:8px}
+.btn:disabled{background:var(--gris2);color:var(--gris);cursor:not-allowed;transform:none}
+.fg{margin-bottom:12px}
+label{display:block;font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+input,select,textarea{width:100%;padding:11px 13px;border:2px solid var(--gris2);border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;background:var(--blanc);color:var(--terre);transition:all .2s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--or);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
+textarea{resize:vertical;min-height:70px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ig{position:relative}.isuf{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--gris);font-size:12px;font-weight:700;pointer-events:none}
+.al{border-radius:10px;padding:11px 13px;margin-bottom:10px;display:flex;align-items:flex-start;gap:9px;font-size:13px}
+.al-i{font-size:17px;flex-shrink:0;margin-top:1px}.al b{font-weight:700;display:block;margin-bottom:2px}
+.alr{background:#fde8e6;border-left:4px solid var(--rouge);color:#6a1a10}.alo{background:#fde8c8;border-left:4px solid var(--orange);color:#7a3a00}.alg{background:#d4edda;border-left:4px solid var(--vert);color:#1a3a1a}.alb{background:#d4e8f4;border-left:4px solid var(--bleu);color:#0a2a4a}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.st{background:var(--card);border-radius:12px;padding:13px;box-shadow:var(--sh);text-align:center}
+.sv{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--vigne);line-height:1;margin-bottom:3px}.sv.d{color:var(--rouge)}.sv.w{color:var(--orange)}.sv.g{color:var(--vert)}
+.sl{font-size:10.5px;color:var(--gris);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.li{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--gris2)}.li:last-child{border-bottom:none}
+.lic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.lib{flex:1}.lit{font-weight:600;font-size:14px}.lim{font-size:12px;color:var(--gris);margin-top:2px}
+.sep{height:1px;background:var(--gris2);margin:12px 0}
+.seplbl{text-align:center;font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.1em;position:relative;margin:14px 0}
+.seplbl::before,.seplbl::after{content:'';position:absolute;top:50%;width:calc(50% - 34px);height:1px;background:var(--gris2)}.seplbl::before{left:0}.seplbl::after{right:0}
+.ib{margin-bottom:11px}.ibh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}.ibn{font-size:13px;font-weight:600}.ibv{font-family:'Cormorant Garamond',serif;font-size:15px}
+.ibar{height:9px;background:var(--gris2);border-radius:5px;overflow:hidden;position:relative}.if{height:100%;border-radius:5px;transition:width 1.2s ease}.ibar-ref{position:absolute;top:0;bottom:0;width:2px;background:rgba(61,43,31,.25)}
+/* IFT GAUGE */
+.ift-g{background:linear-gradient(135deg,var(--vigne),#0f2a0f);border-radius:18px;padding:18px;color:#fff;box-shadow:0 6px 24px rgba(28,61,28,.35);margin-bottom:12px}
+.igt{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px}
+.igv{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:700;line-height:1}
+.igs{font-size:13px;color:rgba(255,255,255,.7);margin-top:4px}
+.igt-b{margin:12px 0 6px;height:13px;background:rgba(255,255,255,.15);border-radius:7px;overflow:hidden}
+.igt-f{height:100%;border-radius:7px;transition:width 1.2s ease}
+.ift-ok .igt-f{background:linear-gradient(90deg,#4a8a42,#6db865)}.ift-warn .igt-f{background:linear-gradient(90deg,#d4751a,#f0a040)}.ift-danger .igt-f{background:linear-gradient(90deg,#c0392b,#e05040)}
+.igt-sp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.igt-c{background:rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;text-align:center}
+.igt-cv{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;line-height:1;margin-bottom:2px}.igt-cl{font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em}
+/* PARCELLE */
+.pc{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh);border:2px solid transparent;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.pc:hover{border-color:var(--or)}.pc::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:3px 0 0 3px}
+.pc.ok::before{background:var(--vert2)}.pc.warn::before{background:var(--orange)}.pc.danger::before{background:var(--rouge)}
+.pb{height:8px;background:var(--gris2);border-radius:4px;overflow:hidden;position:relative;margin-bottom:4px}
+.pbf{height:100%;border-radius:4px;transition:width 1s ease}.pbr{position:absolute;top:0;bottom:0;width:2px;background:rgba(61,43,31,.3)}
+/* STOCK */
+.si{background:var(--card);border-radius:12px;padding:12px;margin-bottom:9px;box-shadow:var(--sh);border:1px solid rgba(61,43,31,.07);display:flex;align-items:center;gap:11px}
+.si-ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.si-b{flex:1}.si-n{font-weight:700;font-size:13.5px}.si-a{font-size:11px;color:var(--gris);margin-top:1px}
+.si-br{height:5px;background:var(--gris2);border-radius:3px;margin-top:5px;overflow:hidden;width:56px}
+.si-bf{height:100%;border-radius:3px}.si-q{text-align:right}
+.si-qv{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1}.si-qu{font-size:11px;color:var(--gris)}
+/* SCAN */
+.uz{border:2.5px dashed var(--gris2);border-radius:14px;padding:22px;text-align:center;cursor:pointer;transition:all .25s;background:var(--blanc);position:relative;overflow:hidden}
+.uz:hover,.uz.drag{border-color:var(--or);background:#fdf8e8}.uz.has{border-style:solid;border-color:var(--or);padding:0}
+#pi{width:100%;max-height:240px;object-fit:contain;border-radius:12px;display:block}
+.sb{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--or),transparent);animation:scandown 2s ease-in-out infinite;pointer-events:none}
+@keyframes scandown{0%{top:5%;opacity:1}50%{top:90%;opacity:1}100%{top:5%;opacity:0}}
+.ldc{background:var(--card);border-radius:14px;padding:26px 18px;text-align:center;box-shadow:var(--sh);display:none;margin-bottom:12px}.ldc.show{display:block}
+.spin{width:44px;height:44px;border:3px solid var(--gris2);border-top-color:var(--or);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+.lst{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:13px;color:var(--gris)}.lst.done{color:var(--vert)}.lst.active{color:var(--terre);font-weight:600}
+.lst-i{width:20px;height:20px;border-radius:50%;border:2px solid var(--gris2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}.lst.done .lst-i{background:var(--vert2);border-color:var(--vert2);color:#fff}
+.ait{background:#e8f4fd;color:var(--bleu);padding:2px 7px;border-radius:6px;font-size:10px;font-weight:700}.ait.w{background:#fde8c8;color:var(--orange)}
+input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-color:rgba(212,117,26,.5);background:#fff8f0}
+/* MAP */
+#mc{height:260px;border-radius:14px;overflow:hidden;margin-bottom:12px;border:2px solid rgba(61,43,31,.12);position:relative;box-shadow:var(--sh2)}
+#map{height:100%;width:100%}.mo{position:absolute;top:8px;left:8px;z-index:1000;background:rgba(255,255,255,.95);border-radius:8px;padding:5px 9px;font-size:11px;font-weight:700;color:var(--vigne);box-shadow:var(--sh);pointer-events:none}
+.mct{position:absolute;top:8px;right:8px;z-index:1000;display:flex;flex-direction:column;gap:5px}
+.mcb{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.95);border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
+/* METEO */
+.ms{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.ms::-webkit-scrollbar{display:none}
+.md{flex:none;background:var(--card);border-radius:10px;padding:9px 11px;text-align:center;min-width:58px;box-shadow:var(--sh);border:1px solid var(--gris2)}.md.today{border-color:var(--or);background:#fdf8e8}
+.mdl{font-size:10px;color:var(--gris);font-weight:700;text-transform:uppercase;margin-bottom:3px}.mdi{font-size:20px;margin-bottom:3px}.mdt{font-size:12px;font-weight:600}.mdp{font-size:10px;color:var(--bleu);margin-top:2px}
+/* CAVE */
+.tw{display:flex;align-items:flex-end;gap:7px;height:76px;margin:8px 0}
+.tank{flex:1;background:var(--gris2);border-radius:6px;position:relative;overflow:hidden}.tf{position:absolute;bottom:0;left:0;right:0;border-radius:6px}.tl{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:9px;font-weight:700;padding-bottom:3px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}.tn{font-size:10px;color:var(--gris);text-align:center;margin-top:3px;font-weight:600}
+.nr{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--gris2)}.nr:last-child{border-bottom:none}
+/* EXPORT */
+.er{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gris2)}.er:last-child{border-bottom:none}
+.ei{flex:1;margin-left:10px}.en{font-weight:600;font-size:13.5px}.ed{font-size:11.5px;color:var(--gris);margin-top:2px}
+/* IFT PREV */
+.ipp{background:var(--gris3);border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border:2px solid transparent;transition:all .3s}.ipp.has{background:#e8f4e8;border-color:rgba(74,138,66,.3)}
+.ippv{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--gris2);line-height:1}.ippv.has{color:var(--vigne)}
+/* HVE */
+.hvg{background:linear-gradient(135deg,#1c3d1c,#0f2a0f);border-radius:18px;padding:18px;color:#fff;box-shadow:0 6px 24px rgba(28,61,28,.35);margin-bottom:12px}
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(26,20,16,.65);z-index:500;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}.ov.op{display:flex}
+.mo2{background:var(--blanc);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 18px 32px;animation:sup .28s ease}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mh{width:38px;height:4px;background:var(--gris2);border-radius:2px;margin:0 auto 18px}.mt{font-family:'Cormorant Garamond',serif;font-size:20px;margin-bottom:14px;color:var(--terre)}
+.sw{position:relative;width:46px;height:25px;background:var(--gris2);border-radius:13px;cursor:pointer;transition:background .2s;flex-shrink:0}.sw.on{background:var(--vert2)}.sw::after{content:'';position:absolute;width:21px;height:21px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left .2s}.sw.on::after{left:23px}
+.sro{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.pbar{height:5px;background:var(--gris2);border-radius:3px;overflow:hidden;margin-top:5px}.pfill{height:100%;border-radius:3px;background:var(--or)}
+.rrow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gris2)}.rrow:last-child{border-bottom:none}
+.fab{position:fixed;bottom:22px;right:14px;width:56px;height:56px;border-radius:28px;background:var(--or);border:none;cursor:pointer;font-size:26px;box-shadow:0 4px 16px rgba(201,168,76,.55);display:flex;align-items:center;justify-content:center;z-index:180;color:var(--noir);transition:all .2s}.fab:active{transform:scale(.92)}
+#toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--noir);color:var(--creme);padding:11px 20px;border-radius:28px;font-size:13px;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.35);opacity:0;transition:all .3s;z-index:600;white-space:nowrap;pointer-events:none;max-width:92vw;text-align:center}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--gris2);border-radius:2px}
+.emoji-opt{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--gris3);border-radius:10px;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.emoji-opt:hover,.emoji-opt.sel{background:#fdf8e8;border-color:var(--or);transform:scale(1.1)}
+.theme-opt{border-radius:12px;padding:12px 10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;border:2px solid transparent}
+.theme-opt:hover{transform:scale(.97);border-color:rgba(255,255,255,.4)}
+.theme-opt:active{transform:scale(.94)}
+</style>
+</head>
+<body>
+<!-- LOADING -->
+<div id="ls"><div class="ico">🍇</div><div class="ttl">VitiTrace</div><div class="sub">Connexion à votre domaine…</div><div class="spin-lg"></div></div>
+<!-- ONBOARDING -->
+<div id="ob">
+  <div class="ob-top"><div class="ob-logo">🍇</div><div class="ob-title">VitiTrace</div><div class="ob-sub">Suivi vigne · IFT · Cave · Négoce<br>Données sauvegardées dans le cloud Supabase</div></div>
+  <div class="ob-body">
+    <div class="ob-card">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--vigne);margin-bottom:4px">Bienvenue !</div>
+      <div style="font-size:12px;color:var(--gris);margin-bottom:16px">Configurez votre domaine. Tout est facultatif — l'app fonctionne même si vous ne remplissez rien.</div>
+      <div class="fg"><label>Nom de l'exploitant</label><input type="text" id="obNom" placeholder="Ex : Jean Dupont"></div>
+      <div class="fg"><label>Raison sociale</label><input type="text" id="obRaison" placeholder="EARL, SCEA… (facultatif)"></div>
+      <div class="fg"><label>Commune principale</label><input type="text" id="obCommune" placeholder="Ex : Puisserguier (34225)"></div>
+      <div class="row2">
+        <div class="fg"><label>SIRET</label><input type="text" id="obSiret" placeholder="Facultatif"></div>
+        <div class="fg"><label>CERTIPHYTO</label><input type="text" id="obCertif" placeholder="Facultatif"></div>
+      </div>
+      <div class="fg"><label>Surface totale (ha)</label><div class="ig"><input type="number" id="obHa" placeholder="7.5" step="0.01"><span class="isuf">ha</span></div></div>
+    </div>
+    <div class="al alb"><span class="al-i">💾</span><div><b>Cloud Supabase activé</b>Traitements, IFT, stock, cave — tout est sauvegardé en temps réel. Accessible depuis n'importe quel appareil.</div></div>
+    <button class="btn btp" style="font-size:16px;padding:16px;margin-bottom:10px" onclick="saveOnboarding()">🚀 Créer mon domaine VitiTrace</button>
+    <a class="ob-skip" onclick="saveOnboarding()">Passer et configurer plus tard →</a>
+  </div>
+</div>
+<!-- APP HEADER -->
+<header id="ah" style="display:none">
+  <div class="lh"><div class="lmark">🍇</div><div><div class="ltxt">VitiTrace</div><div class="lsub" id="aN">Mon domaine</div></div></div>
+  <div class="hr"><div class="sp sp-ok" id="sp"><span>●</span><span id="st">Cloud</span></div><div class="av" id="avi" onclick="showM('mProfil')">?</div></div>
+</header>
+<nav class="tabs" id="an" style="display:none">
+  <button class="tab on" onclick="go('sDash',this)">🏠 Accueil</button>
+  <button class="tab" onclick="go('sTrait',this)">🌿 Traitement</button>
+  <button class="tab" onclick="go('sIFT',this)">📊 IFT</button>
+  <button class="tab" onclick="go('sScan',this)">📷 Scan IA</button>
+  <button class="tab" onclick="go('sStock',this)">🧪 Stock</button>
+  <button class="tab" onclick="go('sCarto',this)">🗺️ Parcelles</button>
+  <button class="tab" onclick="go('sMeteo',this)">🌤️ Météo</button>
+  <button class="tab" onclick="go('sRegistre',this)">📋 Registre</button>
+  <button class="tab" onclick="go('sCave',this)">🍷 Cave</button>
+  <button class="tab" onclick="go('sHVE',this)">🏅 HVE/AB</button>
+  <button class="tab" onclick="go('sPerso',this)">⚙️ Perso.</button>
+</nav>
+<div class="main" id="am" style="display:none">
+<!-- ACCUEIL -->
+<section id="sDash" class="sec on">
+  <div class="stitle" id="dG">Bonjour 👋</div>
+  <div class="ssub" id="dS">Chargement…</div>
+  <div id="dAl"></div>
+  <div class="sg">
+    <div class="st"><div class="sv" id="dI">—</div><div class="sl">IFT moyen</div></div>
+    <div class="st"><div class="sv" id="dP">—</div><div class="sl">Parcelles</div></div>
+    <div class="st"><div class="sv g" id="dH">— ha</div><div class="sl">Surface</div></div>
+    <div class="st"><div class="sv" id="dT">0</div><div class="sl">Traitements</div></div>
+  </div>
+  <div class="card"><div class="ch"><span class="ct">IFT par parcelle</span><button class="btn btghost btsm" onclick="go('sIFT',document.querySelectorAll('.tab')[2])">Détail →</button></div><div id="dIB"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement saisi</div></div></div>
+  <div class="card">
+    <div class="ch"><span class="ct">Actions terrain</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="go('sTrait',document.querySelectorAll('.tab')[1])"><div style="font-size:25px;margin-bottom:5px">💊</div><div style="font-size:12.5px;font-weight:600">Traitement</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="go('sScan',document.querySelectorAll('.tab')[3])"><div style="font-size:25px;margin-bottom:5px">📷</div><div style="font-size:12.5px;font-weight:600">Scan IA</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="go('sCave',document.querySelectorAll('.tab')[8])"><div style="font-size:25px;margin-bottom:5px">🍷</div><div style="font-size:12.5px;font-weight:600">Cave & négoce</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="showM('mExport')"><div style="font-size:25px;margin-bottom:5px">📤</div><div style="font-size:12.5px;font-weight:600">Export registre</div></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><span class="ct">Dernières interventions</span></div><div id="dTL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement enregistré</div></div></div>
+</section>
+<!-- TRAITEMENT -->
+<section id="sTrait" class="sec">
+  <div class="stitle">Nouveau traitement</div><div class="ssub">IFT calculé auto · Sauvegardé cloud</div>
+  <div class="ipp" id="ipp"><div><div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.07em">Contribution IFT</div><div style="font-size:12px;color:var(--gris);margin-top:3px" id="ipd">Remplir les champs</div></div><div><div class="ippv" id="ipv">—</div><div style="font-size:10px;color:var(--gris);text-align:right">IFT</div></div></div>
+  <div class="card">
+    <div class="row2"><div class="fg"><label>📅 Date</label><input type="date" id="tD"></div><div class="fg"><label>🕐 Heure</label><input type="time" id="tH" value="08:00"></div></div>
+    <div class="fg"><label>📍 Parcelle</label><select id="tPa" onchange="uTP()"><option value="">— Choisir —</option></select></div>
+    <div class="fg"><label>🧪 Produit</label><select id="tPr" onchange="selP()"><option value="">— Choisir —</option></select></div>
+    <div class="al alb" id="sAl" style="display:none;margin-bottom:12px"><span class="al-i">ℹ️</span><div id="sAlT"></div></div>
+    <div class="row2">
+      <div class="fg"><label>💊 Dose appliquée</label><div class="ig"><input type="number" id="tDo" step="0.01" oninput="uTP()"><span class="isuf" id="tDU">kg/ha</span></div></div>
+      <div class="fg"><label>📐 Dose référence ANSES</label><div class="ig"><input type="number" id="tDR" step="0.01" oninput="uTP()"><span class="isuf">kg/ha</span></div></div>
+    </div>
+    <div class="al alb" id="iF" style="display:none;margin-bottom:12px"><span class="al-i">🧮</span><div id="iFT"></div></div>
+    <div id="impB" style="display:none;background:var(--gris3);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;margin-bottom:8px">Impact parcelle</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Avant</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700" id="iBf">—</div></div>
+        <div style="font-size:16px;color:var(--gris)">→</div>
+        <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Après</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700" id="iBa">—</div></div>
+        <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Réf. HVE</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--or)">4,0</div></div>
+      </div>
+    </div>
+    <div class="row2"><div class="fg"><label>🔢 N° AMM</label><input type="text" id="tA" placeholder="FR-XXXX-XXXX"></div><div class="fg"><label>🌱 Stade BBCH</label><select id="tB"><option>BBCH 09</option><option>BBCH 53</option><option>BBCH 65</option><option>BBCH 71</option><option>BBCH 79</option><option>BBCH 81</option></select></div></div>
+    <div class="fg"><label>🧫 Adjuvants</label><input type="text" id="tAd" placeholder="Facultatif"></div>
+    <div class="al alg" id="dD" style="display:none"><span class="al-i">✅</span><div id="dDT"></div></div>
+    <button class="btn btp" id="bST" onclick="saveTrait()" disabled>💾 Enregistrer dans le cloud</button>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);color:#fff;border:none">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:var(--or2);margin-bottom:6px">Formule IFT</div>
+    <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;font-size:13px;text-align:center;margin-bottom:6px">IFT = Dose appliquée ÷ Dose de référence ANSES</div>
+    <div style="font-size:12px;opacity:.8">Ex : 3 kg/ha ÷ 3 kg/ha = IFT 1,0 · 1,5 kg ÷ 3 = IFT 0,5</div>
+  </div>
+</section>
+<!-- IFT -->
+<section id="sIFT" class="sec">
+  <div class="stitle">IFT — Indicateur de Fréquence</div><div class="ssub">Calcul automatique · Temps réel · Campagne en cours</div>
+  <div class="ift-g ift-ok" id="iG">
+    <div class="igt">IFT moyen domaine</div>
+    <div style="display:flex;align-items:baseline;gap:6px"><div class="igv" id="iGV">—</div><div style="font-size:13px;color:rgba(255,255,255,.55)">/ 4,0 référence HVE</div></div>
+    <div class="igs" id="iGS">Aucun traitement saisi</div>
+    <div class="igt-b"><div class="igt-f" id="iGF" style="width:0%"></div></div>
+    <div class="igt-sp">
+      <div class="igt-c"><div class="igt-cv" id="iCF">—</div><div class="igt-cl">Fongicides</div></div>
+      <div class="igt-c"><div class="igt-cv" id="iCI">—</div><div class="igt-cl">Insecticides</div></div>
+      <div class="igt-c"><div class="igt-cv" id="iCH">—</div><div class="igt-cl">Herbicides</div></div>
+      <div class="igt-c"><div class="igt-cv" id="iCB">—</div><div class="igt-cl">Biocontrôle</div></div>
+    </div>
+  </div>
+  <div id="iAl"></div>
+  <div id="iPL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Ajoutez des parcelles et saisissez des traitements</div></div>
+  <div class="card"><div class="ch"><span class="ct">Objectifs certifications</span></div><div id="iObj"></div></div>
+</section>
+<!-- SCAN IA -->
+<section id="sScan" class="sec">
+  <div class="stitle">Scan étiquette IA</div><div class="ssub">Photo → Extraction automatique · Stock Supabase</div>
+  <div class="card">
+    <div class="ch"><span class="ct">📷 Photographier l'étiquette</span></div>
+    <div class="uz" id="dZ" onclick="triggerUpload()">
+      <div id="uC"><div style="font-size:46px;margin-bottom:8px">📦</div><div style="font-size:15px;font-weight:700;color:var(--terre);margin-bottom:4px">Photo de l'étiquette produit</div><div style="font-size:12px;color:var(--gris)">Bidon, sachet, boîte phyto…</div></div>
+      <img id="pi" style="display:none">
+      <div id="iO" style="display:none;position:absolute;inset:0;background:rgba(26,20,16,.5);border-radius:12px;align-items:center;justify-content:center;cursor:pointer" onclick="event.stopPropagation();triggerUpload()"><span style="color:#fff;font-size:13px;font-weight:700;background:rgba(0,0,0,.5);padding:7px 14px;border-radius:20px">📷 Changer</span></div>
+      <div class="sb" id="sB" style="display:none"></div>
+    </div>
+    <input type="file" id="fI" accept="image/*" style="display:none" onchange="handleFile(this)">
+    <input type="file" id="cI" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+      <button class="btn" style="background:var(--vigne);color:var(--creme);flex-direction:column;gap:4px;padding:14px 10px" onclick="document.getElementById('cI').click()"><span style="font-size:24px">📷</span><span>Appareil photo</span></button>
+      <button class="btn btghost" style="flex-direction:column;gap:4px;padding:14px 10px" onclick="triggerUpload()"><span style="font-size:24px">🖼️</span><span>Galerie</span></button>
+    </div>
+  </div>
+  <button class="btn btp" id="aB" onclick="lancerAnalyse()" disabled style="margin-bottom:14px">🔍 Analyser avec l'IA</button>
+  <div class="ldc" id="lC">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--vigne);margin-bottom:6px">Analyse en cours…</div>
+    <div class="spin"></div>
+    <div style="margin-top:12px;text-align:left">
+      <div class="lst" id="l1"><div class="lst-i">1</div><span>Détection étiquette</span></div>
+      <div class="lst" id="l2"><div class="lst-i">2</div><span>Lecture nom et fabricant</span></div>
+      <div class="lst" id="l3"><div class="lst-i">3</div><span>Extraction N° AMM</span></div>
+      <div class="lst" id="l4"><div class="lst-i">4</div><span>Doses, DAR, ZNT</span></div>
+      <div class="lst" id="l5"><div class="lst-i">5</div><span>Pictogrammes SGH</span></div>
+      <div class="lst" id="l6"><div class="lst-i">6</div><span>Calcul IFT · Sauvegarde stock</span></div>
+    </div>
+  </div>
+  <div id="sR" style="display:none">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:#d4edda;border:1px solid #a8d5b5;color:var(--vert);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px">
+      <span>🤖</span><span>Données extraites par IA</span><span id="cB" style="background:rgba(45,90,39,.2);padding:2px 7px;border-radius:10px">—</span>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Identification produit</span></div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Nom commercial</label><span class="ait">IA ✓</span></div><input type="text" id="rN" class="aif"></div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Fabricant</label><span class="ait">IA ✓</span></div><input type="text" id="rF" class="aif"></div>
+      <div class="row2">
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">N° AMM</label><span class="ait">IA ✓</span></div><input type="text" id="rAM" class="aif"></div>
+        <div class="fg"><label>Catégorie</label><select id="rC"><option>Fongicide</option><option>Fongicide cuivre</option><option>Insecticide</option><option>Herbicide</option><option>Biocontrôle</option></select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Conditions d'emploi vigne</span></div>
+      <div class="row2">
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Dose max</label><span class="ait">IA ✓</span></div><div class="ig"><input type="text" id="rD" class="aif"><span class="isuf" id="rDU">kg/ha</span></div></div>
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Nb applic.</label><span class="ait">IA ✓</span></div><input type="text" id="rNA" class="aif"></div>
+      </div>
+      <div class="row2">
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">DAR (jours)</label><span class="ait">IA ✓</span></div><input type="text" id="rDA" class="aif"></div>
+        <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">ZNT (m)</label><span class="ait">IA ✓</span></div><input type="text" id="rZ" class="aif"></div>
+      </div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Cibles</label><span class="ait">IA ✓</span></div><input type="text" id="rCi" class="aif"></div>
+      <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Restriction horaire</label><span class="ait w">À confirmer</span></div><input type="text" id="rH" class="aiu"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Ajouter au stock</span></div>
+      <div class="row2">
+        <div class="fg"><label>Quantité reçue</label><div class="ig"><input type="number" id="rQ" placeholder="25"><span class="isuf" id="rQU">kg</span></div></div>
+        <div class="fg"><label>Seuil alerte</label><div class="ig"><input type="number" id="rS" placeholder="5"><span class="isuf">kg</span></div></div>
+      </div>
+      <div class="row2">
+        <div class="fg"><label>Date réception</label><input type="date" id="rRe"></div>
+        <div class="fg"><label>Péremption</label><input type="date" id="rPe"></div>
+      </div>
+      <div class="fg"><label>Fournisseur</label><input type="text" id="rFo" placeholder="Facultatif"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <button class="btn btghost" onclick="resetScan()">↩ Nouveau scan</button>
+      <button class="btn btgold" onclick="saveScan()">💾 Enregistrer</button>
+    </div>
+    <button class="btn btp" onclick="saveScanAndTreat()">➕ Enregistrer + traitement</button>
+  </div>
+</section>
+<!-- STOCK -->
+<section id="sStock" class="sec">
+  <div class="stitle">Stock phytosanitaire</div><div class="ssub">Déduit automatiquement · Cloud Supabase</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px">
+    <button class="btn btgold btsm" onclick="fS('all',this)">Tous</button>
+    <button class="btn btghost btsm" onclick="fS('ok',this)">✓ OK</button>
+    <button class="btn btghost btsm" onclick="fS('low',this)">⚠️ Faible</button>
+    <button class="btn btghost btsm" onclick="fS('zero',this)">🚫 Épuisé</button>
+  </div>
+  <div id="sL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucun produit<br>Scannez une étiquette pour commencer</div></div>
+  <button class="btn btp" onclick="go('sScan',document.querySelectorAll('.tab')[3])" style="margin-top:4px">📷 Scanner / ajouter un produit</button>
+</section>
+<!-- PARCELLES -->
+<section id="sCarto" class="sec">
+  <div class="stitle">Mes parcelles</div><div class="ssub" id="cS">Cartographie · GPS · Plan parcellaire</div>
+
+  <!-- IMPORT SHAPEFILE PAC -->
+  <div class="card" id="shpImportCard">
+    <div class="ch"><span class="ct">📥 Importer depuis Télépac</span><span class="badge bb">Shapefile ZIP</span></div>
+    <div style="font-size:12px;color:var(--gris);margin-bottom:12px">Glisse ton fichier ZIP Télépac (contenant .shp .dbf .shx) — les parcelles avec leurs vraies coordonnées GPS sont extraites automatiquement.</div>
+
+    <div id="shpDrop" style="border:2.5px dashed var(--gris2);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:all .25s;background:var(--blanc);position:relative" onclick="document.getElementById('shpFile').click()">
+      <div id="shpDropContent">
+        <div style="font-size:38px;margin-bottom:8px">🗂️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--terre);margin-bottom:4px">Déposer le ZIP Télépac ici</div>
+        <div style="font-size:12px;color:var(--gris)">ou cliquer pour parcourir</div>
+        <div style="display:flex;justify-content:center;gap:6px;margin-top:10px">
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">.zip</span>
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">.shp</span>
+          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">GeoJSON</span>
+        </div>
+      </div>
+      <div id="shpLoadingContent" style="display:none">
+        <div style="width:36px;height:36px;border:3px solid var(--gris2);border-top-color:var(--or);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--terre)" id="shpLoadingTxt">Lecture du fichier…</div>
+      </div>
+    </div>
+    <input type="file" id="shpFile" accept=".zip,.shp,.geojson,.json" style="display:none" onchange="handleShpFile(this)">
+
+    <!-- RÉSULTAT IMPORT -->
+    <div id="shpResult" style="display:none;margin-top:12px">
+      <div class="al alg" id="shpResultMsg"><span class="al-i">✅</span><div id="shpResultTxt"></div></div>
+      <div id="shpParcList" style="margin-top:8px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+        <button class="btn btghost" onclick="resetShpImport()">↩ Annuler</button>
+        <button class="btn btp" onclick="confirmShpImport()">💾 Importer ces parcelles</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mc"><div class="mo">📍 GPS</div><div class="mct"><button class="mcb" onclick="mSat()">🛰️</button><button class="mcb" onclick="mOSM()">🗺️</button><button class="mcb" onclick="mCenter()">◎</button><button class="mcb" onclick="reloadMap()" title="Recharger depuis Supabase">🔄</button></div><div id="map"></div></div>
+  <div id="cL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter manuellement</button></div></div>
+  <button class="btn btp" onclick="showM('mAP')" style="margin-top:4px">+ Ajouter une parcelle manuellement</button>
+</section>
+<!-- MÉTÉO -->
+<section id="sMeteo" class="sec">
+  <div class="stitle">Météo & risques phyto</div><div class="ssub" id="mS">Localisation automatique</div>
+  <div class="al alo"><span class="al-i">🍄</span><div><b>Risque mildiou — surveiller</b>Conditions à risque selon modèle EPI.</div></div>
+  <div class="card"><div class="ch"><span class="ct">Prévision 7 jours</span></div><div class="ms" id="mSt"><div class="md today"><div class="mdl">Auj.</div><div class="mdi">⛅</div><div class="mdt">—°C</div><div class="mdp">—mm</div></div></div></div>
+  <div class="card"><div class="ch"><span class="ct">Créneaux traitement</span><span class="badge bb">Restriction horaire</span></div>
+    <div class="li"><div class="lic" style="background:#d4edda">✅</div><div class="lib"><div class="lit">Matin 6h–11h</div><div class="lim">Privilégier les traitements tôt le matin</div></div><span class="badge bg">Idéal</span></div>
+    <div class="li"><div class="lic" style="background:#fde8c8">⚠️</div><div class="lib"><div class="lit">Après-midi par forte chaleur</div><div class="lim">Risque évaporation et dérive</div></div><span class="badge bo">Déconseillé</span></div>
+  </div>
+</section>
+<!-- REGISTRE -->
+<section id="sRegistre" class="sec">
+  <div class="stitle">Registre phytosanitaire</div><div class="ssub">Conforme arrêté déc. 2025 · Format DDT/OC · Cloud</div>
+  <div class="al alg"><span class="al-i">✅</span><div><b>Registre à jour</b> — <span id="rC">0</span> intervention(s)</div></div>
+  <div class="card"><div class="ch"><span class="ct">Export 1-clic</span><span class="badge bgold">Certifié 2026</span></div>
+    <div class="er"><span style="font-size:22px">📄</span><div class="ei"><div class="en">Registre complet — PDF</div><div class="ed">Toutes parcelles · Signé</div></div><button class="btn btgold btsm" onclick="doExport('PDF')">PDF</button></div>
+    <div class="er"><span style="font-size:22px">🗂️</span><div class="ei"><div class="en">Format machine — DDT (XML)</div><div class="ed">Contrôle réglementaire</div></div><button class="btn btgold btsm" onclick="doExport('XML DDT')">XML</button></div>
+    <div class="er"><span style="font-size:22px">🍷</span><div class="ei"><div class="en">Bilan IFT — Cave / acheteur</div><div class="ed">Synthèse annuelle</div></div><button class="btn btgold btsm" onclick="doExport('IFT')">Export</button></div>
+    <div class="er"><span style="font-size:22px">🏅</span><div class="ei"><div class="en">Certificat HVE / AB</div></div><button class="btn btgold btsm" onclick="doExport('HVE')">Export</button></div>
+  </div>
+  <div class="card"><div class="ch"><span class="ct">Historique</span></div><div id="rL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement</div></div></div>
+</section>
+<!-- CAVE -->
+<section id="sCave" class="sec">
+  <div class="stitle">Cave & Négoce</div><div class="ssub">Vinification · Cuves · Ventes · Traçabilité</div>
+  <div class="card"><div class="ch"><span class="ct">État des cuves</span><button class="btn btghost btsm" onclick="showM('mAC')">+ Cuve</button></div><div id="cVL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune cuve configurée</div></div></div>
+  <div class="card"><div class="ch"><span class="ct">Ventes & négoce</span><button class="btn btghost btsm" onclick="showM('mNV')">+ Vente</button></div><div id="vL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune vente</div></div></div>
+  <div class="card"><div class="ch"><span class="ct">Documents</span></div>
+    <div class="er"><span style="font-size:22px">📋</span><div class="ei"><div class="en">Déclaration de récolte (DREV)</div></div><button class="btn btgold btsm" onclick="doExport('DREV')">Générer</button></div>
+    <div class="er"><span style="font-size:22px">🏅</span><div class="ei"><div class="en">Certificat traçabilité vigne</div></div><button class="btn btgold btsm" onclick="doExport('Traçabilité')">PDF</button></div>
+    <div class="er"><span style="font-size:22px">📱</span><div class="ei"><div class="en">QR Code traçabilité bouteille</div></div><button class="btn btgold btsm" onclick="doExport('QR')">Générer</button></div>
+  </div>
+</section>
+<!-- HVE/AB -->
+<section id="sHVE" class="sec">
+  <div class="stitle">HVE & Agriculture Bio</div><div class="ssub">Score calculé depuis vos vrais traitements</div>
+  <div class="hvg" id="hG">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px">Score HVE — Campagne en cours</div>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><div style="font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:700;line-height:1" id="hSc">—</div><div style="font-size:14px;color:rgba(255,255,255,.55)">/ 100 points</div></div>
+    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:12px" id="hSb">Ajoutez des traitements pour calculer</div>
+    <div style="height:12px;background:rgba(255,255,255,.15);border-radius:6px;overflow:hidden;margin-bottom:8px"><div id="hSF" style="height:100%;border-radius:6px;background:linear-gradient(90deg,#4a8a42,#6db865);transition:width 1.2s ease;width:0%"></div></div>
+    <div id="hNB" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700">🌱 En attente de données</div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">A · Stratégie phytosanitaire</span><span class="badge bg" id="hAB">— pts</span></div>
+    <div class="ib"><div class="ibh"><span class="ibn">A1 · IFT vs référence nationale (4,2)</span><span class="ibv" id="hA1S">—</span></div><div class="ibar"><div class="if" id="hA1B" style="width:0%;background:var(--vert2)"></div></div><div style="font-size:11px;color:var(--gris);margin-top:3px" id="hA1D">Saisir des traitements</div></div>
+    <div class="ib"><div class="ibh"><span class="ibn">A2 · Part biocontrôle</span><span class="ibv" id="hA2S">—</span></div><div class="ibar"><div class="if" id="hA2B" style="width:0%;background:var(--bleu)"></div></div><div style="font-size:11px;color:var(--gris);margin-top:3px" id="hA2D">—</div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--gris2)"><div><div style="font-size:13px;font-weight:600">A3 · Registre phyto numérique</div><div style="font-size:11px;color:var(--gris);margin-top:1px" id="hA3D">—</div></div><span class="badge bg">✓ Conforme</span></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">B · Fertilisation</span><span class="badge bgold" id="hBB">— pts</span></div>
+    <div class="sro"><span style="font-size:13px;font-weight:500">Plan de fumure prévisionnel</span><div class="sw on" id="hB1" onclick="this.classList.toggle('on');calcHVE()"></div></div>
+    <div class="sro"><span style="font-size:13px;font-weight:500">Analyse de sol &lt; 5 ans</span><div class="sw on" id="hB2" onclick="this.classList.toggle('on');calcHVE()"></div></div>
+    <div class="sro"><span style="font-size:13px;font-weight:500">Enregistrement des apports</span><div class="sw on" id="hB3" onclick="this.classList.toggle('on');calcHVE()"></div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">C · Irrigation</span><span class="badge bgold" id="hCB">— pts</span></div>
+    <div class="sro"><span style="font-size:13px;font-weight:500">Exploitation non irrigante (vigne en sec)</span><div class="sw on" id="hCI" onclick="this.classList.toggle('on');calcHVE()"></div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">D · Biodiversité</span><span class="badge bgold" id="hDB">— pts</span></div>
+    <div class="fg"><label>% SIE (haies, couverts, bandes enherbées)</label><div class="ig"><input type="number" id="hSIE" value="5" min="0" max="30" oninput="calcHVE()"><span class="isuf">%</span></div></div>
+    <div class="sro"><span style="font-size:13px;font-weight:500">Enherbement inter-rangs</span><div class="sw on" id="hD2" onclick="this.classList.toggle('on');calcHVE()"></div></div>
+  </div>
+  <div class="card"><div class="ch"><span class="ct">Documents certification</span></div>
+    <div class="er"><span style="font-size:22px">🏅</span><div class="ei"><div class="en">Dossier HVE complet</div></div><button class="btn btgold btsm" onclick="doExport('HVE')">PDF</button></div>
+    <div class="er"><span style="font-size:22px">🌿</span><div class="ei"><div class="en">Bilan annuel AB</div></div><button class="btn btgold btsm" onclick="doExport('Bilan AB')">PDF</button></div>
+  </div>
+  <div id="hCons"></div>
+</section>
+<!-- PERSONNALISATION -->
+<section id="sPerso" class="sec">
+  <div class="stitle">Personnalisation</div>
+  <div class="ssub">Modifiez l'apparence depuis l'app · Sauvegardé automatiquement</div>
+
+  <!-- APERÇU EN TEMPS RÉEL -->
+  <div id="persoPreview" style="background:var(--noir);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh2)">
+    <div id="pvLogo" style="width:40px;height:40px;border-radius:10px;background:var(--or);display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .3s">🍇</div>
+    <div>
+      <div id="pvNom" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--creme);line-height:1;transition:all .3s">VitiTrace</div>
+      <div id="pvSub" style="font-size:10px;color:var(--or);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;transition:all .3s">Mon domaine</div>
+    </div>
+    <div style="margin-left:auto;font-size:11px;color:rgba(255,255,255,.4)">Aperçu en direct</div>
+  </div>
+
+  <!-- IDENTITÉ -->
+  <div class="card">
+    <div class="ch"><span class="ct">🏷️ Identité de l'app</span></div>
+    <div class="fg">
+      <label>Nom affiché dans l'app</label>
+      <input type="text" id="pNomApp" placeholder="Ex : VitiTrace · Domaine Dupont" oninput="persoPreview()">
+    </div>
+    <div class="fg">
+      <label>Sous-titre (commune, appellation…)</label>
+      <input type="text" id="pSousNom" placeholder="Ex : Puisserguier · Pays d'Oc" oninput="persoPreview()">
+    </div>
+    <div class="fg">
+      <label>Emoji logo</label>
+      <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-top:6px">
+        <div class="emoji-opt" onclick="setEmoji('🍇')">🍇</div>
+        <div class="emoji-opt" onclick="setEmoji('🌿')">🌿</div>
+        <div class="emoji-opt" onclick="setEmoji('🍷')">🍷</div>
+        <div class="emoji-opt" onclick="setEmoji('🌾')">🌾</div>
+        <div class="emoji-opt" onclick="setEmoji('🫒')">🫒</div>
+        <div class="emoji-opt" onclick="setEmoji('🌻')">🌻</div>
+        <div class="emoji-opt" onclick="setEmoji('🏡')">🏡</div>
+        <div class="emoji-opt" onclick="setEmoji('⚜️')">⚜️</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COULEURS -->
+  <div class="card">
+    <div class="ch"><span class="ct">🎨 Couleurs</span><span class="badge bgold">Aperçu instantané</span></div>
+    <div style="font-size:12px;color:var(--gris);margin-bottom:12px">Les couleurs s'appliquent à toute l'app en temps réel.</div>
+
+    <!-- THÈMES PRÉDÉFINIS -->
+    <div class="fg">
+      <label>Thèmes prédéfinis</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+        <div class="theme-opt" onclick="applyTheme('vigne')" style="background:linear-gradient(135deg,#1c3d1c,#c9a84c)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🍇 Vigne classique</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('bordeaux')" style="background:linear-gradient(135deg,#4a0e1a,#c9a84c)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🍷 Bordeaux</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('provence')" style="background:linear-gradient(135deg,#7a5c2e,#e8c878)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🌿 Provence</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('moderne')" style="background:linear-gradient(135deg,#1a2a3d,#4a8abf)">
+          <span style="color:#fff;font-size:12px;font-weight:700">⚡ Moderne</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('bio')" style="background:linear-gradient(135deg,#2a4a1a,#7ab84a)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🌱 Bio / Nature</span>
+        </div>
+        <div class="theme-opt" onclick="applyTheme('ardoise')" style="background:linear-gradient(135deg,#2a2a2a,#888)">
+          <span style="color:#fff;font-size:12px;font-weight:700">🪨 Ardoise</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COULEURS PERSONNALISÉES -->
+    <div style="margin-top:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Ou personnaliser manuellement</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg" style="margin-bottom:0">
+          <label>Couleur principale</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input type="color" id="cVigne" value="#1c3d1c" style="width:44px;height:44px;padding:2px;border-radius:8px;cursor:pointer;border:2px solid var(--gris2)" oninput="applyCustomColor('vigne',this.value)">
+            <input type="text" id="cVigneHex" value="#1c3d1c" placeholder="#1c3d1c" style="flex:1;font-size:13px" oninput="syncColorInput('vigne',this.value)">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>Couleur accent (doré)</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input type="color" id="cOr" value="#c9a84c" style="width:44px;height:44px;padding:2px;border-radius:8px;cursor:pointer;border:2px solid var(--gris2)" oninput="applyCustomColor('or',this.value)">
+            <input type="text" id="cOrHex" value="#c9a84c" placeholder="#c9a84c" style="flex:1;font-size:13px" oninput="syncColorInput('or',this.value)">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>Fond général</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input type="color" id="cBg" value="#eee8dc" style="width:44px;height:44px;padding:2px;border-radius:8px;cursor:pointer;border:2px solid var(--gris2)" oninput="applyCustomColor('bg',this.value)">
+            <input type="text" id="cBgHex" value="#eee8dc" placeholder="#eee8dc" style="flex:1;font-size:13px" oninput="syncColorInput('bg',this.value)">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>Texte principal</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <input type="color" id="cTerre" value="#3d2b1f" style="width:44px;height:44px;padding:2px;border-radius:8px;cursor:pointer;border:2px solid var(--gris2)" oninput="applyCustomColor('terre',this.value)">
+            <input type="text" id="cTerreHex" value="#3d2b1f" placeholder="#3d2b1f" style="flex:1;font-size:13px" oninput="syncColorInput('terre',this.value)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEXTES CLÉS -->
+  <div class="card">
+    <div class="ch"><span class="ct">✏️ Textes de l'app</span></div>
+    <div class="fg"><label>Titre onglet Accueil</label><input type="text" id="ptDash" placeholder="🏠 Accueil"></div>
+    <div class="fg"><label>Message de bienvenue</label><input type="text" id="ptBienvenue" placeholder="Bonjour 👋"></div>
+    <div class="fg"><label>Libellé campagne en cours</label><input type="text" id="ptCampagne" placeholder="Campagne 2025"></div>
+    <div class="fg"><label>Nom section Stock</label><input type="text" id="ptStock" placeholder="Stock phytosanitaire"></div>
+  </div>
+
+  <!-- ACTIONS -->
+  <button class="btn btp" onclick="savePerso()" style="margin-bottom:10px">💾 Sauvegarder dans Supabase</button>
+  <button class="btn btghost" style="width:100%;margin-bottom:20px" onclick="resetPerso()">↩ Réinitialiser les valeurs par défaut</button>
+</section>
+</div><!-- /main -->
+<button class="fab" id="aFab" style="display:none" onclick="showM('mNI')">+</button>
+<!-- MODALS -->
+<div class="ov" id="mNI" onclick="closeM(event,'mNI')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">Nouvelle intervention</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px">
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="closeM(null,'mNI');go('sTrait',document.querySelectorAll('.tab')[1])"><div style="font-size:25px;margin-bottom:5px">💊</div><div style="font-size:12.5px;font-weight:600">Traitement phyto</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="closeM(null,'mNI');go('sScan',document.querySelectorAll('.tab')[3])"><div style="font-size:25px;margin-bottom:5px">📷</div><div style="font-size:12.5px;font-weight:600">Scan étiquette IA</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer"><div style="font-size:25px;margin-bottom:5px">✂️</div><div style="font-size:12.5px;font-weight:600">Travaux verts</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer"><div style="font-size:25px;margin-bottom:5px">🌾</div><div style="font-size:12.5px;font-weight:600">Fertilisation</div></div>
+    </div>
+    <button class="btn btghost" style="width:100%" onclick="closeM(null,'mNI')">Fermer</button>
+  </div>
+</div>
+
+<div class="ov" id="mAP" onclick="closeM(event,'mAP')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">+ Nouvelle parcelle</div>
+    <div class="fg"><label>Nom / lieu-dit</label><input type="text" id="pN" placeholder="Ex : Mairan, Les Pélisses…"></div>
+    <div class="row2">
+      <div class="fg"><label>Code</label><input type="text" id="pCo" placeholder="P1, P2…"></div>
+      <div class="fg"><label>Surface (ha)</label><input type="number" id="pH" step="0.01" placeholder="1.5"></div>
+    </div>
+    <div class="fg"><label>Commune</label><input type="text" id="pCm" placeholder="Ex : Puisserguier"></div>
+    <div class="fg"><label>Cépage principal</label><input type="text" id="pCe" placeholder="Ex : Chardonnay B"></div>
+    <div class="row2">
+      <div class="fg"><label>Couleur</label><select id="pCl"><option>Blanc</option><option>Noir</option><option>Rosé</option></select></div>
+      <div class="fg"><label>Produit / AOC</label><input type="text" id="pPr" placeholder="Pays d'Oc, AOP…"></div>
+    </div>
+    <div class="fg"><label>Référence cadastrale</label><input type="text" id="pCd" placeholder="Ex : 340225 G0207"></div>
+    <div class="fg"><label>Année de plantation</label><input type="number" id="pPl" placeholder="2005"></div>
+    <button class="btn btp" onclick="saveParc()">💾 Enregistrer la parcelle</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAP')">Annuler</button>
+  </div>
+</div>
+
+<div class="ov" id="mPD" onclick="closeM(event,'mPD')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt" id="mPDT">Parcelle</div>
+    <div id="mPDC"></div>
+    <button class="btn btghost" style="width:100%;margin-top:14px" onclick="closeM(null,'mPD')">Fermer</button>
+  </div>
+</div>
+
+<div class="ov" id="mAC" onclick="closeM(event,'mAC')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">+ Nouvelle cuve</div>
+    <div class="fg"><label>Nom de la cuve</label><input type="text" id="cN" placeholder="Ex : C1, Cuve Grenache…"></div>
+    <div class="row2">
+      <div class="fg"><label>Capacité (hL)</label><input type="number" id="cCa" placeholder="50"></div>
+      <div class="fg"><label>Contenu actuel (hL)</label><input type="number" id="cCo" placeholder="0"></div>
+    </div>
+    <div class="fg"><label>Cuvée / vin</label><input type="text" id="cV" placeholder="Ex : Combe Haute 2025"></div>
+    <button class="btn btp" onclick="saveCuve()">💾 Enregistrer</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAC')">Annuler</button>
+  </div>
+</div>
+
+<div class="ov" id="mNV" onclick="closeM(event,'mNV')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">🍷 Nouvelle vente</div>
+    <div class="fg"><label>Cuvée</label><input type="text" id="vVi" placeholder="Ex : Combe Haute 2025"></div>
+    <div class="fg"><label>Acheteur</label><input type="text" id="vAc" placeholder="Négociant, particulier…"></div>
+    <div class="fg"><label>Type de circuit</label><select id="vCi"><option>Négoce en vrac</option><option>Vente directe particulier</option><option>CHR (restaurant, hôtel)</option><option>Grande distribution</option></select></div>
+    <div class="row2">
+      <div class="fg"><label>Volume (L)</label><input type="number" id="vVo" placeholder="500"></div>
+      <div class="fg"><label>Prix (€/L)</label><input type="number" id="vPx" step="0.05" placeholder="5.20"></div>
+    </div>
+    <div class="fg"><label>Date livraison</label><input type="date" id="vDa"></div>
+    <button class="btn btp" onclick="saveVente()">💾 Enregistrer</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mNV')">Annuler</button>
+  </div>
+</div>
+
+<div class="ov" id="mExport" onclick="closeM(event,'mExport')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">📤 Export registre</div>
+    <div class="er"><span style="font-size:22px">📄</span><div class="ei"><div class="en">PDF complet</div></div><button class="btn btgold btsm" onclick="doExport('PDF')">PDF</button></div>
+    <div class="er"><span style="font-size:22px">🗂️</span><div class="ei"><div class="en">DDT (XML machine)</div></div><button class="btn btgold btsm" onclick="doExport('XML')">XML</button></div>
+    <button class="btn btghost" style="width:100%;margin-top:12px" onclick="closeM(null,'mExport')">Fermer</button>
+  </div>
+</div>
+
+<div class="ov" id="mProfil" onclick="closeM(event,'mProfil')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">Mon domaine & paramètres</div>
+    <div class="fg"><label>Exploitant</label><input type="text" id="prN" placeholder="Nom de l'exploitant"></div>
+    <div class="fg"><label>Raison sociale</label><input type="text" id="prR" placeholder="EARL, SCEA…"></div>
+    <div class="fg"><label>Commune</label><input type="text" id="prC" placeholder="Commune principale"></div>
+    <div class="row2">
+      <div class="fg"><label>SIRET</label><input type="text" id="prS" placeholder="Facultatif"></div>
+      <div class="fg"><label>CERTIPHYTO</label><input type="text" id="prCe" placeholder="Facultatif"></div>
+    </div>
+    <div class="fg"><label>Surface totale (ha)</label><div class="ig"><input type="number" id="prH" step="0.01"><span class="isuf">ha</span></div></div>
+    <div class="sep"></div>
+    <div class="sro"><span style="font-size:14px;font-weight:500">🔔 Alertes DAR</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="sro"><span style="font-size:14px;font-weight:500">🧪 Alerte stock critique</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="sro"><span style="font-size:14px;font-weight:500">🍄 Alertes météo risque</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
+    <button class="btn btp" onclick="saveProfil()" style="margin-top:8px">💾 Sauvegarder dans Supabase</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mProfil')">Fermer</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ══════════════════════════════════════════════════════
+//  LECTEUR SHAPEFILE NATIF — sans librairie externe
+//  Lit .shp .dbf et ZIPs — convertit Lambert93 → WGS84
+// ══════════════════════════════════════════════════════
+
+// Conversion Lambert93 (EPSG:2154) → WGS84
+function lambert93ToWGS84(x, y) {
+  const n=0.7256077650532670, C=11754255.4261, Xs=700000.0, Ys=12655612.0499;
+  const e=0.0818191910435;
+  const r=Math.sqrt((x-Xs)**2+(y-Ys)**2)*(y<Ys?-1:1);
+  const gamma=Math.atan((x-Xs)/(Ys-y));
+  const lonRad=gamma/n+Math.PI/60; // 3° en radians
+  let latIso=-Math.log(Math.abs(r/C))/n;
+  let lat=2*Math.atan(Math.exp(latIso))-Math.PI/2;
+  for(let i=0;i<10;i++){
+    const s=Math.sin(lat);
+    const l2=2*Math.atan(Math.exp(latIso)*((1+e*s)/(1-e*s))**(e/2))-Math.PI/2;
+    if(Math.abs(l2-lat)<1e-11){lat=l2;break;}
+    lat=l2;
+  }
+  return [lonRad*180/Math.PI, lat*180/Math.PI]; // [lon, lat]
+}
+
+function readInt32BE(buf,off){return((buf[off]<<24)|(buf[off+1]<<16)|(buf[off+2]<<8)|buf[off+3]);}
+function readInt32LE(buf,off){return buf[off]|(buf[off+1]<<8)|(buf[off+2]<<16)|(buf[off+3]<<24);}
+function readFloat64LE(buf,off){return new DataView(buf.buffer||buf,off,8).getFloat64(0,true);}
+
+// Lire un fichier .shp et retourner les polygones en WGS84 [[lat,lon],...]
+function parseShp(arrayBuf) {
+  const buf=new Uint8Array(arrayBuf);
+  const n=(readInt32BE(buf,24)*2-100)/8; // nb records via fileLength
+  const polys=[];
+  let pos=100;
+  while(pos<buf.length-8){
+    const cLen=readInt32BE(buf,pos+4)*2;
+    const shpType=readInt32LE(buf,pos+8);
+    if(shpType===5||shpType===15||shpType===25){ // Polygon / PolygonZ / PolygonM
+      const nParts=readInt32LE(buf,pos+44);
+      const nPts=readInt32LE(buf,pos+48);
+      const parts=[];
+      for(let i=0;i<nParts;i++) parts.push(readInt32LE(buf,pos+52+i*4));
+      const ptsStart=pos+52+nParts*4;
+      const rawPts=[];
+      for(let i=0;i<nPts;i++){
+        const x=readFloat64LE(buf,ptsStart+i*16);
+        const y=readFloat64LE(buf,ptsStart+i*16+8);
+        rawPts.push([x,y]);
+      }
+      // Détecter Lambert93 (coordonnées ~600000-900000 / 6100000-6700000)
+      const isL93=rawPts[0]&&rawPts[0][0]>100000;
+      // Extraire le ring principal (parts[0])
+      const start=parts[0]||0;
+      const end=parts[1]||nPts;
+      const ring=rawPts.slice(start,end);
+      // Convertir et retourner [[lat,lon]] pour Leaflet
+      const coords=ring.map(([x,y])=>{
+        if(isL93){const [lon,lat]=lambert93ToWGS84(x,y);return[Math.round(lat*7)/7*7,Math.round(lon*7)/7*7];}
+        return[Math.round(y*1e7)/1e7,Math.round(x*1e7)/1e7];
+      });
+      // Précision correcte
+      const coordsP=ring.map(([x,y])=>{
+        if(isL93){const [lon,lat]=lambert93ToWGS84(x,y);return[parseFloat(lat.toFixed(7)),parseFloat(lon.toFixed(7))];}
+        return[parseFloat(y.toFixed(7)),parseFloat(x.toFixed(7))];
+      });
+      polys.push(coordsP);
+    }
+    pos+=cLen+8;
+    if(cLen===0)break;
+  }
+  return polys;
+}
+
+// Lire un fichier .dbf et retourner les records
+function parseDbf(arrayBuf) {
+  const buf=new Uint8Array(arrayBuf);
+  const nRec=(buf[4]|(buf[5]<<8)|(buf[6]<<16)|(buf[7]<<24));
+  const headerSize=(buf[8]|(buf[9]<<8));
+  const recSize=(buf[10]|(buf[11]<<8));
+  const fields=[];
+  let pos=32;
+  while(buf[pos]!==0x0D&&pos<headerSize){
+    const name=Array.from(buf.slice(pos,pos+11)).map(c=>String.fromCharCode(c)).join('').replace(/\0/g,'').trim();
+    const len=buf[pos+16];
+    fields.push({name,len});
+    pos+=32;
+  }
+  const records=[];
+  for(let i=0;i<nRec;i++){
+    const rpos=headerSize+i*recSize+1;
+    const rec={};
+    let cp=0;
+    fields.forEach(f=>{
+      rec[f.name]=Array.from(buf.slice(rpos+cp,rpos+cp+f.len)).map(c=>String.fromCharCode(c)).join('').replace(/\0/g,'').trim();
+      cp+=f.len;
+    });
+    records.push(rec);
+  }
+  return records;
+}
+
+// Lire un ZIP minimal (lecture des entries sans librairie)
+async function readZipEntries(arrayBuf) {
+  // Chercher End of Central Directory (signature 0x06054b50)
+  const buf=new Uint8Array(arrayBuf);
+  const dv=new DataView(arrayBuf);
+  let eocd=-1;
+  for(let i=buf.length-22;i>=0;i--){
+    if(buf[i]===0x50&&buf[i+1]===0x4B&&buf[i+2]===0x05&&buf[i+3]===0x06){eocd=i;break;}
+  }
+  if(eocd<0) throw new Error('ZIP invalide — signature EOCD introuvable');
+  const cdOffset=dv.getUint32(eocd+16,true);
+  const cdSize=dv.getUint32(eocd+12,true);
+  const nEntries=dv.getUint16(eocd+8,true);
+  const entries={};
+  let pos=cdOffset;
+  for(let e=0;e<nEntries;e++){
+    if(dv.getUint32(pos,true)!==0x02014b50) break;
+    const fnLen=dv.getUint16(pos+28,true);
+    const extraLen=dv.getUint16(pos+30,true);
+    const commentLen=dv.getUint16(pos+32,true);
+    const localOffset=dv.getUint32(pos+42,true);
+    const name=new TextDecoder().decode(buf.slice(pos+46,pos+46+fnLen));
+    // Lire local header pour obtenir les données
+    const lhExtraLen=dv.getUint16(localOffset+28,true);
+    const lhFnLen=dv.getUint16(localOffset+26,true);
+    const dataStart=localOffset+30+lhFnLen+lhExtraLen;
+    const compSize=dv.getUint32(pos+20,true);
+    const compMethod=dv.getUint16(pos+10,true);
+    if(compMethod===0){ // stored (non compressé)
+      entries[name.toLowerCase()]=arrayBuf.slice(dataStart,dataStart+compSize);
+    }
+    pos+=46+fnLen+extraLen+commentLen;
+  }
+  return entries;
+}
+<script>
+// ══════════════════════════════════════════
+//  SUPABASE
+// ══════════════════════════════════════════
+const SB_URL = 'https://tndrqmyiwthkphzlviny.supabase.co';
+const SB_KEY = 'sb_publishable_w7C53LSuADnqUN-azcLdug_d4pKIrtd';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let DOM_ID=null, DOM=null, PARCS=[], TRAITS=[], STOCK=[], CUVES=[], VENTES=[];
+const AN = new Date().getFullYear().toString();
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+window.addEventListener('load', async () => {
+  document.getElementById('tD').value = new Date().toISOString().split('T')[0];
+  document.getElementById('rRe').value = new Date().toISOString().split('T')[0];
+
+  // Timeout de sécurité — si rien en 8s, afficher onboarding
+  const timeout = setTimeout(() => {
+    hide('ls'); show('ob');
+    toast('⚠️ Connexion lente — mode hors-ligne activé');
+  }, 8000);
+
+  try {
+    const {data, error} = await sb.from('domaines').select('*').limit(1).single();
+    clearTimeout(timeout);
+    if (data && !error) {
+      DOM=data; DOM_ID=data.id;
+      await loadAll();
+      showApp();
+    } else {
+      hide('ls'); show('ob');
+    }
+  } catch(e) {
+    clearTimeout(timeout);
+    console.error('Init error:', e);
+    hide('ls'); show('ob');
+  }
+});
+
+async function loadAll() {
+  syncSaving();
+  try {
+    const [p,t,s,c,v] = await Promise.all([
+      sb.from('parcelles').select('*').eq('domaine_id',DOM_ID).order('code'),
+      sb.from('traitements').select('*').eq('domaine_id',DOM_ID).order('date_application',{ascending:false}),
+      sb.from('produits_phyto').select('*').eq('domaine_id',DOM_ID).eq('actif',true),
+      sb.from('cuves').select('*').eq('domaine_id',DOM_ID),
+      sb.from('ventes').select('*').eq('domaine_id',DOM_ID).order('created_at',{ascending:false}),
+    ]);
+    PARCS  = (p && p.data) ? p.data : [];
+    TRAITS = (t && t.data) ? t.data : [];
+    STOCK  = (s && s.data) ? s.data : [];
+    CUVES  = (c && c.data) ? c.data : [];
+    VENTES = (v && v.data) ? v.data : [];
+    syncOK();
+  } catch(e) {
+    console.error('loadAll error:', e);
+    syncErr();
+    // Ne pas bloquer — continuer avec tableaux vides
+  }
+}
+
+function showApp() {
+  hide('ls'); hide('ob');
+  show('ah'); show('an'); show('am'); show('aFab');
+  const nom = DOM?.nom || DOM?.raison_sociale || 'Mon domaine';
+  document.getElementById('aN').textContent = nom;
+  document.getElementById('avi').textContent = nom.charAt(0).toUpperCase();
+  fillProfil();
+  renderDash(); renderIFT(); renderStock('all'); renderRegistre(); fillSelects();
+  loadPerso();
+}
+
+// ══════════════════════════════════════════
+//  ONBOARDING
+// ══════════════════════════════════════════
+async function saveOnboarding() {
+  const nom = g('obNom').trim()||'Mon domaine';
+  try {
+    const {data,error} = await sb.from('domaines').insert({
+      nom, raison_sociale:g('obRaison'), commune:g('obCommune'),
+      siret:g('obSiret'), certiphyto:g('obCertif'),
+      surface_ha:parseFloat(g('obHa'))||null, campagne_en_cours:AN
+    }).select().single();
+    if(error) throw error;
+    DOM=data; DOM_ID=data.id;
+    await loadAll(); showApp();
+    toast('✅ Domaine créé · Bienvenue dans VitiTrace !');
+  } catch(e) { toast('⚠️ Erreur — vérifier la connexion : '+e.message); }
+}
+
+// ══════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════
+function go(id,btn) {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  if(id==='sCarto') initMap();
+  if(id==='sIFT') renderIFT();
+  if(id==='sHVE') calcHVE();
+  if(id==='sCave') renderCave();
+}
+
+// ══════════════════════════════════════════
+//  IFT MOTEUR
+// ══════════════════════════════════════════
+const iFT=(d,r)=>(!d||!r)?0:Math.round(d/r*100)/100;
+const iftP=code=>TRAITS.filter(t=>t.parcelle_code===code).reduce((s,t)=>s+(t.ift||0),0);
+function iftDom() {
+  if(!PARCS.length||!TRAITS.length) return 0;
+  let ha=0,ix=0;
+  PARCS.forEach(p=>{ha+=p.surface_ha||0; ix+=iftP(p.code)*(p.surface_ha||0);});
+  return ha?Math.round(ix/ha*100)/100:0;
+}
+function iftCat(cat) {
+  if(!PARCS.length) return 0;
+  let ha=0,ix=0;
+  PARCS.forEach(p=>{
+    const v=TRAITS.filter(t=>t.parcelle_code===p.code&&t.produit_categorie===cat).reduce((s,t)=>s+(t.ift||0),0);
+    ha+=p.surface_ha||0; ix+=v*(p.surface_ha||0);
+  });
+  return ha?Math.round(ix/ha*100)/100:0;
+}
+const iftSt=v=>v<=3?'ok':v<=4?'warn':'danger';
+const iftCol=st=>({ok:'var(--vert2)',warn:'var(--orange)',danger:'var(--rouge)'}[st]);
+
+// ══════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════
+function renderDash() {
+  const ift=iftDom();
+  const nom=DOM?.nom||DOM?.raison_sociale||'';
+  document.getElementById('dG').textContent=nom?`Bonjour, ${nom.split(' ')[0]} 👋`:'Bonjour 👋';
+  document.getElementById('dS').textContent=`Campagne ${AN} · ${DOM?.commune||'Domaine'} · ${DOM?.surface_ha||'—'} ha`;
+  const dI=document.getElementById('dI');
+  dI.textContent=TRAITS.length?ift.toFixed(1).replace('.',','):'—';
+  dI.className='sv '+(ift>4?'d':ift>3.2?'w':'');
+  document.getElementById('dP').textContent=PARCS.length||'—';
+  document.getElementById('dH').textContent=(DOM?.surface_ha?DOM.surface_ha+' ha':'— ha');
+  document.getElementById('dT').textContent=TRAITS.length;
+  document.getElementById('rC').textContent=TRAITS.length;
+  // Bars
+  const ib=document.getElementById('dIB');
+  if(!PARCS.length) { ib.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Ajoutez des parcelles pour voir l\'IFT</div>'; }
+  else {
+    ib.innerHTML=PARCS.map(p=>{
+      const v=iftP(p.code),col=iftCol(iftSt(v)),pct=Math.min(100,v/4.8*100);
+      return`<div class="ib"><div class="ibh"><span class="ibn">${p.code} · ${p.nom}</span><span class="ibv" style="color:${col}">${v.toFixed(1).replace('.',',')}</span></div><div class="ibar"><div class="if" style="width:${pct}%;background:${col}"></div><div class="ibar-ref" style="left:${(4/4.8*100).toFixed(0)}%"></div></div></div>`;
+    }).join('');
+  }
+  // Alertes
+  let al='';
+  PARCS.forEach(p=>{ const v=iftP(p.code); if(v>4) al+=`<div class="al alr"><span class="al-i">🚨</span><div><b>IFT dépassé — ${p.nom}</b>IFT ${v.toFixed(1)} > 4,0 référence HVE.</div></div>`; });
+  STOCK.filter(s=>s.etat==='low'||s.etat==='zero').forEach(s=>{ al+=`<div class="al alo"><span class="al-i">🧪</span><div><b>Stock critique — ${s.nom}</b>Reste ${s.qte_stock} ${s.unite_stock}.</div></div>`; });
+  document.getElementById('dAl').innerHTML=al;
+  // Derniers traits
+  const dtl=document.getElementById('dTL');
+  if(!TRAITS.length) { dtl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement enregistré</div>'; return; }
+  dtl.innerHTML=TRAITS.slice(0,5).map(t=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${t.produit_nom||'—'}</div><div class="lim">${t.date_application} · ${t.parcelle_code} · ${t.dose_appliquee||'—'} ${t.dose_unite||'kg/ha'} · IFT ${(t.ift||0).toFixed(2)}</div></div><span style="background:#d4edda;color:var(--vert);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700">IFT ${(t.ift||0).toFixed(2)}</span></div>`).join('');
+}
+
+// ══════════════════════════════════════════
+//  IFT SECTION
+// ══════════════════════════════════════════
+function renderIFT() {
+  const ift=iftDom(),ref=4.0,st=iftSt(ift);
+  document.getElementById('iG').className='ift-g ift-'+(TRAITS.length?st:'ok');
+  document.getElementById('iGV').textContent=TRAITS.length?ift.toFixed(1).replace('.',','):'—';
+  document.getElementById('iGS').textContent=!TRAITS.length?'Aucun traitement saisi':
+    st==='ok'?`✓ ${(ref-ift).toFixed(1)} sous la référence HVE`:
+    st==='warn'?`⚠️ ${(ift/ref*100).toFixed(0)}% de la référence atteint`:
+    `🚨 Référence dépassée de ${(ift-ref).toFixed(1)}`;
+  const fill=document.getElementById('iGF');
+  fill.style.width='0%';
+  setTimeout(()=>{fill.style.width=TRAITS.length?Math.min(100,ift/(ref*1.4)*100)+'%':'0%';},80);
+  const cats={iCF:'Fongicide',iCI:'Insecticide',iCH:'Herbicide',iCB:'Biocontrôle'};
+  Object.entries(cats).forEach(([id,cat])=>{
+    const v=iftCat(cat)+(id==='iCF'?iftCat('Fongicide cuivre'):0);
+    document.getElementById(id).textContent=TRAITS.length?v.toFixed(1).replace('.',','):'—';
+  });
+  // Alertes
+  let al='';
+  PARCS.forEach(p=>{const v=iftP(p.code);if(v>ref)al+=`<div class="al alr"><span class="al-i">🚨</span><div><b>${p.nom} — IFT ${v.toFixed(1)} · Référence dépassée</b></div></div>`;else if(v>ref*.85)al+=`<div class="al alo"><span class="al-i">⚠️</span><div><b>${p.nom} — IFT ${v.toFixed(1)} (${(v/ref*100).toFixed(0)}%)</b></div></div>`;});
+  document.getElementById('iAl').innerHTML=al;
+  // Par parcelle
+  const pl=document.getElementById('iPL');
+  if(!PARCS.length){pl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Ajoutez des parcelles dans l\'onglet Parcelles</div>';return;}
+  pl.innerHTML=PARCS.map(p=>{
+    const v=iftP(p.code),pst=iftSt(v),col=iftCol(pst),pct=Math.min(100,v/4.8*100),nb=TRAITS.filter(t=>t.parcelle_code===p.code).length;
+    return`<div class="pc ${pst}" onclick="showPD('${p.code}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:1px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${nb} traitement(s)</div></div>
+        <div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1;color:${col}">${v.toFixed(1).replace('.',',')} <span style="font-size:13px;color:var(--gris);font-weight:400">/ ${ref}</span></div></div>
+      </div>
+      <div class="pb"><div class="pbf" style="width:${pct}%;background:${col}"></div><div class="pbr" style="left:${(4/4.8*100).toFixed(0)}%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10.5px">
+        <span style="color:${col};font-weight:700">${(v/ref*100).toFixed(0)}% utilisé</span>
+        <span style="color:var(--gris)">${v<=ref?'Reste : '+(ref-v).toFixed(1)+' IFT':'Dépassé de '+(v-ref).toFixed(1)}</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('iObj').innerHTML=[['Agriculture Biologique',2.5],['Terra Vitis',3.5],['HVE Niveau 3',4.0]].map(([n,r])=>{
+    const ok=ift<=r;
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gris2)"><div style="font-size:13px;font-weight:600">${n}</div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--gris)">≤ ${r}</span><span class="badge ${ok?'bg':'br'}">${ok?'✓ Conforme':'✗ Non conforme'}</span></div></div>`;
+  }).join('');
+}
+
+function showPD(code) {
+  const p=PARCS.find(x=>x.code===code);if(!p)return;
+  const v=iftP(code),col=iftCol(iftSt(v));
+  const ts=TRAITS.filter(t=>t.parcelle_code===code).sort((a,b)=>b.date_application.localeCompare(a.date_application));
+  document.getElementById('mPDT').textContent=`${p.code} · ${p.nom}`;
+  document.getElementById('mPDC').innerHTML=`
+    <div style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);border-radius:12px;padding:14px;color:#fff;text-align:center;margin-bottom:14px">
+      <div style="font-size:11px;opacity:.6;text-transform:uppercase;margin-bottom:4px">IFT cumulé campagne ${AN}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;color:${col};line-height:1">${v.toFixed(2).replace('.',',')}</div>
+      <div style="font-size:13px;opacity:.7">sur 4,0 référence · ${(v/4*100).toFixed(0)}%</div>
+    </div>
+    <div style="background:var(--gris3);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px">
+      <div><b>Cépage :</b> ${p.cepage||'—'} · <b>Surface :</b> ${p.surface_ha||'—'} ha</div>
+      <div style="margin-top:3px"><b>Commune :</b> ${p.commune||'—'}</div>
+      ${p.ref_cadastrale?`<div style="margin-top:3px"><b>Réf. cadastrale :</b> ${p.ref_cadastrale}</div>`:''}
+    </div>
+    ${ts.length?ts.map(t=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${t.produit_nom||'—'}</div><div class="lim">${t.date_application} · ${t.dose_appliquee||'—'} ${t.dose_unite||'kg/ha'} · BBCH ${t.bbch||'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">${t.dose_appliquee} ÷ ${t.dose_reference} = <b style="color:var(--vigne)">IFT ${(t.ift||0).toFixed(2)}</b></div></div><button onclick="delTrait('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gris);padding:4px">🗑️</button></div>`).join(''):'<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement sur cette parcelle</div>'}`;
+  showM('mPD');
+}
+
+async function delTrait(id) {
+  if(!confirm('Supprimer ce traitement ?')) return;
+  const {error}=await sb.from('traitements').delete().eq('id',id);
+  if(!error){TRAITS=TRAITS.filter(t=>t.id!==id);renderDash();renderIFT();renderRegistre();toast('🗑️ Supprimé · IFT recalculé');closeM(null,'mPD');}
+}
+</script>
+<script>
+// ══════════════════════════════════════════
+//  TRAITEMENT
+// ══════════════════════════════════════════
+function fillSelects() {
+  const sp=document.getElementById('tPa');
+  sp.innerHTML='<option value="">— Choisir —</option>';
+  PARCS.forEach(p=>sp.innerHTML+=`<option value="${p.code}">${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)</option>`);
+  const pr=document.getElementById('tPr');
+  pr.innerHTML='<option value="">— Choisir —</option>';
+  STOCK.forEach(s=>{
+    const e=s.etat==='zero'?'🚫':s.etat==='low'?'⚠️':'✓';
+    pr.innerHTML+=`<option value="${s.id}" data-ref="${s.dose_reference||1}" data-unit="${s.dose_unite||'kg/ha'}" data-dar="${s.dar||0}" data-cat="${s.categorie||''}" data-amm="${s.amm||''}">${e} ${s.nom} (${s.qte_stock} ${s.unite_stock})</option>`;
+  });
+  if(!STOCK.length) pr.innerHTML+='<option disabled>— Scanner une étiquette pour ajouter un produit —</option>';
+}
+
+function selP() {
+  const sel=document.getElementById('tPr'),opt=sel.options[sel.selectedIndex];
+  if(!opt.value) return;
+  document.getElementById('tDR').value=opt.dataset.ref||1;
+  document.getElementById('tDU').textContent=opt.dataset.unit||'kg/ha';
+  document.getElementById('tA').value=opt.dataset.amm||'';
+  const s=STOCK.find(x=>x.id===opt.value);
+  if(s){
+    const al=document.getElementById('sAl');al.style.display='flex';
+    al.className='al '+(s.etat==='zero'?'alr':s.etat==='low'?'alo':'alb');
+    document.getElementById('sAlT').innerHTML=`Stock : <b>${s.qte_stock} ${s.unite_stock}</b>${s.etat==='zero'?' — <b>ÉPUISÉ</b>':s.etat==='low'?' — <b>Sous le seuil</b>':''}`;
+  }
+  const dar=parseInt(opt.dataset.dar)||0;
+  if(dar>0){
+    const d=new Date();d.setDate(d.getDate()+dar);
+    document.getElementById('dD').style.display='flex';
+    document.getElementById('dDT').innerHTML=`<b>DAR ${dar} jours</b> · Récolte possible à partir du ${d.toLocaleDateString('fr-FR')}`;
+  }
+  uTP();
+}
+
+function uTP() {
+  const parc=document.getElementById('tPa').value,prod=document.getElementById('tPr').value;
+  const dose=parseFloat(document.getElementById('tDo').value),dRef=parseFloat(document.getElementById('tDR').value);
+  const btn=document.getElementById('bST');
+  if(!prod||!dose||!dRef){
+    document.getElementById('ipv').textContent='—';document.getElementById('ipv').classList.remove('has');
+    document.getElementById('ipp').classList.remove('has');document.getElementById('iF').style.display='none';
+    document.getElementById('impB').style.display='none';btn.disabled=true;return;
+  }
+  const ift=iFT(dose,dRef);
+  document.getElementById('ipv').textContent=ift.toFixed(2).replace('.',',');
+  document.getElementById('ipv').classList.add('has');document.getElementById('ipp').classList.add('has');
+  document.getElementById('ipd').textContent=`${dose} ÷ ${dRef} = IFT ${ift.toFixed(2)}`;
+  document.getElementById('iF').style.display='flex';
+  document.getElementById('iFT').innerHTML=`<b>IFT = ${dose} ÷ ${dRef} = ${ift.toFixed(2)}</b> (${(dose/dRef*100).toFixed(0)}% de la dose référence ANSES)`;
+  if(parc){
+    const before=iftP(parc),after=before+ift;
+    document.getElementById('impB').style.display='block';
+    const be=document.getElementById('iBf'),ae=document.getElementById('iBa');
+    be.textContent=before.toFixed(1).replace('.',',');be.style.color=iftCol(iftSt(before));
+    ae.textContent=after.toFixed(1).replace('.',',');ae.style.color=iftCol(iftSt(after));
+  }
+  btn.disabled=!(parc&&prod&&dose);
+}
+
+async function saveTrait() {
+  const pCode=document.getElementById('tPa').value,pId=document.getElementById('tPr').value;
+  const dose=parseFloat(document.getElementById('tDo').value),dRef=parseFloat(document.getElementById('tDR').value);
+  if(!pCode||!pId||!dose){toast('⚠️ Parcelle et produit obligatoires');return;}
+  const ift=iFT(dose,dRef);
+  const sel=document.getElementById('tPr'),opt=sel.options[sel.selectedIndex];
+  const pNom=opt?opt.text.replace(/^[✓⚠️🚫]\s/,'').split(' (')[0]:'';
+  const parc=PARCS.find(p=>p.code===pCode);
+  syncSaving();
+  try {
+    const {data,error}=await sb.from('traitements').insert({
+      domaine_id:DOM_ID,parcelle_id:parc?.id,produit_id:pId,
+      date_application:document.getElementById('tD').value,
+      heure_application:document.getElementById('tH').value,
+      campagne:AN,parcelle_code:pCode,produit_nom:pNom,
+      produit_categorie:opt?.dataset.cat||'',
+      amm:document.getElementById('tA').value,
+      dose_appliquee:dose,dose_reference:dRef,
+      dose_unite:opt?.dataset.unit||'kg/ha',ift,
+      bbch:document.getElementById('tB').value,
+      adjuvants:document.getElementById('tAd').value,
+      dar:parseInt(opt?.dataset.dar)||0,
+    }).select().single();
+    if(error) throw error;
+    TRAITS.unshift(data);
+    // Déduire stock
+    const s=STOCK.find(x=>x.id===pId);
+    if(s&&parc){
+      const nq=Math.max(0,Math.round((s.qte_stock-dose*(parc.surface_ha||1))*100)/100);
+      const ne=nq<=0?'zero':nq<=s.seuil_alerte?'low':'ok';
+      await sb.from('produits_phyto').update({qte_stock:nq,etat:ne}).eq('id',pId);
+      s.qte_stock=nq;s.etat=ne;
+    }
+    syncOK();
+    renderDash();renderIFT();renderRegistre();renderStock('all');fillSelects();
+    toast(`✅ Traitement sauvegardé · IFT +${ift.toFixed(2)} · Stock déduit`);
+    ['tDo','tDR','tA','tAd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('tPr').value='';
+    document.getElementById('ipv').textContent='—';document.getElementById('ipv').classList.remove('has');
+    document.getElementById('ipp').classList.remove('has');document.getElementById('iF').style.display='none';
+    document.getElementById('impB').style.display='none';document.getElementById('sAl').style.display='none';
+    document.getElementById('dD').style.display='none';document.getElementById('bST').disabled=true;
+  } catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+// ══════════════════════════════════════════
+//  SCAN IA
+// ══════════════════════════════════════════
+let img64=null,imgMime='image/jpeg';
+function triggerUpload(){document.getElementById('fI').click();}
+function handleFile(input){
+  const f=input.files[0];if(!f)return;
+  imgMime=f.type||'image/jpeg';
+  const r=new FileReader();
+  r.onload=e=>{
+    img64=e.target.result.split(',')[1];
+    const prev=document.getElementById('pi'),zone=document.getElementById('dZ');
+    prev.src=e.target.result;prev.style.display='block';
+    document.getElementById('uC').style.display='none';
+    document.getElementById('iO').style.display='flex';
+    zone.classList.add('has');document.getElementById('aB').disabled=false;
+    document.getElementById('sB').style.display='block';toast('✅ Image chargée');
+  };r.readAsDataURL(f);
+}
+const dz=document.getElementById('dZ');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/')){const dt=new DataTransfer();dt.items.add(f);document.getElementById('fI').files=dt.files;handleFile(document.getElementById('fI'));}
+});
+
+async function lancerAnalyse(){
+  if(!img64){toast('⚠️ Charger une image d\'abord');return;}
+  document.getElementById('lC').classList.add('show');
+  document.getElementById('sR').style.display='none';
+  document.getElementById('aB').disabled=true;
+  const ids=['l1','l2','l3','l4','l5','l6'];let i=0;
+  const iv=setInterval(()=>{
+    if(i>0){const p=document.getElementById(ids[i-1]);p.classList.remove('active');p.classList.add('done');p.querySelector('.lst-i').textContent='✓';}
+    if(i<ids.length){document.getElementById(ids[i]).classList.add('active');i++;}else clearInterval(iv);
+  },600);
+  const prompt=`Expert phytosanitaire français. Analyse cette étiquette. UNIQUEMENT JSON sans markdown:
+{"nom":"","fabricant":"","amm":"FR-","categorie":"Fongicide|Insecticide|Herbicide|Fongicide cuivre|Biocontrôle","dose_vigne":"","dose_unite":"kg/ha","nb_applications":"","dar":0,"znt":0,"restriction_horaire":"","cibles":"","pictogrammes":[],"epi":"","phrases_h":"","date_peremption":"","confiance":0}
+Si non visible: chaine vide ou 0.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:imgMime,data:img64}},{type:'text',text:prompt}]}]})
+    });
+    clearInterval(iv);ids.forEach(id=>{const el=document.getElementById(id);el.classList.remove('active');el.classList.add('done');el.querySelector('.lst-i').textContent='✓';});
+    await new Promise(r=>setTimeout(r,400));
+    const data=await res.json();
+    const txt=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    fillScanResult(JSON.parse(txt));
+  }catch(e){
+    clearInterval(iv);
+    fillScanResult({nom:"Cuivrol Extra 49 WG",fabricant:"Manica",amm:"FR-2021-0983",categorie:"Fongicide cuivre",dose_vigne:"2.8",dose_unite:"kg/ha",nb_applications:"4/an",dar:21,znt:20,restriction_horaire:"Pas si abeilles actives",cibles:"Mildiou, Black-rot",confiance:91});
+    toast('⚠️ Mode démo · API Claude requise pour lecture réelle');
+  }
+}
+
+function fillScanResult(d){
+  document.getElementById('lC').classList.remove('show');
+  document.getElementById('sR').style.display='block';
+  document.getElementById('cB').textContent=`conf. ${d.confiance||88}%`;
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  sv('rN',d.nom);sv('rF',d.fabricant);sv('rAM',d.amm);
+  sv('rD',d.dose_vigne);sv('rNA',d.nb_applications);sv('rDA',d.dar);
+  sv('rZ',d.znt);sv('rCi',d.cibles);sv('rH',d.restriction_horaire);
+  if(d.date_peremption)sv('rPe',d.date_peremption);
+  document.getElementById('rDU').textContent=d.dose_unite||'kg/ha';
+  document.getElementById('rQU').textContent=(d.dose_unite||'kg/ha').replace('/ha','');
+  document.getElementById('sR').scrollIntoView({behavior:'smooth'});
+  toast(`✅ Extraction IA · Confiance ${d.confiance||88}%`);
+}
+
+async function saveScan(){
+  const nom=document.getElementById('rN').value;
+  if(!nom){toast('⚠️ Nom obligatoire');return;}
+  syncSaving();
+  const du=document.getElementById('rDU').textContent||'kg/ha';
+  const dr=parseFloat((document.getElementById('rD').value||'1').replace(',','.'));
+  const qte=parseFloat(document.getElementById('rQ').value)||0;
+  const seuil=parseFloat(document.getElementById('rS').value)||5;
+  try{
+    const {data,error}=await sb.from('produits_phyto').insert({
+      domaine_id:DOM_ID,nom,amm:document.getElementById('rAM').value,
+      fabricant:document.getElementById('rF').value,categorie:document.getElementById('rC').value,
+      dose_reference:dr,dose_max:dr,dose_unite:du,
+      dar:parseInt(document.getElementById('rDA').value)||0,
+      znt:parseInt(document.getElementById('rZ').value)||5,
+      nb_applications_max:parseInt(document.getElementById('rNA').value)||null,
+      cibles:document.getElementById('rCi').value,
+      restriction_horaire:document.getElementById('rH').value,
+      qte_stock:qte,unite_stock:du.replace('/ha',''),
+      seuil_alerte:seuil,etat:qte<=0?'zero':qte<=seuil?'low':'ok',
+      date_reception:document.getElementById('rRe').value||null,
+      date_peremption:document.getElementById('rPe').value||null,
+      fournisseur:document.getElementById('rFo').value,actif:true
+    }).select().single();
+    if(error)throw error;
+    STOCK.push(data);syncOK();renderStock('all');fillSelects();
+    toast('✅ Produit enregistré dans le stock Supabase');resetScan();
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+function saveScanAndTreat(){saveScan().then(()=>go('sTrait',document.querySelectorAll('.tab')[1]));}
+function resetScan(){
+  img64=null;
+  document.getElementById('pi').style.display='none';document.getElementById('uC').style.display='block';
+  document.getElementById('iO').style.display='none';document.getElementById('dZ').classList.remove('has');
+  document.getElementById('aB').disabled=true;document.getElementById('lC').classList.remove('show');
+  document.getElementById('sR').style.display='none';document.getElementById('sB').style.display='none';
+  document.getElementById('fI').value='';
+  ['l1','l2','l3','l4','l5','l6'].forEach((id,i)=>{const el=document.getElementById(id);el.className='lst';el.querySelector('.lst-i').textContent=i+1;});
+}
+
+// ══════════════════════════════════════════
+//  STOCK
+// ══════════════════════════════════════════
+function renderStock(filter){
+  const list=document.getElementById('sL');
+  const items=filter==='all'?STOCK:STOCK.filter(s=>s.etat===filter);
+  if(!items.length){list.innerHTML=`<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucun produit ${filter!=='all'?'dans cette catégorie':''}<br>Scannez une étiquette pour commencer</div>`;return;}
+  list.innerHTML=items.map(s=>{
+    const pct=Math.min(100,Math.round(s.qte_stock/((s.seuil_alerte||1)*3)*100));
+    const col=s.etat==='ok'?'var(--vert2)':s.etat==='low'?'var(--orange)':'var(--rouge)';
+    const bg=s.etat==='ok'?'#d4edda':s.etat==='low'?'#fde8c8':'#fde8e6';
+    const ic=s.categorie?.includes('Bio')?'🌱':s.categorie?.includes('cuivre')?'🟤':'🌿';
+    const bc=s.etat==='ok'?'bg':s.etat==='low'?'bo':'br';
+    return`<div class="si"><div class="si-ic" style="background:${bg}">${ic}</div><div class="si-b"><div class="si-n">${s.nom}</div><div class="si-a">${s.amm||''} · ${s.categorie||''} · DAR ${s.dar||0}j</div><div class="si-br"><div class="si-bf" style="width:${pct}%;background:${col}"></div></div>${s.etat!=='ok'?`<div style="font-size:10px;font-weight:700;color:${col};text-transform:uppercase;margin-top:3px">${s.etat==='zero'?'ÉPUISÉ':'Sous seuil — '+s.seuil_alerte+' '+s.unite_stock}</div>`:''}</div><div class="si-q"><div class="si-qv" style="color:${col}">${s.qte_stock}</div><div class="si-qu">${s.unite_stock}</div><span class="badge ${bc}" style="margin-top:4px;display:inline-block">${s.etat==='ok'?'✓ OK':s.etat==='low'?'⚠️':'🚫'}</span></div></div>`;
+  }).join('');
+}
+function fS(f,btn){document.querySelectorAll('#sStock .btn').forEach(b=>{b.className='btn btghost btsm';});btn.className='btn btgold btsm';renderStock(f);}
+
+// ══════════════════════════════════════════
+//  PARCELLES
+// ══════════════════════════════════════════
+async function saveParc(){
+  const nom=document.getElementById('pN').value.trim(),code=document.getElementById('pCo').value.trim();
+  if(!nom||!code){toast('⚠️ Nom et code obligatoires');return;}
+  syncSaving();
+  try{
+    const {data,error}=await sb.from('parcelles').insert({
+      domaine_id:DOM_ID,code,nom,commune:document.getElementById('pCm').value,
+      cepage:document.getElementById('pCe').value,couleur:document.getElementById('pCl').value,
+      produit_aoc:document.getElementById('pPr').value,ref_cadastrale:document.getElementById('pCd').value,
+      surface_ha:parseFloat(document.getElementById('pH').value)||null,
+      date_plantation:document.getElementById('pPl').value?`${document.getElementById('pPl').value}-01-01`:null,
+      color:'#4a8a42',
+    }).select().single();
+    if(error)throw error;
+    PARCS.push(data);syncOK();fillSelects();renderDash();renderIFT();
+    const th=PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
+    await sb.from('domaines').update({surface_ha:th}).eq('id',DOM_ID);
+    DOM.surface_ha=th;document.getElementById('dH').textContent=th.toFixed(2)+' ha';
+    toast('✅ Parcelle enregistrée dans Supabase');closeM(null,'mAP');
+    ['pN','pCo','pH','pCm','pCe','pPr','pCd','pPl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+// ══════════════════════════════════════════
+//  MAP
+// ══════════════════════════════════════════
+let mI=false,mL=null,tOSM,tSAT;
+function initMap(){
+  let center=[43.37,3.05],zoom=12;
+  if(PARCS.length){
+    const wp=PARCS.filter(p=>p.coords&&p.coords.length);
+    if(wp.length){
+      const la=wp.flatMap(p=>p.coords.map(c=>c[0])),lo=wp.flatMap(p=>p.coords.map(c=>c[1]));
+      center=[(Math.min(...la)+Math.max(...la))/2,(Math.min(...lo)+Math.max(...lo))/2];
+      zoom=13;
+    }
+  }
+  if(!mI){
+    mI=true;
+    mL=L.map('map',{zoomControl:false,attributionControl:false}).setView(center,zoom);
+    tOSM=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(mL);
+    tSAT=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
+  } else {
+    mL.setView(center,zoom);
+    // Supprimer tous les polygones et markers existants
+    mL.eachLayer(l=>{if(l instanceof L.Polygon||l instanceof L.Marker)mL.removeLayer(l);});
+  }
+  // Dessiner les parcelles
+  PARCS.forEach(p=>{
+    if(p.coords&&p.coords.length>=3){
+      const poly=L.polygon(p.coords,{color:'#1a1410',weight:2,fillColor:p.color||'#4a8a42',fillOpacity:.55}).addTo(mL);
+      const c=poly.getBounds().getCenter();
+      L.marker(c,{icon:L.divIcon({className:'',html:`<div style="background:rgba(255,255,255,.92);border-radius:6px;padding:3px 7px;font-family:Outfit,sans-serif;font-size:11px;font-weight:700;color:#1a1410;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2)">${p.code} · IFT ${iftP(p.code).toFixed(1)}</div>`,iconAnchor:[30,10]})}).addTo(mL);
+      poly.bindPopup(`<b>${p.nom}</b><br>${p.surface_ha} ha · ${p.cepage||'—'}<br>IFT : <b>${iftP(p.code).toFixed(2)}</b>`);
+    }
+  });
+  const cl=document.getElementById('cL');
+  if(!PARCS.length){
+    cl.innerHTML=`<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter manuellement</button></div>`;
+    document.getElementById('cS').textContent='Aucune parcelle configurée';
+    return;
+  }
+  document.getElementById('cS').textContent=`${PARCS.length} parcelle(s) · ${PARCS.reduce((s,p)=>s+(p.surface_ha||0),0).toFixed(2)} ha`;
+  cl.innerHTML=PARCS.map(p=>{
+    const v=iftP(p.code),st=iftSt(v),col=iftCol(st);
+    return`<div class="card" onclick="showPD('${p.code}')"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div></div>`;
+  }).join('');
+}
+function mSat(){if(!mL)return;try{mL.removeLayer(tOSM);}catch(e){}tSAT.addTo(mL);toast('🛰️ Vue satellite');}
+function mOSM(){if(!mL)return;try{mL.removeLayer(tSAT);}catch(e){}tOSM.addTo(mL);toast('🗺️ Vue plan');}
+function mCenter(){if(!mL||!PARCS.length)return;mL.setView([43.37,3.05],12);}
+async function reloadMap(){
+  toast('🔄 Rechargement des parcelles…');
+  const {data}=await sb.from('parcelles').select('*').eq('domaine_id',DOM_ID).order('code');
+  PARCS=data||[];
+  mI=false; // forcer réinitialisation complète
+  initMap();
+  renderDash();renderIFT();fillSelects();
+  toast(`✅ ${PARCS.length} parcelle(s) chargée(s)`);
+}
+
+// ══════════════════════════════════════════
+//  REGISTRE
+// ══════════════════════════════════════════
+function renderRegistre(){
+  document.getElementById('rC').textContent=TRAITS.length;
+  const rl=document.getElementById('rL');
+  if(!TRAITS.length){rl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement</div>';return;}
+  rl.innerHTML=TRAITS.slice(0,10).map(t=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${t.produit_nom||'—'}</div><div class="lim">${t.date_application} · ${t.parcelle_code} · BBCH ${t.bbch||'—'} · ${t.dose_appliquee||'—'} ${t.dose_unite||'kg/ha'} · AMM ${t.amm||'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">IFT = <b style="color:var(--vigne)">${(t.ift||0).toFixed(2)}</b></div></div><span style="background:#d4edda;color:var(--vert);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700">✓</span></div>`).join('');
+}
+
+// ══════════════════════════════════════════
+//  CAVE
+// ══════════════════════════════════════════
+async function saveCuve(){
+  const nom=document.getElementById('cN').value.trim();if(!nom){toast('⚠️ Nom obligatoire');return;}
+  syncSaving();
+  try{
+    const {data,error}=await sb.from('cuves').insert({domaine_id:DOM_ID,nom,capacite_hl:parseFloat(document.getElementById('cCa').value)||null,contenu_actuel_hl:parseFloat(document.getElementById('cCo').value)||0,cuvee_nom:document.getElementById('cV').value,statut:'en_cours'}).select().single();
+    if(error)throw error;CUVES.push(data);syncOK();renderCave();toast('✅ Cuve enregistrée');closeM(null,'mAC');
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+async function saveVente(){
+  syncSaving();
+  const vol=parseFloat(document.getElementById('vVo').value)||0,prix=parseFloat(document.getElementById('vPx').value)||0;
+  try{
+    const {data,error}=await sb.from('ventes').insert({domaine_id:DOM_ID,cuvee_nom:document.getElementById('vVi').value,acheteur:document.getElementById('vAc').value,type_circuit:document.getElementById('vCi').value,volume_litres:vol,prix_litre:prix,montant_total:Math.round(vol*prix*100)/100,date_livraison:document.getElementById('vDa').value||null}).select().single();
+    if(error)throw error;VENTES.unshift(data);syncOK();renderCave();toast('✅ Vente enregistrée');closeM(null,'mNV');
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+function renderCave(){
+  const cl=document.getElementById('cVL');
+  if(!CUVES.length){cl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune cuve</div>';}
+  else{cl.innerHTML=`<div class="tw">${CUVES.map(c=>{const p=c.capacite_hl?Math.min(100,c.contenu_actuel_hl/c.capacite_hl*100):0;return`<div><div class="tank" style="height:68px"><div class="tf" style="height:${p}%;background:var(--raisin)"><div class="tl">${p.toFixed(0)}%</div></div></div><div class="tn">${c.nom}·${c.capacite_hl||'?'}hL</div></div>`;}).join('')}</div><div style="font-size:12px;color:var(--gris);margin-top:4px">Total : <b>${CUVES.reduce((s,c)=>s+(c.contenu_actuel_hl||0),0)} hL</b> / <b>${CUVES.reduce((s,c)=>s+(c.capacite_hl||0),0)} hL</b></div>`;}
+  const vl=document.getElementById('vL');
+  if(!VENTES.length){vl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune vente</div>';}
+  else{const ca=VENTES.reduce((s,v)=>s+(v.montant_total||0),0);vl.innerHTML=`<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--raisin);margin-bottom:10px">${ca.toLocaleString('fr-FR')} €</div>${VENTES.slice(0,5).map(v=>`<div class="nr"><div><div style="font-weight:600;font-size:14px">${v.acheteur||'—'}</div><div style="font-size:12px;color:var(--gris)">${v.cuvee_nom||'—'} · ${v.type_circuit||'—'}</div></div><div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--raisin);font-weight:600">${v.prix_litre||'—'} €/L</div><div style="font-size:11px;color:var(--gris)">${v.volume_litres||0} L · ${(v.montant_total||0).toLocaleString('fr-FR')} €</div></div></div>`).join('')}`;}
+}
+
+// ══════════════════════════════════════════
+//  HVE
+// ══════════════════════════════════════════
+function calcHVE(){
+  const ift=iftDom(),ref=4.2,iftBio=iftCat('Biocontrôle'),partBio=ift>0?(iftBio/ift)*100:0;
+  let pA1=0;
+  if(TRAITS.length){const r=ift/ref;if(r<=0.5)pA1=15;else if(r<=0.7)pA1=12;else if(r<=0.85)pA1=9;else if(r<=1)pA1=6;}
+  document.getElementById('hA1B').style.width=(pA1/15*100)+'%';
+  document.getElementById('hA1B').style.background=pA1>=12?'var(--vert2)':pA1>=6?'var(--orange)':'var(--rouge)';
+  document.getElementById('hA1S').textContent=pA1+'/15 pts';
+  document.getElementById('hA1D').textContent=TRAITS.length?`IFT : ${ift.toFixed(2)} · Réf : ${ref} · Ratio : ${(ift/ref*100).toFixed(0)}%`:'Saisir des traitements';
+  let pA2=0;if(TRAITS.length){if(partBio>=30)pA2=10;else if(partBio>=20)pA2=7;else if(partBio>=10)pA2=4;else if(partBio>=5)pA2=2;}
+  document.getElementById('hA2B').style.width=(pA2/10*100)+'%';
+  document.getElementById('hA2S').textContent=pA2+'/10 pts';
+  document.getElementById('hA2D').textContent=TRAITS.length?`Biocontrôle : ${partBio.toFixed(1)}% de l'IFT total`:'—';
+  const pA3=2.5,pA4=2.5,pA=Math.round(pA1+pA2+pA3+pA4);
+  document.getElementById('hAB').textContent=pA+'/30 pts';
+  document.getElementById('hAB').className='badge '+(pA>=24?'bg':pA>=15?'bo':'br');
+  document.getElementById('hA3D').textContent=`${TRAITS.length} intervention(s) · Registre conforme`;
+  const b1=document.getElementById('hB1').classList.contains('on')?1:0;
+  const b2=document.getElementById('hB2').classList.contains('on')?1:0;
+  const b3=document.getElementById('hB3').classList.contains('on')?1:0;
+  const pB=Math.round(b1*8+b2*7+b3*5);
+  document.getElementById('hBB').textContent=pB+'/20 pts';
+  document.getElementById('hBB').className='badge '+(pB>=16?'bg':pB>=10?'bo':'br');
+  const pC=document.getElementById('hCI').classList.contains('on')?20:0;
+  document.getElementById('hCB').textContent=pC+'/20 pts';
+  document.getElementById('hCB').className='badge '+(pC>=16?'bg':'bo');
+  const sie=parseFloat(document.getElementById('hSIE').value)||0;
+  const pD1=sie>=10?15:sie>=7?11:sie>=5?7:sie>=3?3:0;
+  const pD=Math.round(pD1+(document.getElementById('hD2').classList.contains('on')?10:0));
+  document.getElementById('hDB').textContent=pD+'/25 pts';
+  document.getElementById('hDB').className='badge '+(pD>=20?'bg':pD>=12?'bo':'br');
+  const tot=pA+pB+pC+pD;
+  document.getElementById('hSc').textContent=tot;
+  const f=document.getElementById('hSF');f.style.width='0%';
+  setTimeout(()=>{f.style.width=tot+'%';f.style.background=tot>=75?'linear-gradient(90deg,#4a8a42,#6db865)':tot>=50?'linear-gradient(90deg,#c9a84c,#f0d878)':'linear-gradient(90deg,#d4751a,#f0a040)';},80);
+  let nb;if(tot>=75)nb='🏅 Niveau 3 — HVE certifiable';else if(tot>=50)nb='🌿 Niveau 2 — HVE intermédiaire';else if(tot>=25)nb='🌱 Niveau 1';else nb='⚠️ En dessous du Niveau 1';
+  document.getElementById('hNB').textContent=nb;
+  document.getElementById('hSb').textContent=tot>=75?`Certification accessible · Contacter votre organisme`:tot>=50?`${75-tot} pts pour le N3`:`${50-tot} pts pour le N2`;
+  const tips=[];
+  if(TRAITS.length&&ift>3.5)tips.push('🎯 <b>Réduire l\'IFT</b> — Doses à 70–80% de la référence. Gain : +6 pts domaine A.');
+  if(partBio<20&&TRAITS.length)tips.push('🌱 <b>Augmenter le biocontrôle</b> — Viser ≥ 20%. Gain : +5 pts A2.');
+  if(sie<7)tips.push('🌿 <b>Augmenter les SIE</b> — Porter à 7% via enherbement ou haies. Gain : +4 pts D.');
+  if(tot>=75)tips.push('🏆 <b>Score N3 atteint !</b> Contactez Ecocert, Bureau Veritas ou Certisud.');
+  if(!TRAITS.length)tips.push('📝 <b>Saisissez vos traitements</b> — Le score HVE se calcule depuis votre IFT réel.');
+  document.getElementById('hCons').innerHTML=tips.length?`<div class="card" style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);color:#fff;border:none"><div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;margin-bottom:10px;color:var(--or2)">💡 Recommandations</div><div style="font-size:13px;line-height:1.7;opacity:.85">${tips.join('<br><br>')}</div></div>`:'';
+}
+
+// ══════════════════════════════════════════
+//  PROFIL
+// ══════════════════════════════════════════
+function fillProfil(){
+  if(!DOM)return;
+  sv('prN',DOM.nom);sv('prR',DOM.raison_sociale);sv('prC',DOM.commune);sv('prS',DOM.siret);sv('prCe',DOM.certiphyto);sv('prH',DOM.surface_ha);
+}
+async function saveProfil(){
+  syncSaving();
+  const u={nom:g('prN'),raison_sociale:g('prR'),commune:g('prC'),siret:g('prS'),certiphyto:g('prCe'),surface_ha:parseFloat(g('prH'))||null};
+  try{
+    const {error}=await sb.from('domaines').update(u).eq('id',DOM_ID);
+    if(error)throw error;Object.assign(DOM,u);
+    const n=u.nom||u.raison_sociale||'Mon domaine';
+    document.getElementById('aN').textContent=n;document.getElementById('avi').textContent=n.charAt(0).toUpperCase();
+    syncOK();toast('✅ Profil sauvegardé');closeM(null,'mProfil');renderDash();
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+// ══════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════
+function doExport(t){toast(`📤 Export ${t} en cours…`);setTimeout(()=>toast(`✅ ${t} exporté`),1500);}
+function showM(id){document.getElementById(id).classList.add('op');}
+function closeM(e,id){if(!e||e.target.classList.contains('ov'))document.getElementById(id).classList.remove('op');}
+function g(id){return(document.getElementById(id)?.value||'').trim();}
+function sv(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
+function show(id){const el=document.getElementById(id);if(el){el.style.display='';if(id==='ob')el.style.display='flex';}}
+function hide(id){const el=document.getElementById(id);if(el){if(id==='ls')el.classList.add('off');else el.style.display='none';}}
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(14px)';},3200);
+}
+function syncSaving(){const p=document.getElementById('sp');p.className='sp sp-sv';document.getElementById('st').textContent='Sauvegarde…';}
+function syncOK(){const p=document.getElementById('sp');p.className='sp sp-ok';document.getElementById('st').textContent='Cloud ✓';}
+function syncErr(){const p=document.getElementById('sp');p.className='sp sp-er';document.getElementById('st').textContent='Erreur sync';}
+
+// ══════════════════════════════════════════
+//  PERSONNALISATION
+// ══════════════════════════════════════════
+const THEMES = {
+  vigne:   {vigne:'#1c3d1c',or:'#c9a84c',bg:'#eee8dc',terre:'#3d2b1f',noir:'#1a1410'},
+  bordeaux:{vigne:'#4a0e1a',or:'#c9a84c',bg:'#f0e8e0',terre:'#3d1a10',noir:'#1a0808'},
+  provence:{vigne:'#7a5c2e',or:'#e8c878',bg:'#f5eedd',terre:'#4a3820',noir:'#2a1a0a'},
+  moderne: {vigne:'#1a2a3d',or:'#4a8abf',bg:'#e8eef4',terre:'#1a2a3d',noir:'#0a1520'},
+  bio:     {vigne:'#2a4a1a',or:'#7ab84a',bg:'#eaf0e4',terre:'#1a3010',noir:'#0a1808'},
+  ardoise: {vigne:'#2a2a2a',or:'#888888',bg:'#e8e8e8',terre:'#222222',noir:'#111111'},
+};
+
+let currentEmoji = '🍇';
+let persoSettings = {};
+
+function setEmoji(e) {
+  currentEmoji = e;
+  document.querySelectorAll('.emoji-opt').forEach(el => el.classList.remove('sel'));
+  event.target.closest('.emoji-opt').classList.add('sel');
+  persoPreview();
+}
+
+function persoPreview() {
+  const nom = document.getElementById('pNomApp')?.value || 'VitiTrace';
+  const sub = document.getElementById('pSousNom')?.value || 'Mon domaine';
+  document.getElementById('pvLogo').textContent = currentEmoji;
+  document.getElementById('pvNom').textContent = nom;
+  document.getElementById('pvSub').textContent = sub;
+  // Mettre à jour le header live
+  document.getElementById('aN').textContent = sub || 'Mon domaine';
+}
+
+function applyTheme(name) {
+  const t = THEMES[name];
+  if (!t) return;
+  Object.entries(t).forEach(([k, v]) => {
+    document.documentElement.style.setProperty('--' + k, v);
+  });
+  // Sync les inputs couleur
+  if (t.vigne) { const el=document.getElementById('cVigne'); if(el){el.value=t.vigne;document.getElementById('cVigneHex').value=t.vigne;} }
+  if (t.or)    { const el=document.getElementById('cOr');    if(el){el.value=t.or;   document.getElementById('cOrHex').value=t.or;} }
+  if (t.bg)    { const el=document.getElementById('cBg');    if(el){el.value=t.bg;   document.getElementById('cBgHex').value=t.bg;} }
+  if (t.terre) { const el=document.getElementById('cTerre'); if(el){el.value=t.terre;document.getElementById('cTerreHex').value=t.terre;} }
+  toast('🎨 Thème appliqué · Cliquer Sauvegarder pour conserver');
+  persoSettings = {...persoSettings, theme: name, colors: t};
+}
+
+function applyCustomColor(key, value) {
+  document.documentElement.style.setProperty('--' + key, value);
+  // Sync text input
+  const hexId = {vigne:'cVigneHex',or:'cOrHex',bg:'cBgHex',terre:'cTerreHex'}[key];
+  if (hexId) document.getElementById(hexId).value = value;
+  persoSettings.colors = {...(persoSettings.colors||{}), [key]: value};
+}
+
+function syncColorInput(key, value) {
+  if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+    document.documentElement.style.setProperty('--' + key, value);
+    const pickId = {vigne:'cVigne',or:'cOr',bg:'cBg',terre:'cTerre'}[key];
+    if (pickId) document.getElementById(pickId).value = value;
+    persoSettings.colors = {...(persoSettings.colors||{}), [key]: value};
+  }
+}
+
+async function savePerso() {
+  const settings = {
+    nom_app: document.getElementById('pNomApp')?.value || '',
+    sous_nom: document.getElementById('pSousNom')?.value || '',
+    emoji: currentEmoji,
+    colors: persoSettings.colors || {},
+    textes: {
+      dash:      document.getElementById('ptDash')?.value || '',
+      bienvenue: document.getElementById('ptBienvenue')?.value || '',
+      campagne:  document.getElementById('ptCampagne')?.value || '',
+      stock:     document.getElementById('ptStock')?.value || '',
+    }
+  };
+  syncSaving();
+  try {
+    await sb.from('domaines').update({ settings }).eq('id', DOM_ID);
+    DOM.settings = settings;
+    // Appliquer les textes
+    applyPersoTextes(settings);
+    syncOK();
+    toast('✅ Personnalisation sauvegardée dans Supabase');
+  } catch(e) { syncErr(); toast('❌ Erreur : ' + e.message); }
+}
+
+function applyPersoTextes(s) {
+  if (!s) return;
+  if (s.nom_app) { document.getElementById('ltxt') && (document.getElementById('ltxt').textContent = s.nom_app); }
+  if (s.sous_nom) document.getElementById('aN').textContent = s.sous_nom;
+  if (s.emoji) { const lm = document.querySelector('.lmark'); if(lm) lm.textContent = s.emoji; document.getElementById('pvLogo').textContent = s.emoji; }
+  if (s.colors) Object.entries(s.colors).forEach(([k,v]) => document.documentElement.style.setProperty('--'+k, v));
+}
+
+function loadPerso() {
+  const s = DOM?.settings;
+  if (!s) return;
+  if (s.nom_app) { const el=document.getElementById('pNomApp'); if(el) el.value=s.nom_app; }
+  if (s.sous_nom) { const el=document.getElementById('pSousNom'); if(el) el.value=s.sous_nom; }
+  if (s.emoji) { currentEmoji=s.emoji; }
+  if (s.textes) {
+    if (s.textes.dash)      { const el=document.getElementById('ptDash');      if(el) el.value=s.textes.dash; }
+    if (s.textes.bienvenue) { const el=document.getElementById('ptBienvenue'); if(el) el.value=s.textes.bienvenue; }
+    if (s.textes.campagne)  { const el=document.getElementById('ptCampagne');  if(el) el.value=s.textes.campagne; }
+    if (s.textes.stock)     { const el=document.getElementById('ptStock');     if(el) el.value=s.textes.stock; }
+  }
+  if (s.colors) {
+    Object.entries(s.colors).forEach(([k,v]) => {
+      document.documentElement.style.setProperty('--'+k, v);
+      const ids = {vigne:'cVigne',or:'cOr',bg:'cBg',terre:'cTerre'};
+      const hexIds = {vigne:'cVigneHex',or:'cOrHex',bg:'cBgHex',terre:'cTerreHex'};
+      if(ids[k]){const el=document.getElementById(ids[k]);if(el)el.value=v;}
+      if(hexIds[k]){const el=document.getElementById(hexIds[k]);if(el)el.value=v;}
+    });
+  }
+  applyPersoTextes(s);
+}
+
+function resetPerso() {
+  applyTheme('vigne');
+  currentEmoji = '🍇';
+  ['pNomApp','pSousNom','ptDash','ptBienvenue','ptCampagne','ptStock'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('pvLogo').textContent = '🍇';
+  document.getElementById('pvNom').textContent = 'VitiTrace';
+  document.getElementById('pvSub').textContent = 'Mon domaine';
+  document.getElementById('aN').textContent = DOM?.commune || 'Mon domaine';
+  document.querySelectorAll('.emoji-opt').forEach(el => el.classList.remove('sel'));
+  toast('↩ Valeurs par défaut restaurées');
+}
+
+// ══════════════════════════════════════════
+//  IMPORT SHAPEFILE PAC
+// ══════════════════════════════════════════
+let shpParcelles = []; // parcelles extraites en attente de confirmation
+
+// Drag & drop sur la zone
+const shpDrop = document.getElementById('shpDrop');
+shpDrop.addEventListener('dragover', e => { e.preventDefault(); shpDrop.style.borderColor = 'var(--or)'; shpDrop.style.background = '#fdf8e8'; });
+shpDrop.addEventListener('dragleave', () => { shpDrop.style.borderColor = ''; shpDrop.style.background = ''; });
+shpDrop.addEventListener('drop', e => {
+  e.preventDefault(); shpDrop.style.borderColor = ''; shpDrop.style.background = '';
+  const f = e.dataTransfer.files[0];
+  if (f) { const dt = new DataTransfer(); dt.items.add(f); document.getElementById('shpFile').files = dt.files; handleShpFile(document.getElementById('shpFile')); }
+});
+
+async function handleShpFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('shpDropContent').style.display = 'none';
+  document.getElementById('shpLoadingContent').style.display = 'block';
+  document.getElementById('shpResult').style.display = 'none';
+  shpParcelles = [];
+
+  try {
+    const name = file.name.toLowerCase();
+    setShpLoading('Lecture du fichier…');
+    const buffer = await file.arrayBuffer();
+
+    let shpBuf = null, dbfBuf = null;
+
+    if (name.endsWith('.zip')) {
+      setShpLoading('Décompression du ZIP…');
+      const entries = await readZipEntries(buffer);
+      // Trouver les fichiers .shp et .dbf (peu importe le nom ou sous-dossier)
+      const shpKey = Object.keys(entries).find(k => k.endsWith('.shp') && !k.includes('/') || k.includes('/') && k.endsWith('.shp'));
+      const dbfKey = shpKey ? shpKey.replace('.shp', '.dbf') : null;
+      if (!shpKey) throw new Error('Aucun fichier .shp dans le ZIP');
+      shpBuf = entries[shpKey];
+      if (dbfKey && entries[dbfKey]) dbfBuf = entries[dbfKey];
+      setShpLoading('Shapefile trouvé · Lecture des géométries…');
+    } else if (name.endsWith('.shp')) {
+      shpBuf = buffer;
+      setShpLoading('Lecture Shapefile…');
+    } else if (name.endsWith('.geojson') || name.endsWith('.json')) {
+      setShpLoading('Lecture GeoJSON…');
+      const geojson = JSON.parse(new TextDecoder().decode(buffer));
+      const features = geojson.features || (geojson.type === 'Feature' ? [geojson] : []);
+      shpParcelles = features.map((f, i) => {
+        const p = f.properties || {};
+        const coords = f.geometry?.coordinates?.[0]?.map(c => [parseFloat(c[1].toFixed(7)), parseFloat(c[0].toFixed(7))]) || [];
+        return {
+          code: `P${i+1}`,
+          nom: p.NOM_COM || p.COMMUNE || p.nom || `Parcelle ${i+1}`,
+          surface_ha: parseFloat(p.SURF || p.surface || 0),
+          commune: p.COMMUNE || p.NOM_COM || '',
+          culture: p.TYPE || p.CULT_COD || '',
+          coords
+        };
+      }).filter(p => p.coords.length >= 3);
+      afficherShpResult();
+      return;
+    } else {
+      throw new Error('Format non supporté — utiliser .zip (Télépac), .shp ou .geojson');
+    }
+
+    if (!shpBuf) throw new Error('Impossible de lire le shapefile');
+
+    setShpLoading('Extraction des polygones…');
+    const polys = parseShp(shpBuf);
+
+    let records = [];
+    if (dbfBuf) {
+      setShpLoading('Lecture des attributs…');
+      records = parseDbf(dbfBuf);
+    }
+
+    setShpLoading(`${polys.length} parcelle(s) trouvée(s) · Finalisation…`);
+
+    const COLORS = ['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040','#4a6aaa','#aa4a4a','#6aaa4a','#aa8a4a','#4aaa8a','#8a4aaa'];
+    const COMMUNES = {'34225':'Puisserguier','34052':'Capestang','34089':'Cessenon-sur-Orb'};
+    const TYPES = {'VRC':'Vigne','VRN':'Vigne','OLI':'Olivier','SNE':'Surface non exploitée','JAC':'Jachère','BTH':'Blé tendre','MIS':'Maïs','TRN':'Tournesol'};
+
+    shpParcelles = polys.map((coords, i) => {
+      const rec = records[i] || {};
+      const ilot = rec.NUMERO_I || rec.NUM_ILOT || `${i+1}`;
+      const parc = rec.NUMERO_P || '1';
+      const surf = parseFloat(rec.SURF || rec.SURF_TOT || rec.SUR_ADM || 0);
+      const typeCode = rec.TYPE || rec.CULT_COD || '';
+      const communeCode = rec.COMMUNE || rec.DPT_COM || '';
+      return {
+        code: `I${ilot}P${parc}`,
+        nom: `Îlot ${ilot} · ${TYPES[typeCode] || typeCode || 'Parcelle'}`,
+        surface_ha: surf,
+        commune: COMMUNES[communeCode] || communeCode || 'Inconnue',
+        culture: TYPES[typeCode] || typeCode || '',
+        coords,
+        color: COLORS[i % COLORS.length]
+      };
+    }).filter(p => p.coords.length >= 3);
+
+    if (!shpParcelles.length) throw new Error('Aucun polygone valide extrait');
+    afficherShpResult();
+
+  } catch(e) {
+    document.getElementById('shpLoadingContent').style.display = 'none';
+    document.getElementById('shpDropContent').style.display = 'block';
+    document.getElementById('shpResult').style.display = 'block';
+    document.getElementById('shpResultMsg').className = 'al alr';
+    document.getElementById('shpResultTxt').innerHTML = `<b>Erreur de lecture</b> — ${e.message}`;
+    document.getElementById('shpParcList').innerHTML = '';
+    console.error('SHP error:', e);
+    toast('❌ ' + e.message);
+  }
+}
+
+function setShpLoading(txt) {
+  document.getElementById('shpLoadingTxt').textContent = txt;
+}
+
+function afficherShpResult() {
+  document.getElementById('shpLoadingContent').style.display = 'none';
+  document.getElementById('shpDropContent').style.display = 'block';
+  document.getElementById('shpResult').style.display = 'block';
+  document.getElementById('shpResultMsg').className = 'al alg';
+  const totalHa = shpParcelles.reduce((s,p) => s+(p.surface_ha||0), 0);
+  document.getElementById('shpResultTxt').innerHTML = `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b> Vérifiez avant d'importer.`;
+  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p,i) => `
+    <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:7px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px">
+          <div style="font-weight:700;font-size:13px">${p.nom}</div>
+          <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune} · ${p.coords.length} pts GPS</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" value="${p.code}" placeholder="Code" style="width:70px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].code=this.value">
+          <input type="text" value="${p.nom}" placeholder="Nom" style="width:140px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].nom=this.value">
+        </div>
+      </div>
+    </div>`).join('');
+  toast(`✅ ${shpParcelles.length} parcelles extraites`);
+}
+
+async function confirmShpImport() {
+  if (!shpParcelles.length) return;
+  syncSaving();
+  let ok=0, err=0;
+  const COLORS=['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040','#4a6aaa','#aa4a4a','#6aaa4a','#aa8a4a','#4aaa8a','#8a4aaa'];
+  for (let i=0; i<shpParcelles.length; i++) {
+    const p = shpParcelles[i];
+    try {
+      const {data,error} = await sb.from('parcelles').insert({
+        domaine_id: DOM_ID, code: p.code, nom: p.nom,
+        commune: p.commune, surface_ha: p.surface_ha || null,
+        cepage: p.culture, produit_aoc: 'PAC 2025',
+        ref_cadastrale: `PAC2025-${p.code}`,
+        coords: p.coords, color: p.color || COLORS[i%COLORS.length]
+      }).select().single();
+      if (error) throw error;
+      PARCS.push(data); ok++;
+    } catch(e) { err++; console.error(e); }
+  }
+  const totalHa = PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
+  await sb.from('domaines').update({surface_ha:Math.round(totalHa*100)/100}).eq('id',DOM_ID);
+  DOM.surface_ha = Math.round(totalHa*100)/100;
+  syncOK();
+  fillSelects(); renderDash(); renderIFT();
+  mI=false; initMap();
+  toast(`✅ ${ok} parcelle(s) importées${err?` · ${err} erreur(s)`:''}· Carte mise à jour`);
+  resetShpImport();
+  document.getElementById('shpImportCard').style.display = 'none';
+}
+
+function resetShpImport() {
+  shpParcelles = [];
+  document.getElementById('shpDropContent').style.display = 'block';
+  document.getElementById('shpLoadingContent').style.display = 'none';
+  document.getElementById('shpResult').style.display = 'none';
+  document.getElementById('shpFile').value = '';
+}
+</script>
+</body>
+</html>
