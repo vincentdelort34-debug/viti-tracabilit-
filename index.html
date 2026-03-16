@@ -804,40 +804,30 @@ function parseDbf(arrayBuf) {
   return records;
 }
 
-// Lire un ZIP minimal (lecture des entries sans librairie)
+// Lire un ZIP avec fflate — gère deflate, stored, tous formats
 async function readZipEntries(arrayBuf) {
-  // Chercher End of Central Directory (signature 0x06054b50)
-  const buf=new Uint8Array(arrayBuf);
-  const dv=new DataView(arrayBuf);
-  let eocd=-1;
-  for(let i=buf.length-22;i>=0;i--){
-    if(buf[i]===0x50&&buf[i+1]===0x4B&&buf[i+2]===0x05&&buf[i+3]===0x06){eocd=i;break;}
-  }
-  if(eocd<0) throw new Error('ZIP invalide — signature EOCD introuvable');
-  const cdOffset=dv.getUint32(eocd+16,true);
-  const cdSize=dv.getUint32(eocd+12,true);
-  const nEntries=dv.getUint16(eocd+8,true);
-  const entries={};
-  let pos=cdOffset;
-  for(let e=0;e<nEntries;e++){
-    if(dv.getUint32(pos,true)!==0x02014b50) break;
-    const fnLen=dv.getUint16(pos+28,true);
-    const extraLen=dv.getUint16(pos+30,true);
-    const commentLen=dv.getUint16(pos+32,true);
-    const localOffset=dv.getUint32(pos+42,true);
-    const name=new TextDecoder().decode(buf.slice(pos+46,pos+46+fnLen));
-    // Lire local header pour obtenir les données
-    const lhExtraLen=dv.getUint16(localOffset+28,true);
-    const lhFnLen=dv.getUint16(localOffset+26,true);
-    const dataStart=localOffset+30+lhFnLen+lhExtraLen;
-    const compSize=dv.getUint32(pos+20,true);
-    const compMethod=dv.getUint16(pos+10,true);
-    if(compMethod===0){ // stored (non compressé)
-      entries[name.toLowerCase()]=arrayBuf.slice(dataStart,dataStart+compSize);
+  return new Promise((resolve, reject) => {
+    try {
+      const entries = {};
+      // fflate.unzip décompresse tout le ZIP en une passe
+      fflate.unzip(new Uint8Array(arrayBuf), (err, files) => {
+        if (err) {
+          reject(new Error('ZIP illisible : ' + err.message));
+          return;
+        }
+        // files = { "nom.shp": Uint8Array, "nom.dbf": Uint8Array, ... }
+        Object.entries(files).forEach(([name, data]) => {
+          // Garder seulement les fichiers (pas les dossiers)
+          if (data.length > 0) {
+            entries[name.toLowerCase()] = data.buffer;
+          }
+        });
+        resolve(entries);
+      });
+    } catch(e) {
+      reject(e);
     }
-    pos+=46+fnLen+extraLen+commentLen;
-  }
-  return entries;
+  });
 }
 // ══════════════════════════════════════════
 //  SUPABASE
@@ -1742,9 +1732,10 @@ async function handleShpFile(input) {
       setShpLoading('Décompression du ZIP…');
       const entries = await readZipEntries(buffer);
       // Trouver les fichiers .shp et .dbf (peu importe le nom ou sous-dossier)
-      const shpKey = Object.keys(entries).find(k => k.endsWith('.shp') && !k.includes('/') || k.includes('/') && k.endsWith('.shp'));
+      const shpKey = Object.keys(entries).find(k => k.endsWith('.shp'));
+      console.log('ZIP contents:', Object.keys(entries));
       const dbfKey = shpKey ? shpKey.replace('.shp', '.dbf') : null;
-      if (!shpKey) throw new Error('Aucun fichier .shp dans le ZIP');
+      if (!shpKey) throw new Error('Aucun fichier .shp trouvé dans le ZIP — contenu : ' + Object.keys(entries).join(', '));
       shpBuf = entries[shpKey];
       if (dbfKey && entries[dbfKey]) dbfBuf = entries[dbfKey];
       setShpLoading('Shapefile trouvé · Lecture des géométries…');
