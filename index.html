@@ -402,7 +402,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     </div>
   </div>
 
-  <div id="mc"><div class="mo">📍 GPS</div><div class="mct"><button class="mcb" onclick="mSat()">🛰️</button><button class="mcb" onclick="mOSM()">🗺️</button><button class="mcb" onclick="mCenter()">◎</button></div><div id="map"></div></div>
+  <div id="mc"><div class="mo">📍 GPS</div><div class="mct"><button class="mcb" onclick="mSat()">🛰️</button><button class="mcb" onclick="mOSM()">🗺️</button><button class="mcb" onclick="mCenter()">◎</button><button class="mcb" onclick="reloadMap()" title="Recharger depuis Supabase">🔄</button></div><div id="map"></div></div>
   <div id="cL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter manuellement</button></div></div>
   <button class="btn btp" onclick="showM('mAP')" style="margin-top:4px">+ Ajouter une parcelle manuellement</button>
 </section>
@@ -702,8 +702,142 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 
 <div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="https://unpkg.com/shpjs@3.6.3/dist/shp.js"></script>
+<script>
+// ══════════════════════════════════════════════════════
+//  LECTEUR SHAPEFILE NATIF — sans librairie externe
+//  Lit .shp .dbf et ZIPs — convertit Lambert93 → WGS84
+// ══════════════════════════════════════════════════════
+
+// Conversion Lambert93 (EPSG:2154) → WGS84
+function lambert93ToWGS84(x, y) {
+  const n=0.7256077650532670, C=11754255.4261, Xs=700000.0, Ys=12655612.0499;
+  const e=0.0818191910435;
+  const r=Math.sqrt((x-Xs)**2+(y-Ys)**2)*(y<Ys?-1:1);
+  const gamma=Math.atan((x-Xs)/(Ys-y));
+  const lonRad=gamma/n+Math.PI/60; // 3° en radians
+  let latIso=-Math.log(Math.abs(r/C))/n;
+  let lat=2*Math.atan(Math.exp(latIso))-Math.PI/2;
+  for(let i=0;i<10;i++){
+    const s=Math.sin(lat);
+    const l2=2*Math.atan(Math.exp(latIso)*((1+e*s)/(1-e*s))**(e/2))-Math.PI/2;
+    if(Math.abs(l2-lat)<1e-11){lat=l2;break;}
+    lat=l2;
+  }
+  return [lonRad*180/Math.PI, lat*180/Math.PI]; // [lon, lat]
+}
+
+function readInt32BE(buf,off){return((buf[off]<<24)|(buf[off+1]<<16)|(buf[off+2]<<8)|buf[off+3]);}
+function readInt32LE(buf,off){return buf[off]|(buf[off+1]<<8)|(buf[off+2]<<16)|(buf[off+3]<<24);}
+function readFloat64LE(buf,off){return new DataView(buf.buffer||buf,off,8).getFloat64(0,true);}
+
+// Lire un fichier .shp et retourner les polygones en WGS84 [[lat,lon],...]
+function parseShp(arrayBuf) {
+  const buf=new Uint8Array(arrayBuf);
+  const n=(readInt32BE(buf,24)*2-100)/8; // nb records via fileLength
+  const polys=[];
+  let pos=100;
+  while(pos<buf.length-8){
+    const cLen=readInt32BE(buf,pos+4)*2;
+    const shpType=readInt32LE(buf,pos+8);
+    if(shpType===5||shpType===15||shpType===25){ // Polygon / PolygonZ / PolygonM
+      const nParts=readInt32LE(buf,pos+44);
+      const nPts=readInt32LE(buf,pos+48);
+      const parts=[];
+      for(let i=0;i<nParts;i++) parts.push(readInt32LE(buf,pos+52+i*4));
+      const ptsStart=pos+52+nParts*4;
+      const rawPts=[];
+      for(let i=0;i<nPts;i++){
+        const x=readFloat64LE(buf,ptsStart+i*16);
+        const y=readFloat64LE(buf,ptsStart+i*16+8);
+        rawPts.push([x,y]);
+      }
+      // Détecter Lambert93 (coordonnées ~600000-900000 / 6100000-6700000)
+      const isL93=rawPts[0]&&rawPts[0][0]>100000;
+      // Extraire le ring principal (parts[0])
+      const start=parts[0]||0;
+      const end=parts[1]||nPts;
+      const ring=rawPts.slice(start,end);
+      // Convertir et retourner [[lat,lon]] pour Leaflet
+      const coords=ring.map(([x,y])=>{
+        if(isL93){const [lon,lat]=lambert93ToWGS84(x,y);return[Math.round(lat*7)/7*7,Math.round(lon*7)/7*7];}
+        return[Math.round(y*1e7)/1e7,Math.round(x*1e7)/1e7];
+      });
+      // Précision correcte
+      const coordsP=ring.map(([x,y])=>{
+        if(isL93){const [lon,lat]=lambert93ToWGS84(x,y);return[parseFloat(lat.toFixed(7)),parseFloat(lon.toFixed(7))];}
+        return[parseFloat(y.toFixed(7)),parseFloat(x.toFixed(7))];
+      });
+      polys.push(coordsP);
+    }
+    pos+=cLen+8;
+    if(cLen===0)break;
+  }
+  return polys;
+}
+
+// Lire un fichier .dbf et retourner les records
+function parseDbf(arrayBuf) {
+  const buf=new Uint8Array(arrayBuf);
+  const nRec=(buf[4]|(buf[5]<<8)|(buf[6]<<16)|(buf[7]<<24));
+  const headerSize=(buf[8]|(buf[9]<<8));
+  const recSize=(buf[10]|(buf[11]<<8));
+  const fields=[];
+  let pos=32;
+  while(buf[pos]!==0x0D&&pos<headerSize){
+    const name=Array.from(buf.slice(pos,pos+11)).map(c=>String.fromCharCode(c)).join('').replace(/\0/g,'').trim();
+    const len=buf[pos+16];
+    fields.push({name,len});
+    pos+=32;
+  }
+  const records=[];
+  for(let i=0;i<nRec;i++){
+    const rpos=headerSize+i*recSize+1;
+    const rec={};
+    let cp=0;
+    fields.forEach(f=>{
+      rec[f.name]=Array.from(buf.slice(rpos+cp,rpos+cp+f.len)).map(c=>String.fromCharCode(c)).join('').replace(/\0/g,'').trim();
+      cp+=f.len;
+    });
+    records.push(rec);
+  }
+  return records;
+}
+
+// Lire un ZIP minimal (lecture des entries sans librairie)
+async function readZipEntries(arrayBuf) {
+  // Chercher End of Central Directory (signature 0x06054b50)
+  const buf=new Uint8Array(arrayBuf);
+  const dv=new DataView(arrayBuf);
+  let eocd=-1;
+  for(let i=buf.length-22;i>=0;i--){
+    if(buf[i]===0x50&&buf[i+1]===0x4B&&buf[i+2]===0x05&&buf[i+3]===0x06){eocd=i;break;}
+  }
+  if(eocd<0) throw new Error('ZIP invalide — signature EOCD introuvable');
+  const cdOffset=dv.getUint32(eocd+16,true);
+  const cdSize=dv.getUint32(eocd+12,true);
+  const nEntries=dv.getUint16(eocd+8,true);
+  const entries={};
+  let pos=cdOffset;
+  for(let e=0;e<nEntries;e++){
+    if(dv.getUint32(pos,true)!==0x02014b50) break;
+    const fnLen=dv.getUint16(pos+28,true);
+    const extraLen=dv.getUint16(pos+30,true);
+    const commentLen=dv.getUint16(pos+32,true);
+    const localOffset=dv.getUint32(pos+42,true);
+    const name=new TextDecoder().decode(buf.slice(pos+46,pos+46+fnLen));
+    // Lire local header pour obtenir les données
+    const lhExtraLen=dv.getUint16(localOffset+28,true);
+    const lhFnLen=dv.getUint16(localOffset+26,true);
+    const dataStart=localOffset+30+lhFnLen+lhExtraLen;
+    const compSize=dv.getUint32(pos+20,true);
+    const compMethod=dv.getUint16(pos+10,true);
+    if(compMethod===0){ // stored (non compressé)
+      entries[name.toLowerCase()]=arrayBuf.slice(dataStart,dataStart+compSize);
+    }
+    pos+=46+fnLen+extraLen+commentLen;
+  }
+  return entries;
+}
 <script>
 // ══════════════════════════════════════════
 //  SUPABASE
@@ -1188,16 +1322,26 @@ async function saveParc(){
 // ══════════════════════════════════════════
 let mI=false,mL=null,tOSM,tSAT;
 function initMap(){
-  let center=[43.617,3.067],zoom=10;
+  let center=[43.37,3.05],zoom=12;
   if(PARCS.length){
     const wp=PARCS.filter(p=>p.coords&&p.coords.length);
-    if(wp.length){const la=wp.flatMap(p=>p.coords.map(c=>c[0])),lo=wp.flatMap(p=>p.coords.map(c=>c[1]));center=[(Math.min(...la)+Math.max(...la))/2,(Math.min(...lo)+Math.max(...lo))/2];zoom=13;}
+    if(wp.length){
+      const la=wp.flatMap(p=>p.coords.map(c=>c[0])),lo=wp.flatMap(p=>p.coords.map(c=>c[1]));
+      center=[(Math.min(...la)+Math.max(...la))/2,(Math.min(...lo)+Math.max(...lo))/2];
+      zoom=13;
+    }
   }
   if(!mI){
-    mI=true;mL=L.map('map',{zoomControl:false,attributionControl:false}).setView(center,zoom);
+    mI=true;
+    mL=L.map('map',{zoomControl:false,attributionControl:false}).setView(center,zoom);
     tOSM=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(mL);
     tSAT=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
-  }else{mL.setView(center,zoom);mL.eachLayer(l=>{if(l instanceof L.Polygon||l instanceof L.Marker)mL.removeLayer(l);});}
+  } else {
+    mL.setView(center,zoom);
+    // Supprimer tous les polygones et markers existants
+    mL.eachLayer(l=>{if(l instanceof L.Polygon||l instanceof L.Marker)mL.removeLayer(l);});
+  }
+  // Dessiner les parcelles
   PARCS.forEach(p=>{
     if(p.coords&&p.coords.length>=3){
       const poly=L.polygon(p.coords,{color:'#1a1410',weight:2,fillColor:p.color||'#4a8a42',fillOpacity:.55}).addTo(mL);
@@ -1207,13 +1351,29 @@ function initMap(){
     }
   });
   const cl=document.getElementById('cL');
-  if(!PARCS.length){cl.innerHTML=`<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter</button></div>`;document.getElementById('cS').textContent='Aucune parcelle configurée';return;}
+  if(!PARCS.length){
+    cl.innerHTML=`<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter manuellement</button></div>`;
+    document.getElementById('cS').textContent='Aucune parcelle configurée';
+    return;
+  }
   document.getElementById('cS').textContent=`${PARCS.length} parcelle(s) · ${PARCS.reduce((s,p)=>s+(p.surface_ha||0),0).toFixed(2)} ha`;
-  cl.innerHTML=PARCS.map(p=>{const v=iftP(p.code),st=iftSt(v),col=iftCol(st);return`<div class="card" onclick="showPD('${p.code}')"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div></div>`;}).join('');
+  cl.innerHTML=PARCS.map(p=>{
+    const v=iftP(p.code),st=iftSt(v),col=iftCol(st);
+    return`<div class="card" onclick="showPD('${p.code}')"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div></div>`;
+  }).join('');
 }
 function mSat(){if(!mL)return;try{mL.removeLayer(tOSM);}catch(e){}tSAT.addTo(mL);toast('🛰️ Vue satellite');}
 function mOSM(){if(!mL)return;try{mL.removeLayer(tSAT);}catch(e){}tOSM.addTo(mL);toast('🗺️ Vue plan');}
-function mCenter(){if(!mL)return;mL.setView([43.617,3.067],10);}
+function mCenter(){if(!mL||!PARCS.length)return;mL.setView([43.37,3.05],12);}
+async function reloadMap(){
+  toast('🔄 Rechargement des parcelles…');
+  const {data}=await sb.from('parcelles').select('*').eq('domaine_id',DOM_ID).order('code');
+  PARCS=data||[];
+  mI=false; // forcer réinitialisation complète
+  initMap();
+  renderDash();renderIFT();fillSelects();
+  toast(`✅ ${PARCS.length} parcelle(s) chargée(s)`);
+}
 
 // ══════════════════════════════════════════
 //  REGISTRE
@@ -1489,7 +1649,6 @@ shpDrop.addEventListener('drop', e => {
 async function handleShpFile(input) {
   const file = input.files[0];
   if (!file) return;
-
   document.getElementById('shpDropContent').style.display = 'none';
   document.getElementById('shpLoadingContent').style.display = 'block';
   document.getElementById('shpResult').style.display = 'none';
@@ -1499,132 +1658,80 @@ async function handleShpFile(input) {
     const name = file.name.toLowerCase();
     setShpLoading('Lecture du fichier…');
     const buffer = await file.arrayBuffer();
-    let geojson = null;
 
-    if (name.endsWith('.geojson') || name.endsWith('.json')) {
-      // GeoJSON direct
-      setShpLoading('Lecture GeoJSON…');
-      const txt = new TextDecoder().decode(buffer);
-      geojson = JSON.parse(txt);
+    let shpBuf = null, dbfBuf = null;
 
-    } else if (name.endsWith('.zip')) {
+    if (name.endsWith('.zip')) {
       setShpLoading('Décompression du ZIP…');
-
-      // Essai 1 : shpjs direct sur le buffer
-      try {
-        geojson = await shp(buffer);
-      } catch(e1) {
-        // Essai 2 : JSZip pour explorer le contenu et trouver les .shp
-        setShpLoading('Exploration du contenu ZIP…');
-        const zip = await JSZip.loadAsync(buffer);
-        const files = Object.keys(zip.files);
-
-        // Chercher tous les .shp dans le ZIP (même dans sous-dossiers)
-        const shpFiles = files.filter(f => f.toLowerCase().endsWith('.shp') && !zip.files[f].dir);
-
-        if (!shpFiles.length) throw new Error('Aucun fichier .shp trouvé dans le ZIP');
-
-        setShpLoading(`Lecture de ${shpFiles.length} shapefile(s)…`);
-        const allFeatures = [];
-
-        for (const shpPath of shpFiles) {
-          try {
-            const basePath = shpPath.replace(/\.shp$/i, '');
-            const dbfPath = files.find(f => f.toLowerCase() === basePath.toLowerCase() + '.dbf');
-            const prjPath = files.find(f => f.toLowerCase() === basePath.toLowerCase() + '.prj');
-
-            // Lire les buffers
-            const shpBuf = await zip.files[shpPath].async('arraybuffer');
-            const dbfBuf = dbfPath ? await zip.files[dbfPath].async('arraybuffer') : null;
-
-            // Reconstruire un ZIP minimal avec juste ce shapefile pour shpjs
-            const miniZip = new JSZip();
-            const fname = shpPath.split('/').pop().replace(/\.shp$/i, '');
-            miniZip.file(fname + '.shp', shpBuf);
-            if (dbfBuf) miniZip.file(fname + '.dbf', dbfBuf);
-            if (prjPath) {
-              const prjBuf = await zip.files[prjPath].async('arraybuffer');
-              miniZip.file(fname + '.prj', prjBuf);
-            }
-            const miniBuffer = await miniZip.generateAsync({type:'arraybuffer'});
-
-            const result = await shp(miniBuffer);
-            if (result && result.features) allFeatures.push(...result.features);
-            else if (Array.isArray(result)) result.forEach(r => r.features && allFeatures.push(...r.features));
-          } catch(e2) {
-            console.warn('Erreur lecture shapefile:', shpPath, e2);
-          }
-        }
-
-        if (!allFeatures.length) throw new Error('Impossible de lire les shapefiles — format non supporté');
-        geojson = { type: 'FeatureCollection', features: allFeatures };
-      }
-
+      const entries = await readZipEntries(buffer);
+      // Trouver les fichiers .shp et .dbf (peu importe le nom ou sous-dossier)
+      const shpKey = Object.keys(entries).find(k => k.endsWith('.shp') && !k.includes('/') || k.includes('/') && k.endsWith('.shp'));
+      const dbfKey = shpKey ? shpKey.replace('.shp', '.dbf') : null;
+      if (!shpKey) throw new Error('Aucun fichier .shp dans le ZIP');
+      shpBuf = entries[shpKey];
+      if (dbfKey && entries[dbfKey]) dbfBuf = entries[dbfKey];
+      setShpLoading('Shapefile trouvé · Lecture des géométries…');
     } else if (name.endsWith('.shp')) {
+      shpBuf = buffer;
       setShpLoading('Lecture Shapefile…');
-      geojson = await shp(buffer);
+    } else if (name.endsWith('.geojson') || name.endsWith('.json')) {
+      setShpLoading('Lecture GeoJSON…');
+      const geojson = JSON.parse(new TextDecoder().decode(buffer));
+      const features = geojson.features || (geojson.type === 'Feature' ? [geojson] : []);
+      shpParcelles = features.map((f, i) => {
+        const p = f.properties || {};
+        const coords = f.geometry?.coordinates?.[0]?.map(c => [parseFloat(c[1].toFixed(7)), parseFloat(c[0].toFixed(7))]) || [];
+        return {
+          code: `P${i+1}`,
+          nom: p.NOM_COM || p.COMMUNE || p.nom || `Parcelle ${i+1}`,
+          surface_ha: parseFloat(p.SURF || p.surface || 0),
+          commune: p.COMMUNE || p.NOM_COM || '',
+          culture: p.TYPE || p.CULT_COD || '',
+          coords
+        };
+      }).filter(p => p.coords.length >= 3);
+      afficherShpResult();
+      return;
     } else {
-      throw new Error('Format non supporté — utiliser .zip (Télépac) ou .geojson');
+      throw new Error('Format non supporté — utiliser .zip (Télépac), .shp ou .geojson');
     }
 
-    setShpLoading('Extraction des parcelles…');
+    if (!shpBuf) throw new Error('Impossible de lire le shapefile');
 
-    // Normaliser en tableau de features
-    const features = [];
-    if (Array.isArray(geojson)) {
-      geojson.forEach(g => {
-        if (g && g.features) features.push(...g.features);
-        else if (g && g.type === 'Feature') features.push(g);
-      });
-    } else if (geojson && geojson.type === 'FeatureCollection') {
-      features.push(...(geojson.features || []));
-    } else if (geojson && geojson.type === 'Feature') {
-      features.push(geojson);
+    setShpLoading('Extraction des polygones…');
+    const polys = parseShp(shpBuf);
+
+    let records = [];
+    if (dbfBuf) {
+      setShpLoading('Lecture des attributs…');
+      records = parseDbf(dbfBuf);
     }
 
-    if (!features.length) throw new Error('Aucune parcelle trouvée dans le fichier');
+    setShpLoading(`${polys.length} parcelle(s) trouvée(s) · Finalisation…`);
 
-    setShpLoading(`${features.length} parcelle(s) détectée(s)…`);
+    const COLORS = ['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040','#4a6aaa','#aa4a4a','#6aaa4a','#aa8a4a','#4aaa8a','#8a4aaa'];
+    const COMMUNES = {'34225':'Puisserguier','34052':'Capestang','34089':'Cessenon-sur-Orb'};
+    const TYPES = {'VRC':'Vigne','VRN':'Vigne','OLI':'Olivier','SNE':'Surface non exploitée','JAC':'Jachère','BTH':'Blé tendre','MIS':'Maïs','TRN':'Tournesol'};
 
-    // Extraire les données de chaque parcelle
-    shpParcelles = features.map((f, i) => {
-      const p = f.properties || {};
-      // Champs Télépac PAC (noms variables selon les exports)
-      const nom =
-        p.NOM_COM || p.nom_com || p.COMMUNE || p.commune ||
-        p.LIBELLE || p.libelle || p.LIB_CULT || p.lib_cult ||
-        p.CULT_COD || p.cult_cod || p.CODE_CULT || p.code_cult ||
-        p.NOM || p.nom || `Parcelle ${i+1}`;
-      const code =
-        p.NUM_ILOT || p.num_ilot || p.NUMERO_I || p.numero_i ||
-        p.REF_PARC || p.ref_parc || p.CODE || p.code ||
-        p.ID || p.id || `P${i+1}`;
-      const surface =
-        p.SURF_PARC || p.surf_parc || p.SUR_ADM || p.sur_adm ||
-        p.SURFACE || p.surface || p.AREA || p.area ||
-        calcSurface(f.geometry) || 0;
-      const commune =
-        p.NOM_COM || p.nom_com || p.COMMUNE || p.commune ||
-        p.LIB_COM || p.lib_com || '';
-      const culture =
-        p.CULT_COD || p.cult_cod || p.CODE_CULT || p.code_cult ||
-        p.LIB_CULT || p.lib_cult || p.CULTURE || p.culture || '';
-
-      const coords = extractCoords(f.geometry);
-
+    shpParcelles = polys.map((coords, i) => {
+      const rec = records[i] || {};
+      const ilot = rec.NUMERO_I || rec.NUM_ILOT || `${i+1}`;
+      const parc = rec.NUMERO_P || '1';
+      const surf = parseFloat(rec.SURF || rec.SURF_TOT || rec.SUR_ADM || 0);
+      const typeCode = rec.TYPE || rec.CULT_COD || '';
+      const communeCode = rec.COMMUNE || rec.DPT_COM || '';
       return {
-        code: String(code).slice(0, 10),
-        nom: String(nom).slice(0, 60),
-        surface_ha: Math.round(parseFloat(surface) * 10000) / 10000 || 0,
-        commune: String(commune),
-        culture: String(culture),
+        code: `I${ilot}P${parc}`,
+        nom: `Îlot ${ilot} · ${TYPES[typeCode] || typeCode || 'Parcelle'}`,
+        surface_ha: surf,
+        commune: COMMUNES[communeCode] || communeCode || 'Inconnue',
+        culture: TYPES[typeCode] || typeCode || '',
         coords,
-        raw: p
+        color: COLORS[i % COLORS.length]
       };
-    }).filter(p => p.coords && p.coords.length >= 3);
+    }).filter(p => p.coords.length >= 3);
 
-    if (!shpParcelles.length) throw new Error('Aucune géométrie polygone valide trouvée');
-
+    if (!shpParcelles.length) throw new Error('Aucun polygone valide extrait');
     afficherShpResult();
 
   } catch(e) {
@@ -1632,9 +1739,9 @@ async function handleShpFile(input) {
     document.getElementById('shpDropContent').style.display = 'block';
     document.getElementById('shpResult').style.display = 'block';
     document.getElementById('shpResultMsg').className = 'al alr';
-    document.getElementById('shpResultTxt').innerHTML = `<b>Erreur de lecture</b>${e.message}`;
+    document.getElementById('shpResultTxt').innerHTML = `<b>Erreur de lecture</b> — ${e.message}`;
     document.getElementById('shpParcList').innerHTML = '';
-    console.error('SHP import error:', e);
+    console.error('SHP error:', e);
     toast('❌ ' + e.message);
   }
 }
@@ -1643,106 +1750,55 @@ function setShpLoading(txt) {
   document.getElementById('shpLoadingTxt').textContent = txt;
 }
 
-function extractCoords(geometry) {
-  if (!geometry) return [];
-  try {
-    let ring;
-    if (geometry.type === 'Polygon') {
-      ring = geometry.coordinates[0];
-    } else if (geometry.type === 'MultiPolygon') {
-      // Prendre le plus grand polygone
-      ring = geometry.coordinates.reduce((a, b) => a[0].length > b[0].length ? a : b)[0];
-    } else return [];
-    // Convertir [lon, lat] → [lat, lon] pour Leaflet
-    return ring.map(c => [c[1], c[0]]);
-  } catch(e) { return []; }
-}
-
-function calcSurface(geometry) {
-  // Estimation simple de surface en ha depuis les coordonnées
-  try {
-    if (!geometry) return 0;
-    let ring;
-    if (geometry.type === 'Polygon') ring = geometry.coordinates[0];
-    else if (geometry.type === 'MultiPolygon') ring = geometry.coordinates[0][0];
-    else return 0;
-    // Formule de Shoelace en degrés → conversion approximative
-    let area = 0;
-    for (let i = 0; i < ring.length - 1; i++) {
-      area += ring[i][0] * ring[i+1][1];
-      area -= ring[i+1][0] * ring[i][1];
-    }
-    // Convertir deg² → m² (approximation lat ~44°)
-    const m2 = Math.abs(area / 2) * 111320 * 111320 * Math.cos(44 * Math.PI / 180);
-    return Math.round(m2 / 100) / 100; // en ha
-  } catch(e) { return 0; }
-}
-
 function afficherShpResult() {
   document.getElementById('shpLoadingContent').style.display = 'none';
   document.getElementById('shpDropContent').style.display = 'block';
   document.getElementById('shpResult').style.display = 'block';
   document.getElementById('shpResultMsg').className = 'al alg';
-  const totalHa = shpParcelles.reduce((s, p) => s + (p.surface_ha || 0), 0);
-  document.getElementById('shpResultTxt').innerHTML =
-    `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b>Vérifiez les données avant d'importer.`;
-
-  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p, i) => `
-    <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-      <div style="flex:1">
-        <div style="font-weight:700;font-size:13px">${p.nom}</div>
-        <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune||'—'} · ${p.culture||'—'}</div>
-        <div style="font-size:10px;color:var(--gris);margin-top:1px">Code : ${p.code} · ${p.coords.length} points GPS</div>
-      </div>
-      <div>
-        <input type="text" value="${p.code}" placeholder="Code" style="width:60px;padding:5px 7px;font-size:12px;margin-bottom:4px" onchange="shpParcelles[${i}].code=this.value">
-        <input type="text" value="${p.nom}" placeholder="Nom" style="width:120px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].nom=this.value">
+  const totalHa = shpParcelles.reduce((s,p) => s+(p.surface_ha||0), 0);
+  document.getElementById('shpResultTxt').innerHTML = `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b> Vérifiez avant d'importer.`;
+  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p,i) => `
+    <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:7px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px">
+          <div style="font-weight:700;font-size:13px">${p.nom}</div>
+          <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune} · ${p.coords.length} pts GPS</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" value="${p.code}" placeholder="Code" style="width:70px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].code=this.value">
+          <input type="text" value="${p.nom}" placeholder="Nom" style="width:140px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].nom=this.value">
+        </div>
       </div>
     </div>`).join('');
-
-  toast(`✅ ${shpParcelles.length} parcelles extraites du Shapefile`);
+  toast(`✅ ${shpParcelles.length} parcelles extraites`);
 }
 
 async function confirmShpImport() {
   if (!shpParcelles.length) return;
   syncSaving();
-  let imported = 0, errors = 0;
-  const colors = ['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040'];
-
-  for (let i = 0; i < shpParcelles.length; i++) {
+  let ok=0, err=0;
+  const COLORS=['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040','#4a6aaa','#aa4a4a','#6aaa4a','#aa8a4a','#4aaa8a','#8a4aaa'];
+  for (let i=0; i<shpParcelles.length; i++) {
     const p = shpParcelles[i];
     try {
-      const { data, error } = await sb.from('parcelles').insert({
-        domaine_id: DOM_ID,
-        code: p.code,
-        nom: p.nom,
-        commune: p.commune || '',
-        surface_ha: p.surface_ha || null,
-        cepage: p.culture || '',
-        coords: p.coords,
-        color: colors[i % colors.length],
+      const {data,error} = await sb.from('parcelles').insert({
+        domaine_id: DOM_ID, code: p.code, nom: p.nom,
+        commune: p.commune, surface_ha: p.surface_ha || null,
+        cepage: p.culture, produit_aoc: 'PAC 2025',
+        ref_cadastrale: `PAC2025-${p.code}`,
+        coords: p.coords, color: p.color || COLORS[i%COLORS.length]
       }).select().single();
       if (error) throw error;
-      PARCS.push(data);
-      imported++;
-    } catch(e) { errors++; console.error(e); }
+      PARCS.push(data); ok++;
+    } catch(e) { err++; console.error(e); }
   }
-
-  // Mettre à jour surface totale
-  const totalHa = PARCS.reduce((s, p) => s + (p.surface_ha || 0), 0);
-  await sb.from('domaines').update({ surface_ha: Math.round(totalHa * 100) / 100 }).eq('id', DOM_ID);
-  DOM.surface_ha = Math.round(totalHa * 100) / 100;
-
+  const totalHa = PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
+  await sb.from('domaines').update({surface_ha:Math.round(totalHa*100)/100}).eq('id',DOM_ID);
+  DOM.surface_ha = Math.round(totalHa*100)/100;
   syncOK();
   fillSelects(); renderDash(); renderIFT();
-
-  // Recharger la carte
-  mI = false;
-  initMap();
-
-  toast(`✅ ${imported} parcelle(s) importées${errors ? ` · ${errors} erreur(s)` : ''} · Carte mise à jour`);
-
-  // Masquer le bloc import
+  mI=false; initMap();
+  toast(`✅ ${ok} parcelle(s) importées${err?` · ${err} erreur(s)`:''}· Carte mise à jour`);
   resetShpImport();
   document.getElementById('shpImportCard').style.display = 'none';
 }
