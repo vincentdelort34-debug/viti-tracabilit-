@@ -362,7 +362,10 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <button class="btn btghost btsm" onclick="fS('zero',this)">🚫 Épuisé</button>
   </div>
   <div id="sL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucun produit<br>Scannez une étiquette pour commencer</div></div>
-  <button class="btn btp" onclick="go('sScan',document.querySelectorAll('.tab')[3])" style="margin-top:4px">📷 Scanner / ajouter un produit</button>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+    <button class="btn btghost" onclick="showM('mAddProd')">✏️ Saisie manuelle</button>
+    <button class="btn btp" onclick="go('sScan',document.querySelectorAll('.tab')[3])">📷 Scanner</button>
+  </div>
 </section>
 <!-- PARCELLES -->
 <section id="sCarto" class="sec">
@@ -601,18 +604,98 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 <!-- MODALS -->
 <div class="ov" id="mNI" onclick="closeM(event,'mNI')">
   <div class="mo2" onclick="event.stopPropagation()">
-    <div class="mh"></div><div class="mt">Nouvelle intervention</div>
+    <div class="mh"></div><div class="mt">Nouvelle saisie</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px">
       <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="closeM(null,'mNI');go('sTrait',document.querySelectorAll('.tab')[1])"><div style="font-size:25px;margin-bottom:5px">💊</div><div style="font-size:12.5px;font-weight:600">Traitement phyto</div></div>
       <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="closeM(null,'mNI');go('sScan',document.querySelectorAll('.tab')[3])"><div style="font-size:25px;margin-bottom:5px">📷</div><div style="font-size:12.5px;font-weight:600">Scan étiquette IA</div></div>
-      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer"><div style="font-size:25px;margin-bottom:5px">✂️</div><div style="font-size:12.5px;font-weight:600">Travaux verts</div></div>
-      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer"><div style="font-size:25px;margin-bottom:5px">🌾</div><div style="font-size:12.5px;font-weight:600">Fertilisation</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="closeM(null,'mNI');showM('mAddProd')"><div style="font-size:25px;margin-bottom:5px">🧪</div><div style="font-size:12.5px;font-weight:600">Produit phyto</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Saisie manuelle</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="closeM(null,'mNI');showM('mAddObs')"><div style="font-size:25px;margin-bottom:5px">👁️</div><div style="font-size:12.5px;font-weight:600">Observation</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Sans photo</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="closeM(null,'mNI');showM('mAP')"><div style="font-size:25px;margin-bottom:5px">🗺️</div><div style="font-size:12.5px;font-weight:600">Parcelle</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Saisie manuelle</div></div>
+      <div style="background:var(--card);border:2px solid var(--gris2);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer" onclick="closeM(null,'mNI');showM('mAddRendement')"><div style="font-size:25px;margin-bottom:5px">🌾</div><div style="font-size:12.5px;font-weight:600">Rendement</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Vendanges</div></div>
     </div>
     <button class="btn btghost" style="width:100%" onclick="closeM(null,'mNI')">Fermer</button>
   </div>
 </div>
 
-<div class="ov" id="mAP" onclick="closeM(event,'mAP')">
+<div class="ov" id="mAddProd" onclick="closeM(event,'mAddProd')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">✏️ Ajouter un produit</div>
+    <div class="fg"><label>Nom du produit *</label><input type="text" id="mpNom" placeholder="Ex : Soufre Micronisé Wettable"></div>
+    <div class="row2">
+      <div class="fg"><label>N° AMM</label><input type="text" id="mpAMM" placeholder="FR-XXXX-XXXX"></div>
+      <div class="fg"><label>Catégorie</label>
+        <select id="mpCateg">
+          <option>Fongicide</option><option>Fongicide cuivre</option>
+          <option>Insecticide</option><option>Herbicide</option><option>Biocontrôle</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>Fabricant</label><input type="text" id="mpFab" placeholder="Ex : De Sangosse, Bayer…"></div>
+    <div class="row2">
+      <div class="fg"><label>Dose référence ANSES</label><div class="ig"><input type="number" id="mpDoseRef" step="0.01" placeholder="3"><span class="isuf" id="mpDoseUnit">kg/ha</span></div></div>
+      <div class="fg"><label>Unité</label>
+        <select id="mpUnite" onchange="document.getElementById('mpDoseUnit').textContent=this.value">
+          <option value="kg/ha">kg/ha</option><option value="L/ha">L/ha</option><option value="g/ha">g/ha</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>DAR (jours)</label><input type="number" id="mpDAR" placeholder="28" min="0"></div>
+      <div class="fg"><label>ZNT (m)</label><input type="number" id="mpZNT" placeholder="5" min="0"></div>
+    </div>
+    <div class="fg"><label>Cibles</label><input type="text" id="mpCibles" placeholder="Ex : Mildiou, Oïdium, Botrytis…"></div>
+    <div class="sep"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Stock initial</div>
+    <div class="row2">
+      <div class="fg"><label>Quantité</label><div class="ig"><input type="number" id="mpQte" placeholder="25" step="0.1"><span class="isuf" id="mpQteUnit">kg</span></div></div>
+      <div class="fg"><label>Seuil alerte</label><div class="ig"><input type="number" id="mpSeuil" placeholder="5" step="0.1"><span class="isuf">kg</span></div></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Date réception</label><input type="date" id="mpRecep"></div>
+      <div class="fg"><label>Péremption</label><input type="date" id="mpPerem"></div>
+    </div>
+    <div class="fg"><label>Fournisseur</label><input type="text" id="mpFourn" placeholder="Facultatif"></div>
+    <button class="btn btp" onclick="saveManualProd()">💾 Enregistrer dans le stock</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddProd')">Annuler</button>
+  </div>
+</div>
+
+<div class="ov" id="mAddObs" onclick="closeM(event,'mAddObs')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">👁️ Nouvelle observation</div>
+    <div class="fg"><label>Date</label><input type="date" id="obDate"></div>
+    <div class="fg"><label>Parcelle</label><select id="obParc"><option value="">— Toutes —</option></select></div>
+    <div class="fg"><label>Type</label>
+      <select id="obType">
+        <option>🍄 Maladie fongique</option><option>🐛 Ravageur</option>
+        <option>💧 Stress hydrique</option><option>🌿 État végétatif</option><option>⚠️ Dégâts divers</option>
+      </select>
+    </div>
+    <div class="fg"><label>Gravité</label>
+      <select id="obGravite"><option>Faible</option><option>Moyen</option><option>Élevé</option></select>
+    </div>
+    <div class="fg"><label>Description *</label><textarea id="obDesc" placeholder="Décrire ce que vous observez…" style="min-height:90px"></textarea></div>
+    <div class="fg"><label>Traitement recommandé</label><input type="text" id="obTrait" placeholder="Facultatif"></div>
+    <button class="btn btp" onclick="saveObs()">💾 Enregistrer l'observation</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddObs')">Annuler</button>
+  </div>
+</div>
+
+<div class="ov" id="mAddRendement" onclick="closeM(event,'mAddRendement')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">🌾 Saisir un rendement</div>
+    <div class="fg"><label>Parcelle</label><select id="rdParc"><option value="">— Choisir —</option></select></div>
+    <div class="fg"><label>Campagne</label><input type="number" id="rdCamp" value="2025"></div>
+    <div class="row2">
+      <div class="fg"><label>Estimation (kg)</label><input type="number" id="rdEstim" placeholder="8000"></div>
+      <div class="fg"><label>Pesée réelle (kg)</label><input type="number" id="rdReel" placeholder="8100"></div>
+    </div>
+    <div class="fg"><label>Date de vendange</label><input type="date" id="rdDate"></div>
+    <div class="fg"><label>Destinataire</label><input type="text" id="rdDest" placeholder="Cave coop, négoce, vente directe…"></div>
+    <button class="btn btp" onclick="saveRendement()">💾 Enregistrer</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddRendement')">Annuler</button>
+  </div>
+</div>
   <div class="mo2" onclick="event.stopPropagation()">
     <div class="mh"></div><div class="mt">+ Nouvelle parcelle</div>
     <div class="fg"><label>Nom / lieu-dit</label><input type="text" id="pN" placeholder="Ex : Mairan, Les Pélisses…"></div>
@@ -904,6 +987,8 @@ function showApp() {
   fillProfil();
   renderDash(); renderIFT(); renderStock('all'); renderRegistre(); fillSelects();
   loadPerso();
+  // Remplir les selects des modals manuels
+  fillObsSelects();
 }
 
 // ══════════════════════════════════════════
@@ -1497,7 +1582,113 @@ async function saveProfil(){
 // ══════════════════════════════════════════
 //  UTILS
 // ══════════════════════════════════════════
+function fillObsSelects() {
+  ['obParc','rdParc'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const first = id==='obParc' ? '<option value="">— Toutes —</option>' : '<option value="">— Choisir —</option>';
+    sel.innerHTML = first + PARCS.map(p=>`<option value="${p.code}">${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)</option>`).join('');
+  });
+  const obDate = document.getElementById('obDate');
+  if (obDate && !obDate.value) obDate.value = new Date().toISOString().split('T')[0];
+  const mpRecep = document.getElementById('mpRecep');
+  if (mpRecep && !mpRecep.value) mpRecep.value = new Date().toISOString().split('T')[0];
+}
+
 function doExport(t){toast(`📤 Export ${t} en cours…`);setTimeout(()=>toast(`✅ ${t} exporté`),1500);}
+
+// ══════════════════════════════════════════
+//  SAISIE MANUELLE — PRODUIT PHYTO
+// ══════════════════════════════════════════
+async function saveManualProd() {
+  const nom = g('mpNom');
+  if (!nom) { toast('⚠️ Nom du produit obligatoire'); return; }
+  syncSaving();
+  const unite = document.getElementById('mpUnite')?.value || 'kg/ha';
+  const qte = parseFloat(g('mpQte')) || 0;
+  const seuil = parseFloat(g('mpSeuil')) || 5;
+  try {
+    const {data,error} = await sb.from('produits_phyto').insert({
+      domaine_id: DOM_ID,
+      nom, amm: g('mpAMM'), fabricant: g('mpFab'),
+      categorie: document.getElementById('mpCateg')?.value || 'Fongicide',
+      dose_reference: parseFloat(g('mpDoseRef')) || 1,
+      dose_max: parseFloat(g('mpDoseRef')) || 1,
+      dose_unite: unite,
+      dar: parseInt(g('mpDAR')) || 0,
+      znt: parseInt(g('mpZNT')) || 5,
+      cibles: g('mpCibles'),
+      qte_stock: qte,
+      unite_stock: unite.replace('/ha',''),
+      seuil_alerte: seuil,
+      etat: qte<=0?'zero':qte<=seuil?'low':'ok',
+      date_reception: g('mpRecep') || null,
+      date_peremption: g('mpPerem') || null,
+      fournisseur: g('mpFourn'),
+      actif: true
+    }).select().single();
+    if (error) throw error;
+    STOCK.push(data);
+    syncOK();
+    renderStock('all'); fillSelects();
+    toast('✅ Produit enregistré dans le stock');
+    closeM(null,'mAddProd');
+    // Reset
+    ['mpNom','mpAMM','mpFab','mpDoseRef','mpDAR','mpZNT','mpCibles','mpQte','mpSeuil','mpRecep','mpPerem','mpFourn'].forEach(id=>{sv(id,'');});
+  } catch(e) { syncErr(); toast('❌ Erreur : '+e.message); }
+}
+
+// ══════════════════════════════════════════
+//  SAISIE MANUELLE — OBSERVATION
+// ══════════════════════════════════════════
+async function saveObs() {
+  const desc = g('obDesc');
+  if (!desc) { toast('⚠️ Description obligatoire'); return; }
+  syncSaving();
+  try {
+    const parcCode = g('obParc');
+    const parc = PARCS.find(p=>p.code===parcCode);
+    await sb.from('observations').insert({
+      domaine_id: DOM_ID,
+      parcelle_id: parc?.id || null,
+      date_observation: g('obDate') || new Date().toISOString().split('T')[0],
+      type_obs: document.getElementById('obType')?.value || 'Autre',
+      gravite: document.getElementById('obGravite')?.value || 'Faible',
+      description: desc,
+      traitement_recommande: g('obTrait'),
+    });
+    syncOK();
+    toast('✅ Observation enregistrée');
+    closeM(null,'mAddObs');
+    ['obDesc','obTrait'].forEach(id=>{sv(id,'');});
+  } catch(e) { syncErr(); toast('❌ Erreur : '+e.message); }
+}
+
+// ══════════════════════════════════════════
+//  SAISIE MANUELLE — RENDEMENT
+// ══════════════════════════════════════════
+async function saveRendement() {
+  const parcCode = g('rdParc');
+  if (!parcCode) { toast('⚠️ Parcelle obligatoire'); return; }
+  syncSaving();
+  try {
+    const parc = PARCS.find(p=>p.code===parcCode);
+    await sb.from('rendements').insert({
+      domaine_id: DOM_ID,
+      parcelle_id: parc?.id || null,
+      parcelle_code: parcCode,
+      campagne: g('rdCamp') || AN,
+      estimation_kg: parseFloat(g('rdEstim')) || null,
+      pesee_reelle_kg: parseFloat(g('rdReel')) || null,
+      date_vendange: g('rdDate') || null,
+      destinataire: g('rdDest'),
+    });
+    syncOK();
+    toast('✅ Rendement enregistré');
+    closeM(null,'mAddRendement');
+    ['rdEstim','rdReel','rdDate','rdDest'].forEach(id=>{sv(id,'');});
+  } catch(e) { syncErr(); toast('❌ Erreur : '+e.message); }
+}
 function showM(id){document.getElementById(id).classList.add('op');}
 function closeM(e,id){if(!e||e.target.classList.contains('ov'))document.getElementById(id).classList.remove('op');}
 function g(id){return(document.getElementById(id)?.value||'').trim();}
