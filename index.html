@@ -256,7 +256,37 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   .desk-grid,.desk-grid-3{display:block}
   .map-fullscreen-btn{display:none}
   .stock-table,.reg-table{display:none}
+  /* Barre actions mobile en haut de chaque section */
+  .sec-actions{display:flex;gap:8px;margin-bottom:12px;justify-content:flex-end}
 }
+
+/* IMPRESSION */
+@media print {
+  #appSidebar,#appTopbar,nav.tabs,header,.fab,#toast,
+  .btn,.sec-actions,.map-fullscreen-btn,
+  .shpImportCard,.upload-zone,.ldc { display:none !important; }
+  body { background:#fff !important; color:#000 !important; overflow:visible !important; }
+  .main { max-width:100% !important; padding:10px !important; overflow:visible !important; }
+  .sec { display:none !important; }
+  .sec.on { display:block !important; }
+  .card { box-shadow:none !important; border:1px solid #ccc !important; page-break-inside:avoid; }
+  .ift-g,.hvg { background:#1c3d1c !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  #mc { height:300px !important; }
+  .reg-table, .stock-table { display:table !important; }
+  h1,h2,.stitle { color:#1c3d1c !important; }
+  @page { margin:15mm; size:A4; }
+  /* En-tête impression */
+  .print-header { display:block !important; }
+}
+.print-header {
+  display:none;
+  text-align:center;
+  margin-bottom:16px;
+  padding-bottom:12px;
+  border-bottom:2px solid #1c3d1c;
+}
+.print-header h1 { font-family:'Cormorant Garamond',serif; font-size:24px; color:#1c3d1c; }
+.print-header p { font-size:12px; color:#666; margin-top:4px; }
 </style>
 </head>
 <body>
@@ -334,6 +364,8 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <div id="appTopbar" style="display:none">
     <div class="tb-title" id="tbTitle">Accueil</div>
     <div class="tb-actions">
+      <button class="btn btghost btsm" onclick="printSection()" title="Imprimer cette page">🖨️ Imprimer</button>
+      <button class="btn btghost btsm" id="btnEdit" onclick="toggleEdit()" title="Modifier">✏️ Éditer</button>
       <button class="btn btgold btsm" onclick="showM('mNI')">+ Nouvelle saisie</button>
     </div>
   </div>
@@ -341,6 +373,15 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 <div class="main" id="am" style="display:none">
 <!-- ACCUEIL -->
 <section id="sDash" class="sec on">
+  <!-- En-tête impression -->
+  <div class="print-header">
+    <h1 id="phTitle">VitiTrace — Tableau de bord</h1>
+    <p id="phSub">Domaine · Campagne 2025 · Imprimé le <span id="phDate"></span></p>
+  </div>
+  <!-- Barre actions mobile -->
+  <div class="sec-actions">
+    <button class="btn btghost btsm" onclick="printSection()">🖨️</button>
+  </div>
   <div class="stitle" id="dG">Bonjour 👋</div>
   <div class="ssub" id="dS">Chargement…</div>
   <div id="dAl"></div>
@@ -761,22 +802,56 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 
 <div class="ov" id="mAddProd" onclick="closeM(event,'mAddProd')">
   <div class="mo2" onclick="event.stopPropagation()">
-    <div class="mh"></div><div class="mt">✏️ Ajouter un produit</div>
-    <div class="fg"><label>Nom du produit *</label><input type="text" id="mpNom" placeholder="Ex : Soufre Micronisé Wettable"></div>
+    <div class="mh"></div><div class="mt">🧪 Ajouter un produit phyto</div>
+
+    <!-- SÉLECTION CASCADE -->
+    <div style="background:var(--gris3);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🔍 Recherche par matière active</div>
+      <div class="fg"><label>1 · Catégorie</label>
+        <select id="mpCategPhyto" onchange="onCategChange()">
+          <option value="">— Choisir une catégorie —</option>
+        </select>
+      </div>
+      <div class="fg"><label>2 · Matière active</label>
+        <select id="mpMAPhyto" onchange="onMAChange()" disabled>
+          <option value="">— Choisir d'abord une catégorie —</option>
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:0"><label>3 · Spécialité commerciale</label>
+        <select id="mpProdPhyto" onchange="onProdChange()" disabled>
+          <option value="">— Choisir d'abord une matière active —</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ALERTE RÉGLEMENTAIRE -->
+    <div id="mpPhytoAlert" class="al alo" style="display:none;margin-bottom:12px"><span class="al-i">⚠️</span><div id="mpPhytoAlertContent"></div></div>
+
+    <div class="seplbl">Informations pré-remplies — à vérifier</div>
+
+    <!-- CHAMPS AUTO-REMPLIS -->
+    <div class="fg"><label>Nom commercial *</label><input type="text" id="mpNom" placeholder="Sélectionner ci-dessus ou saisir manuellement"></div>
     <div class="row2">
+      <div class="fg"><label>Fabricant</label><input type="text" id="mpFab" placeholder="Auto"></div>
       <div class="fg"><label>N° AMM</label><input type="text" id="mpAMM" placeholder="FR-XXXX-XXXX"></div>
-      <div class="fg"><label>Catégorie</label>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Formulation</label><input type="text" id="mpForma" placeholder="Ex: WG 80%, SC 400g/L"></div>
+      <div class="fg"><label>Catégorie Supabase</label>
         <select id="mpCateg">
           <option>Fongicide</option><option>Fongicide cuivre</option>
           <option>Insecticide</option><option>Herbicide</option><option>Biocontrôle</option>
         </select>
       </div>
     </div>
-    <div class="fg"><label>Fabricant</label><input type="text" id="mpFab" placeholder="Ex : De Sangosse, Bayer…"></div>
     <div class="row2">
-      <div class="fg"><label>Dose référence ANSES</label><div class="ig"><input type="number" id="mpDoseRef" step="0.01" placeholder="3"><span class="isuf" id="mpDoseUnit">kg/ha</span></div></div>
+      <div class="fg"><label>Dose référence ANSES</label>
+        <div class="ig"><input type="number" id="mpDoseRef" step="0.01">
+          <span class="isuf" id="mpDoseUnit">kg/ha</span>
+        </div>
+      </div>
       <div class="fg"><label>Unité</label>
-        <select id="mpUnite" onchange="document.getElementById('mpDoseUnit').textContent=this.value">
+        <select id="mpUnite" onchange="document.getElementById('mpDoseUnit').textContent=this.value;document.getElementById('mpQteUnit').textContent=this.value.replace('/ha','')">
           <option value="kg/ha">kg/ha</option><option value="L/ha">L/ha</option><option value="g/ha">g/ha</option>
         </select>
       </div>
@@ -786,11 +861,20 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <div class="fg"><label>ZNT (m)</label><input type="number" id="mpZNT" placeholder="5" min="0"></div>
     </div>
     <div class="fg"><label>Cibles</label><input type="text" id="mpCibles" placeholder="Ex : Mildiou, Oïdium, Botrytis…"></div>
+
     <div class="sep"></div>
-    <div style="font-size:12px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Stock initial</div>
+    <div style="font-size:12px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📦 Stock initial</div>
     <div class="row2">
-      <div class="fg"><label>Quantité</label><div class="ig"><input type="number" id="mpQte" placeholder="25" step="0.1"><span class="isuf" id="mpQteUnit">kg</span></div></div>
-      <div class="fg"><label>Seuil alerte</label><div class="ig"><input type="number" id="mpSeuil" placeholder="5" step="0.1"><span class="isuf">kg</span></div></div>
+      <div class="fg"><label>Quantité</label>
+        <div class="ig"><input type="number" id="mpQte" placeholder="25" step="0.1">
+          <span class="isuf" id="mpQteUnit">kg</span>
+        </div>
+      </div>
+      <div class="fg"><label>Seuil alerte</label>
+        <div class="ig"><input type="number" id="mpSeuil" placeholder="5" step="0.1">
+          <span class="isuf">kg</span>
+        </div>
+      </div>
     </div>
     <div class="row2">
       <div class="fg"><label>Date réception</label><input type="date" id="mpRecep"></div>
@@ -1141,6 +1225,7 @@ function showApp() {
   loadPerso();
   // Remplir les selects des modals manuels
   fillObsSelects();
+  initPhytoSelects();
 }
 
 // ══════════════════════════════════════════
@@ -1165,6 +1250,9 @@ async function saveOnboarding() {
 //  NAV
 // ══════════════════════════════════════════
 function go(id, btn) {
+  currentSection = id;
+  // Reset edit mode when changing section
+  if (editMode) toggleEdit();
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   // Sync mobile tabs
@@ -1816,6 +1904,68 @@ window.addEventListener('resize', () => {
   if (mL) mL.invalidateSize();
 });
 
+// ══════════════════════════════════════════
+//  IMPRESSION & ÉDITION
+// ══════════════════════════════════════════
+const SECTION_TITLES = {
+  sDash:'Tableau de bord', sTrait:'Traitement phytosanitaire',
+  sIFT:'IFT — Indicateur de Fréquence de Traitement',
+  sScan:'Scan étiquette IA', sStock:'Stock phytosanitaire',
+  sCarto:'Plan parcellaire', sMeteo:'Météo & risques phyto',
+  sRegistre:'Registre phytosanitaire', sCave:'Cave & Négoce',
+  sHVE:'HVE & Agriculture Biologique', sPerso:'Personnalisation'
+};
+
+let currentSection = 'sDash';
+
+function printSection() {
+  // Mettre à jour l'en-tête d'impression
+  const nom = DOM?.nom || DOM?.raison_sociale || 'Domaine';
+  const titre = SECTION_TITLES[currentSection] || 'VitiTrace';
+  const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
+  const phTitle = document.getElementById('phTitle');
+  const phSub = document.getElementById('phSub');
+  const phDate = document.getElementById('phDate');
+  if (phTitle) phTitle.textContent = `VitiTrace — ${titre}`;
+  if (phSub) phSub.textContent = `${nom} · Campagne ${new Date().getFullYear()} · Imprimé le ${date}`;
+  if (phDate) phDate.textContent = date;
+  window.print();
+}
+
+let editMode = false;
+function toggleEdit() {
+  editMode = !editMode;
+  const btn = document.getElementById('btnEdit');
+  if (editMode) {
+    btn.textContent = '✅ Terminer';
+    btn.className = 'btn bg btsm';
+    // Rendre les champs éditables dans la section courante
+    const sec = document.getElementById(currentSection);
+    if (sec) {
+      sec.querySelectorAll('.lit, .sv, .stitle').forEach(el => {
+        el.contentEditable = 'true';
+        el.style.outline = '2px dashed var(--or)';
+        el.style.borderRadius = '4px';
+        el.style.padding = '2px 4px';
+      });
+    }
+    toast('✏️ Mode édition — cliquez sur un texte pour le modifier');
+  } else {
+    btn.textContent = '✏️ Éditer';
+    btn.className = 'btn btghost btsm';
+    const sec = document.getElementById(currentSection);
+    if (sec) {
+      sec.querySelectorAll('[contenteditable="true"]').forEach(el => {
+        el.contentEditable = 'false';
+        el.style.outline = '';
+        el.style.borderRadius = '';
+        el.style.padding = '';
+      });
+    }
+    toast('✅ Modifications enregistrées localement');
+  }
+}
+
 function fillObsSelects() {
   ['obParc','rdParc'].forEach(id => {
     const sel = document.getElementById(id);
@@ -2344,4 +2494,380 @@ function resetShpImport() {
 }
 </script>
 </body>
-</html>
+</html><!-- SCRIPT BASE PRODUITS PHYTO -->
+<script>
+// ══════════════════════════════════════════════════════════════
+//  BASE DE DONNÉES PRODUITS PHYTO VIGNE — FRANCE 2025
+//  Source : E-phy ANSES / Homologations en vigueur
+// ══════════════════════════════════════════════════════════════
+const PHYTO_DB = {
+  categories: {
+    fongicide: {
+      label: '🍄 Fongicide',
+      matieres: {
+        soufre: {
+          label: 'Soufre (fongicide)',
+          dose_ref: 3.0, dose_max: 10.0, unite: 'kg/ha',
+          dar: 28, znt: 5, categ: 'Fongicide',
+          cibles: 'Oïdium (Uncinula necator)',
+          nb_applic: 'Sans limite (plafond soufre élémentaire)',
+          restriction: 'Ne pas appliquer par T° > 35°C ni sur végétation mouillée',
+          produits: [
+            { nom: 'Soufre Micronisé Wettable', fab: 'De Sangosse', amm: 'FR-2019-0847', forme: 'WP 80%', dose: 3.0 },
+            { nom: 'Thiovit Jet', fab: 'Syngenta', amm: 'FR-2014-1823', forme: 'WG 80%', dose: 3.0 },
+            { nom: 'Microthiol Spécial Disperss', fab: 'UPL', amm: 'FR-2017-0432', forme: 'WG 80%', dose: 3.0 },
+            { nom: 'Heliosoufre S', fab: 'Agronutrition', amm: 'FR-2020-0915', forme: 'SC 720 g/L', dose: 3.0 },
+            { nom: 'Cosavet DF Edge', fab: 'Certis', amm: 'FR-2018-1204', forme: 'WG 80%', dose: 3.0 },
+            { nom: 'Soufre Mouillable Disperss', fab: 'Agriphar', amm: 'FR-2016-0678', forme: 'WP 80%', dose: 3.0 },
+          ]
+        },
+        cuivre: {
+          label: 'Cuivre (hydroxyde, oxychlorure, sulfate)',
+          dose_ref: 2.5, dose_max: 4.0, unite: 'kg/ha',
+          dar: 21, znt: 20, categ: 'Fongicide cuivre',
+          cibles: 'Mildiou (Plasmopara viticola), Black-rot, Excoriose',
+          nb_applic: 'Plafond 28 kg Cu métal/ha sur 7 ans',
+          restriction: 'ZNT 20 m — Zones non traitées obligatoires',
+          produits: [
+            { nom: 'Cuivrol Extra 49 WG', fab: 'Manica', amm: 'FR-2021-0983', forme: 'WG 49%', dose: 2.8 },
+            { nom: 'Cuivre Hydroxyde Champion 50 WG', fab: 'Certis', amm: 'FR-2020-1234', forme: 'WG 50%', dose: 2.5 },
+            { nom: 'Nordox 75 WG', fab: 'Nordox', amm: 'FR-2018-0456', forme: 'WG 75% (oxyde cuivreux)', dose: 1.5 },
+            { nom: 'Kocide Opti', fab: 'FMC', amm: 'FR-2019-0789', forme: 'WG 46.1%', dose: 3.0 },
+            { nom: 'Bouille Bordelaise WDG', fab: 'Cerexagri', amm: 'FR-2016-0234', forme: 'WG 20% (bouillie)', dose: 4.0 },
+            { nom: 'Héliocuivre', fab: 'Agronutrition', amm: 'FR-2022-0156', forme: 'SC 190 g/L', dose: 3.0 },
+            { nom: 'Cuprex Evo', fab: 'Agriphar', amm: 'FR-2020-0567', forme: 'WP 50%', dose: 2.5 },
+          ]
+        },
+        folpet: {
+          label: 'Folpet',
+          dose_ref: 1.5, dose_max: 2.5, unite: 'kg/ha',
+          dar: 28, znt: 5, categ: 'Fongicide',
+          cibles: 'Mildiou, Black-rot, Excoriose, Anthracnose',
+          nb_applic: '4 applications max/an',
+          restriction: 'CMR2 — EPI complet obligatoire — DAP 48h',
+          produits: [
+            { nom: 'Folpan 80 WDG', fab: 'Arysta', amm: 'FR-2018-0556', forme: 'WG 80%', dose: 1.5 },
+            { nom: 'Mikal Flash', fab: 'BASF', amm: 'FR-2019-0334', forme: 'WG (folpet+fosétyl)', dose: 2.5 },
+            { nom: 'Fantic F', fab: 'Isagro', amm: 'FR-2017-0891', forme: 'WP 60%', dose: 1.5 },
+            { nom: 'Dithane Neo Tec', fab: 'Corteva', amm: 'FR-2015-0667', forme: 'WG 75% (mancozèbe)', dose: 1.7 },
+          ]
+        },
+        mancozebe: {
+          label: 'Mancozèbe (EBDC)',
+          dose_ref: 1.7, dose_max: 2.0, unite: 'kg/ha',
+          dar: 42, znt: 5, categ: 'Fongicide',
+          cibles: 'Mildiou, Black-rot',
+          nb_applic: '4 applications max/an — Zone délicate résidus',
+          restriction: 'DAR 42j strict — CMR2 — Résidus surveillés export',
+          produits: [
+            { nom: 'Dithane M-45', fab: 'Corteva', amm: 'FR-2014-0445', forme: 'WP 80%', dose: 1.7 },
+            { nom: 'Pérostar', fab: 'Nufarm', amm: 'FR-2016-0892', forme: 'WP 75%', dose: 1.7 },
+          ]
+        },
+        cymoxanil: {
+          label: 'Cymoxanil (anti-mildiou curatif)',
+          dose_ref: 0.25, dose_max: 0.35, unite: 'kg/ha',
+          dar: 21, znt: 5, categ: 'Fongicide',
+          cibles: 'Mildiou — action curative 72h après contamination',
+          nb_applic: '4 applications max/an — Alternance obligatoire',
+          restriction: 'Toujours en mélange — Résistances fréquentes',
+          produits: [
+            { nom: 'Curzate M WG', fab: 'Corteva', amm: 'FR-2017-0234', forme: 'WG (cymox+mancoz)', dose: 2.5 },
+            { nom: 'Viderut Pro', fab: 'UPL', amm: 'FR-2020-0678', forme: 'WG 45%', dose: 0.3 },
+          ]
+        },
+        metalaxyl: {
+          label: 'Métalaxyl-M (anti-mildiou systémique)',
+          dose_ref: 0.05, dose_max: 0.08, unite: 'kg/ha',
+          dar: 28, znt: 5, categ: 'Fongicide',
+          cibles: 'Mildiou — action systémique translaminaire',
+          nb_applic: '3 applications max/an — Risque résistance élevé',
+          restriction: 'Ne jamais utiliser seul — Alternance obligatoire FRAC 4',
+          produits: [
+            { nom: 'Ridomil Gold MZ Pepite', fab: 'Syngenta', amm: 'FR-2018-0445', forme: 'WG (métalaxyl-M + mancoz)', dose: 2.5 },
+            { nom: 'Ridomil Gold R', fab: 'Syngenta', amm: 'FR-2019-0667', forme: 'WG 68%', dose: 2.5 },
+          ]
+        },
+        iprodione: {
+          label: 'Fludioxonil / Iprodione (botryticide)',
+          dose_ref: 0.5, dose_max: 1.0, unite: 'kg/ha',
+          dar: 21, znt: 5, categ: 'Fongicide',
+          cibles: 'Botrytis (pourriture grise) — Excoriose',
+          nb_applic: '2 applications max/an',
+          restriction: 'Traitement en début véraison ou floraison uniquement',
+          produits: [
+            { nom: 'Switch 62.5 WG', fab: 'Syngenta', amm: 'FR-2016-0789', forme: 'WG (flud+cyprod)', dose: 0.8 },
+            { nom: 'Scala', fab: 'Bayer', amm: 'FR-2015-0334', forme: 'SC 400 g/L (pyrimethanil)', dose: 1.0 },
+            { nom: 'Teldor', fab: 'Bayer', amm: 'FR-2014-0567', forme: 'SC 500 g/L (fenhexamid)', dose: 1.0 },
+          ]
+        },
+        quinoxyfen: {
+          label: 'Quinoxyfène / Tébuconazole (oïdicide)',
+          dose_ref: 0.075, dose_max: 0.1, unite: 'L/ha',
+          dar: 35, znt: 5, categ: 'Fongicide',
+          cibles: 'Oïdium — action préventive et curative',
+          nb_applic: '2 applications max/an — Rotation FRAC',
+          restriction: 'CMR1B pour tébuconazole — EPI complet',
+          produits: [
+            { nom: 'Talendo', fab: 'UPL', amm: 'FR-2017-0445', forme: 'EC 200 g/L quinoxyfène', dose: 0.075 },
+            { nom: 'Folicur', fab: 'Bayer', amm: 'FR-2015-0678', forme: 'EC 250 g/L tébuconazole', dose: 0.1 },
+            { nom: 'Prosper Evo', fab: 'Bayer', amm: 'FR-2019-0234', forme: 'EC (spirox+tébu)', dose: 0.1 },
+          ]
+        },
+      }
+    },
+    insecticide: {
+      label: '🐛 Insecticide',
+      matieres: {
+        spinosad: {
+          label: 'Spinosad (biocontrôle)',
+          dose_ref: 0.25, dose_max: 0.375, unite: 'L/ha',
+          dar: 7, znt: 20, categ: 'Biocontrôle',
+          cibles: 'Vers de la grappe (Lobesia botrana, Eupoecilia ambiguella)',
+          nb_applic: '3 applications max/an',
+          restriction: 'ZNT 20m — Dangereux abeilles (pas en floraison)',
+          produits: [
+            { nom: 'Success 4', fab: 'Corteva', amm: 'FR-2016-0567', forme: 'SC 480 g/L', dose: 0.25 },
+            { nom: 'Laser', fab: 'Corteva', amm: 'FR-2015-0445', forme: 'SC 480 g/L', dose: 0.25 },
+          ]
+        },
+        acetamipride: {
+          label: 'Acétamipride (néonicotinoïde)',
+          dose_ref: 0.125, dose_max: 0.15, unite: 'kg/ha',
+          dar: 14, znt: 20, categ: 'Insecticide',
+          cibles: 'Cicadelles (Empoasca vitis, Scaphoideus titanus)',
+          nb_applic: '2 applications max/an',
+          restriction: 'ZNT 20m — Interdit floraison — Surveillance FD',
+          produits: [
+            { nom: 'Mospilan SG', fab: 'Nisso', amm: 'FR-2017-0678', forme: 'SG 20%', dose: 0.125 },
+            { nom: 'Gazel', fab: 'Nufarm', amm: 'FR-2018-0334', forme: 'SG 20%', dose: 0.125 },
+          ]
+        },
+        lambdacyhalothrine: {
+          label: 'Lambda-cyhalothrine (pyréthrinoïde)',
+          dose_ref: 0.015, dose_max: 0.02, unite: 'L/ha',
+          dar: 14, znt: 20, categ: 'Insecticide',
+          cibles: 'Vers de la grappe, Cicadelles, Thrips',
+          nb_applic: '2 applications max/an',
+          restriction: 'ZNT 20m — Très dangereux organismes aquatiques',
+          produits: [
+            { nom: 'Karaté Zeon', fab: 'Syngenta', amm: 'FR-2016-0892', forme: 'CS 100 g/L', dose: 0.015 },
+            { nom: 'Warrior 2', fab: 'Syngenta', amm: 'FR-2018-0567', forme: 'CS 100 g/L', dose: 0.015 },
+          ]
+        },
+        kaolin: {
+          label: 'Kaolin (protection physique — biocontrôle)',
+          dose_ref: 6.0, dose_max: 8.0, unite: 'kg/ha',
+          dar: 0, znt: 5, categ: 'Biocontrôle',
+          cibles: 'Cicadelle verte, Vers de la grappe, Cicadelle de la FD',
+          nb_applic: 'Sans limite',
+          restriction: 'Efficacité dépendante de la pluie — À renouveler',
+          produits: [
+            { nom: 'Surround WP', fab: 'Tessenderlo', amm: 'FR-2019-0123', forme: 'WP 95%', dose: 6.0 },
+          ]
+        },
+      }
+    },
+    herbicide: {
+      label: '🌿 Herbicide',
+      matieres: {
+        glyphosate: {
+          label: 'Glyphosate',
+          dose_ref: 1.44, dose_max: 2.16, unite: 'L/ha',
+          dar: 0, znt: 5, categ: 'Herbicide',
+          cibles: 'Adventices annuelles et vivaces — Désherbage rang',
+          nb_applic: '2 passages max/an',
+          restriction: 'Interdit < 3m cours d\'eau — Pas avant vendange — CMR suspecté',
+          produits: [
+            { nom: 'Roundup Star', fab: 'Bayer', amm: 'FR-2018-0445', forme: 'SL 360 g/L', dose: 1.44 },
+            { nom: 'Glyphogan 480 SL', fab: 'Nufarm', amm: 'FR-2016-0678', forme: 'SL 480 g/L', dose: 1.08 },
+            { nom: 'Touchdown Premium', fab: 'Syngenta', amm: 'FR-2017-0334', forme: 'SL 450 g/L', dose: 1.15 },
+          ]
+        },
+        flazasulfuron: {
+          label: 'Flazasulfuron (sulfonylurée)',
+          dose_ref: 0.1, dose_max: 0.1, unite: 'kg/ha',
+          dar: 0, znt: 20, categ: 'Herbicide',
+          cibles: 'Adventices annuelles et vivaces — Liseron, Chiendent',
+          nb_applic: '1 application/an',
+          restriction: 'ZNT 20m — Risque phytotox si dérive — Sol argileux',
+          produits: [
+            { nom: 'Katana', fab: 'ISK Biosciences', amm: 'FR-2015-0567', forme: 'WG 25%', dose: 0.1 },
+            { nom: 'Chikara', fab: 'Bayer', amm: 'FR-2017-0892', forme: 'WG 25%', dose: 0.1 },
+          ]
+        },
+        pendimethaline: {
+          label: 'Pendiméthaline (herbicide de prélevée)',
+          dose_ref: 2.6, dose_max: 2.6, unite: 'L/ha',
+          dar: 0, znt: 20, categ: 'Herbicide',
+          cibles: 'Adventices annuelles — Action prélevée sol humide',
+          nb_applic: '1 application/an',
+          restriction: 'ZNT 20m — Appliquer avant germination adventices',
+          produits: [
+            { nom: 'Stomp Aqua', fab: 'BASF', amm: 'FR-2016-0445', forme: 'CS 455 g/L', dose: 2.6 },
+          ]
+        },
+      }
+    },
+    biocontrole: {
+      label: '🌱 Biocontrôle / AB',
+      matieres: {
+        bicarbonate: {
+          label: 'Bicarbonate de potassium',
+          dose_ref: 3.0, dose_max: 5.0, unite: 'kg/ha',
+          dar: 0, znt: 5, categ: 'Biocontrôle',
+          cibles: 'Oïdium — Action curative rapide',
+          nb_applic: 'Sans limite',
+          restriction: 'Efficacité sur oïdium débutant — pH milieu alcalinisant',
+          produits: [
+            { nom: 'Armicarb', fab: 'Certis', amm: 'FR-2018-0234', forme: 'SP 85%', dose: 3.0 },
+            { nom: 'Karma', fab: 'De Sangosse', amm: 'FR-2019-0567', forme: 'SP 85%', dose: 3.0 },
+          ]
+        },
+        huilesorgonum: {
+          label: 'Huile essentielle orange / Soufre AB',
+          dose_ref: 1.0, dose_max: 2.0, unite: 'L/ha',
+          dar: 0, znt: 5, categ: 'Biocontrôle',
+          cibles: 'Oïdium, Acariens — Autorisation AB',
+          nb_applic: 'Sans limite',
+          restriction: 'Ne pas mélanger avec produits acides — T° < 25°C',
+          produits: [
+            { nom: 'Prev-Am', fab: 'Goëmar', amm: 'FR-2020-0345', forme: 'EC (orange essentielle)', dose: 1.0 },
+            { nom: 'Limocide', fab: 'TIPKE', amm: 'FR-2021-0678', forme: 'EC (citrus)', dose: 1.5 },
+          ]
+        },
+        pyrethrine: {
+          label: 'Pyréthrines naturelles (insecticide AB)',
+          dose_ref: 0.2, dose_max: 0.3, unite: 'L/ha',
+          dar: 3, znt: 20, categ: 'Biocontrôle',
+          cibles: 'Vers de la grappe, Cicadelles, Thrips',
+          nb_applic: '3 applications max/an',
+          restriction: 'ZNT 20m — Très dangereux abeilles — Soir uniquement',
+          produits: [
+            { nom: 'Pyrethrum FS', fab: 'Certis', amm: 'FR-2017-0123', forme: 'FS 25 g/L', dose: 0.25 },
+            { nom: 'Nakar', fab: 'Agrauxine', amm: 'FR-2019-0456', forme: 'EC 23 g/L', dose: 0.2 },
+          ]
+        },
+        argile: {
+          label: 'Argile blanche (kaolin — protection AB)',
+          dose_ref: 5.0, dose_max: 8.0, unite: 'kg/ha',
+          dar: 0, znt: 5, categ: 'Biocontrôle',
+          cibles: 'Protection thermique, Cicadelle FD, Eudémis',
+          nb_applic: 'Sans limite',
+          restriction: 'Renforcer après pluie — Compatible AB et HVE',
+          produits: [
+            { nom: 'Surround WP', fab: 'Tessenderlo', amm: 'FR-2019-0123', forme: 'WP 95%', dose: 5.0 },
+          ]
+        },
+      }
+    }
+  }
+};
+
+// ══════════════════════════════════════════
+//  FONCTIONS DE SÉLECTION CASCADE
+// ══════════════════════════════════════════
+
+function initPhytoSelects() {
+  // Remplir le select catégorie
+  const selCat = document.getElementById('mpCategPhyto');
+  if (!selCat) return;
+  selCat.innerHTML = '<option value="">— Choisir une catégorie —</option>';
+  Object.entries(PHYTO_DB.categories).forEach(([key, cat]) => {
+    selCat.innerHTML += `<option value="${key}">${cat.label}</option>`;
+  });
+}
+
+function onCategChange() {
+  const catKey = document.getElementById('mpCategPhyto').value;
+  const selMA = document.getElementById('mpMAPhyto');
+  const selProd = document.getElementById('mpProdPhyto');
+  selMA.innerHTML = '<option value="">— Choisir une matière active —</option>';
+  selProd.innerHTML = '<option value="">— Choisir un produit —</option>';
+  clearPhytoFields();
+  if (!catKey) return;
+  const cat = PHYTO_DB.categories[catKey];
+  if (!cat) return;
+  Object.entries(cat.matieres).forEach(([key, ma]) => {
+    selMA.innerHTML += `<option value="${key}">${ma.label}</option>`;
+  });
+  document.getElementById('mpMAPhyto').disabled = false;
+  document.getElementById('mpProdPhyto').disabled = true;
+}
+
+function onMAChange() {
+  const catKey = document.getElementById('mpCategPhyto').value;
+  const maKey = document.getElementById('mpMAPhyto').value;
+  const selProd = document.getElementById('mpProdPhyto');
+  selProd.innerHTML = '<option value="">— Choisir la spécialité commerciale —</option>';
+  clearPhytoFields();
+  if (!catKey || !maKey) return;
+  const ma = PHYTO_DB.categories[catKey]?.matieres[maKey];
+  if (!ma) return;
+  // Afficher les infos MA
+  fillPhytoFromMA(ma);
+  // Remplir produits
+  ma.produits.forEach(p => {
+    selProd.innerHTML += `<option value="${p.nom}" data-fab="${p.fab}" data-amm="${p.amm}" data-forme="${p.forme}" data-dose="${p.dose}">${p.nom} (${p.fab})</option>`;
+  });
+  selProd.disabled = false;
+}
+
+function onProdChange() {
+  const catKey = document.getElementById('mpCategPhyto').value;
+  const maKey = document.getElementById('mpMAPhyto').value;
+  const selProd = document.getElementById('mpProdPhyto');
+  const opt = selProd.options[selProd.selectedIndex];
+  if (!opt || !opt.value) return;
+  const ma = PHYTO_DB.categories[catKey]?.matieres[maKey];
+  if (!ma) return;
+  // Remplir avec le produit sélectionné
+  setVal('mpNom', opt.value);
+  setVal('mpFab', opt.dataset.fab || '');
+  setVal('mpAMM', opt.dataset.amm || '');
+  // Dose spécifique au produit si différente
+  const dose = parseFloat(opt.dataset.dose) || ma.dose_ref;
+  setVal('mpDoseRef', dose);
+  // Afficher la formulation
+  const phForma = document.getElementById('mpForma');
+  if (phForma) phForma.value = opt.dataset.forme || '';
+  // Résumé réglementaire
+  updatePhytoAlert(ma, opt.value);
+}
+
+function fillPhytoFromMA(ma) {
+  setVal('mpDoseRef', ma.dose_ref);
+  setVal('mpDAR', ma.dar);
+  setVal('mpZNT', ma.znt);
+  setVal('mpCibles', ma.cibles);
+  // Unité
+  const uniteEl = document.getElementById('mpUnite');
+  if (uniteEl) {
+    uniteEl.value = ma.unite.includes('L') ? 'L/ha' : 'kg/ha';
+    document.getElementById('mpDoseUnit').textContent = uniteEl.value;
+    document.getElementById('mpQteUnit').textContent = uniteEl.value.replace('/ha','');
+  }
+  // Catégorie Supabase
+  const catEl = document.getElementById('mpCateg');
+  if (catEl) catEl.value = ma.categ;
+}
+
+function clearPhytoFields() {
+  ['mpNom','mpFab','mpAMM','mpForma','mpDoseRef','mpDAR','mpZNT','mpCibles'].forEach(id => sv(id, ''));
+  const alertEl = document.getElementById('mpPhytoAlert');
+  if (alertEl) alertEl.style.display = 'none';
+}
+
+function updatePhytoAlert(ma, prodNom) {
+  const alertEl = document.getElementById('mpPhytoAlert');
+  if (!alertEl) return;
+  const warnings = [];
+  if (ma.dar > 21) warnings.push(`⏰ DAR long : ${ma.dar} jours avant récolte`);
+  if (ma.znt >= 20) warnings.push(`🌊 ZNT ${ma.znt}m — Zones non traitées obligatoires`);
+  if (ma.restriction) warnings.push(`⚠️ ${ma.restriction}`);
+  if (ma.nb_applic) warnings.push(`🔢 Limites : ${ma.nb_applic}`);
+  alertEl.style.display = 'block';
+  const contentEl = document.getElementById('mpPhytoAlertContent');
+  if (contentEl) contentEl.innerHTML = warnings.map(w => `<div style="margin-bottom:4px;font-size:12px">${w}</div>`).join('');
+}
+</script>
