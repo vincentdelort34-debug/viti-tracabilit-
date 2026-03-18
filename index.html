@@ -875,61 +875,6 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddProd')">Annuler</button>
   </div>
 </div>
-    <div class="fg"><label>Nom commercial *</label><input type="text" id="mpNom" placeholder="Sélectionner ci-dessus ou saisir manuellement"></div>
-    <div class="row2">
-      <div class="fg"><label>Fabricant</label><input type="text" id="mpFab" placeholder="Auto"></div>
-      <div class="fg"><label>N° AMM</label><input type="text" id="mpAMM" placeholder="FR-XXXX-XXXX"></div>
-    </div>
-    <div class="row2">
-      <div class="fg"><label>Formulation</label><input type="text" id="mpForma" placeholder="Ex: WG 80%, SC 400g/L"></div>
-      <div class="fg"><label>Catégorie Supabase</label>
-        <select id="mpCateg">
-          <option>Fongicide</option><option>Fongicide cuivre</option>
-          <option>Insecticide</option><option>Herbicide</option><option>Biocontrôle</option>
-        </select>
-      </div>
-    </div>
-    <div class="row2">
-      <div class="fg"><label>Dose référence ANSES</label>
-        <div class="ig"><input type="number" id="mpDoseRef" step="0.01">
-          <span class="isuf" id="mpDoseUnit">kg/ha</span>
-        </div>
-      </div>
-      <div class="fg"><label>Unité</label>
-        <select id="mpUnite" onchange="document.getElementById('mpDoseUnit').textContent=this.value;document.getElementById('mpQteUnit').textContent=this.value.replace('/ha','')">
-          <option value="kg/ha">kg/ha</option><option value="L/ha">L/ha</option><option value="g/ha">g/ha</option>
-        </select>
-      </div>
-    </div>
-    <div class="row2">
-      <div class="fg"><label>DAR (jours)</label><input type="number" id="mpDAR" placeholder="28" min="0"></div>
-      <div class="fg"><label>ZNT (m)</label><input type="number" id="mpZNT" placeholder="5" min="0"></div>
-    </div>
-    <div class="fg"><label>Cibles</label><input type="text" id="mpCibles" placeholder="Ex : Mildiou, Oïdium, Botrytis…"></div>
-
-    <div class="sep"></div>
-    <div style="font-size:12px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📦 Stock initial</div>
-    <div class="row2">
-      <div class="fg"><label>Quantité</label>
-        <div class="ig"><input type="number" id="mpQte" placeholder="25" step="0.1">
-          <span class="isuf" id="mpQteUnit">kg</span>
-        </div>
-      </div>
-      <div class="fg"><label>Seuil alerte</label>
-        <div class="ig"><input type="number" id="mpSeuil" placeholder="5" step="0.1">
-          <span class="isuf">kg</span>
-        </div>
-      </div>
-    </div>
-    <div class="row2">
-      <div class="fg"><label>Date réception</label><input type="date" id="mpRecep"></div>
-      <div class="fg"><label>Péremption</label><input type="date" id="mpPerem"></div>
-    </div>
-    <div class="fg"><label>Fournisseur</label><input type="text" id="mpFourn" placeholder="Facultatif"></div>
-    <button class="btn btp" onclick="saveManualProd()">💾 Enregistrer dans le stock</button>
-    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddProd')">Annuler</button>
-  </div>
-</div>
 
 <div class="ov" id="mAddObs" onclick="closeM(event,'mAddObs')">
   <div class="mo2" onclick="event.stopPropagation()">
