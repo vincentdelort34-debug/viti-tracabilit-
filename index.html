@@ -1518,8 +1518,16 @@ function handleFile(input){
     prev.src=e.target.result;prev.style.display='block';
     document.getElementById('uC').style.display='none';
     document.getElementById('iO').style.display='flex';
-    zone.classList.add('has');document.getElementById('aB').disabled=false;
-    document.getElementById('sB').style.display='block';toast('✅ Image chargée');
+    zone.classList.add('has');
+    document.getElementById('aB').disabled=false;
+    document.getElementById('aB').style.background='var(--or)';
+    document.getElementById('aB').style.color='var(--noir)';
+    document.getElementById('sB').style.display='block';
+    toast('✅ Photo chargée — Appuyez sur Analyser');
+    // Sur mobile : lancer analyse automatiquement après 1 seconde
+    if(window.innerWidth < 900) {
+      setTimeout(() => lancerAnalyse(), 800);
+    }
   };r.readAsDataURL(f);
 }
 const dz=document.getElementById('dZ');
@@ -2807,7 +2815,7 @@ function searchPhyto(query) {
   }
   res.style.display = 'block';
   res.innerHTML = matches.map((p, i) => `
-    <div onclick="selectPhytoProd(${i},'${query}')"
+    <div onclick="selectPhytoProd(${i})"
       style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--gris2);transition:background .15s"
       onmouseenter="this.style.background='var(--gris3)'"
       onmouseleave="this.style.background=''">
@@ -2815,7 +2823,7 @@ function searchPhyto(query) {
       <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.maLabel} · ${p.catLabel}${p.fab?' · '+p.fab:''}</div>
       <div style="display:flex;gap:8px;margin-top:3px;flex-wrap:wrap">
         <span style="font-size:10px;background:#d4edda;color:var(--vert);padding:1px 6px;border-radius:4px">DAR ${p.dar}j</span>
-        <span style="font-size:10px;background:#d4e8f4;color:var(--bleu);padding:1px 6px;border-radius:4px">ZNT ${p.znt}m</span>
+        <span style="font-size:10px;background:#d4e8f4;color:#2a6a9a;padding:1px 6px;border-radius:4px">ZNT ${p.znt}m</span>
         <span style="font-size:10px;background:#fdf3d0;color:#8a6a10;padding:1px 6px;border-radius:4px">${p.dose_ref} ${p.unite}</span>
       </div>
     </div>`).join('');
