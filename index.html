@@ -804,7 +804,75 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <div class="mo2" onclick="event.stopPropagation()">
     <div class="mh"></div><div class="mt">🧪 Ajouter un produit phyto</div>
 
-    <!-- SÉLECTION CASCADE -->
+    <!-- RECHERCHE LIBRE -->
+    <div style="background:var(--gris3);border-radius:12px;padding:14px;margin-bottom:14px;position:relative">
+      <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">🔍 Recherche — nom commercial, matière active ou catégorie</div>
+      <input type="text" id="mpSearch" placeholder="Ex : Thiovit, Soufre, Mildiou, Cuivre…" oninput="searchPhyto(this.value)" autocomplete="off" style="margin-bottom:0">
+      <!-- RÉSULTATS -->
+      <div id="mpSearchResults" style="display:none;position:absolute;left:14px;right:14px;background:var(--blanc);border:2px solid var(--or);border-radius:10px;box-shadow:var(--sh2);z-index:100;max-height:220px;overflow-y:auto;margin-top:4px"></div>
+    </div>
+
+    <!-- ALERTE RÉGLEMENTAIRE -->
+    <div id="mpPhytoAlert" class="al alo" style="display:none;margin-bottom:12px"><span class="al-i">⚠️</span><div id="mpPhytoAlertContent"></div></div>
+
+    <div class="seplbl">Informations — modifier si besoin</div>
+
+    <!-- CHAMPS AUTO-REMPLIS OU SAISIE MANUELLE -->
+    <div class="fg"><label>Nom commercial *</label><input type="text" id="mpNom" placeholder="Taper ou sélectionner ci-dessus"></div>
+    <div class="row2">
+      <div class="fg"><label>Fabricant</label><input type="text" id="mpFab" placeholder="Ex : De Sangosse, Bayer…"></div>
+      <div class="fg"><label>N° AMM</label><input type="text" id="mpAMM" placeholder="FR-XXXX-XXXX"></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Formulation</label><input type="text" id="mpForma" placeholder="Ex: WG 80%, SC 400g/L"></div>
+      <div class="fg"><label>Catégorie</label>
+        <select id="mpCateg">
+          <option>Fongicide</option><option>Fongicide cuivre</option>
+          <option>Insecticide</option><option>Herbicide</option><option>Biocontrôle</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Dose référence ANSES</label>
+        <div class="ig"><input type="number" id="mpDoseRef" step="0.01" placeholder="3">
+          <span class="isuf" id="mpDoseUnit">kg/ha</span>
+        </div>
+      </div>
+      <div class="fg"><label>Unité</label>
+        <select id="mpUnite" onchange="document.getElementById('mpDoseUnit').textContent=this.value;document.getElementById('mpQteUnit').textContent=this.value.replace('/ha','')">
+          <option value="kg/ha">kg/ha</option><option value="L/ha">L/ha</option><option value="g/ha">g/ha</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>DAR (jours)</label><input type="number" id="mpDAR" placeholder="28" min="0"></div>
+      <div class="fg"><label>ZNT (m)</label><input type="number" id="mpZNT" placeholder="5" min="0"></div>
+    </div>
+    <div class="fg"><label>Cibles</label><input type="text" id="mpCibles" placeholder="Ex : Mildiou, Oïdium, Botrytis…"></div>
+
+    <div class="sep"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📦 Stock initial</div>
+    <div class="row2">
+      <div class="fg"><label>Quantité</label>
+        <div class="ig"><input type="number" id="mpQte" placeholder="25" step="0.1">
+          <span class="isuf" id="mpQteUnit">kg</span>
+        </div>
+      </div>
+      <div class="fg"><label>Seuil alerte</label>
+        <div class="ig"><input type="number" id="mpSeuil" placeholder="5" step="0.1">
+          <span class="isuf">kg</span>
+        </div>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Date réception</label><input type="date" id="mpRecep"></div>
+      <div class="fg"><label>Péremption</label><input type="date" id="mpPerem"></div>
+    </div>
+    <div class="fg"><label>Fournisseur</label><input type="text" id="mpFourn" placeholder="Facultatif"></div>
+    <button class="btn btp" onclick="saveManualProd()">💾 Enregistrer dans le stock</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddProd')">Annuler</button>
+  </div>
+</div>
     <div style="background:var(--gris3);border-radius:12px;padding:14px;margin-bottom:14px">
       <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🔍 Recherche par matière active</div>
       <div class="fg"><label>1 · Catégorie</label>
@@ -2769,14 +2837,125 @@ const PHYTO_DB = {
 // ══════════════════════════════════════════
 
 function initPhytoSelects() {
-  // Remplir le select catégorie
-  const selCat = document.getElementById('mpCategPhyto');
-  if (!selCat) return;
-  selCat.innerHTML = '<option value="">— Choisir une catégorie —</option>';
-  Object.entries(PHYTO_DB.categories).forEach(([key, cat]) => {
-    selCat.innerHTML += `<option value="${key}">${cat.label}</option>`;
+  // Construire l'index de recherche plat à partir de la base
+  window.PHYTO_INDEX = [];
+  Object.entries(PHYTO_DB.categories).forEach(([catKey, cat]) => {
+    Object.entries(cat.matieres).forEach(([maKey, ma]) => {
+      // Ajouter chaque produit commercial
+      ma.produits.forEach(p => {
+        window.PHYTO_INDEX.push({
+          // Données pour la recherche
+          searchText: [p.nom, ma.label, cat.label, p.fab, ma.cibles].join(' ').toLowerCase(),
+          // Données d'affichage
+          nomProd: p.nom, fab: p.fab, amm: p.amm, forme: p.forme,
+          dose: p.dose, catLabel: cat.label, maLabel: ma.label,
+          // Données réglementaires
+          dose_ref: ma.dose_ref, dose_max: ma.dose_max, unite: ma.unite,
+          dar: ma.dar, znt: ma.znt, categ: ma.categ,
+          cibles: ma.cibles, nb_applic: ma.nb_applic, restriction: ma.restriction,
+        });
+      });
+      // Ajouter aussi la matière active elle-même (sans produit spécifique)
+      window.PHYTO_INDEX.push({
+        searchText: [ma.label, cat.label, ma.cibles].join(' ').toLowerCase(),
+        nomProd: ma.label.split(' (')[0], fab: '', amm: '', forme: '',
+        dose: ma.dose_ref, catLabel: cat.label, maLabel: ma.label,
+        dose_ref: ma.dose_ref, dose_max: ma.dose_max, unite: ma.unite,
+        dar: ma.dar, znt: ma.znt, categ: ma.categ,
+        cibles: ma.cibles, nb_applic: ma.nb_applic, restriction: ma.restriction,
+        isMA: true
+      });
+    });
   });
 }
+
+function searchPhyto(query) {
+  const res = document.getElementById('mpSearchResults');
+  if (!query || query.length < 2) { res.style.display = 'none'; return; }
+  const q = query.toLowerCase();
+  const matches = (window.PHYTO_INDEX || [])
+    .filter(p => p.searchText.includes(q))
+    .slice(0, 12);
+  if (!matches.length) {
+    res.style.display = 'block';
+    res.innerHTML = `<div style="padding:12px;font-size:13px;color:var(--gris);text-align:center">
+      Aucun produit trouvé — vous pouvez saisir manuellement ci-dessous
+    </div>`;
+    return;
+  }
+  res.style.display = 'block';
+  res.innerHTML = matches.map((p, i) => `
+    <div onclick="selectPhytoProd(${i},'${query}')"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--gris2);transition:background .15s"
+      onmouseenter="this.style.background='var(--gris3)'"
+      onmouseleave="this.style.background=''">
+      <div style="font-weight:700;font-size:13px;color:var(--terre)">${p.nomProd}${p.isMA?' <span style=\'font-size:10px;color:var(--gris);font-weight:400\'>(matière active)</span>':''}</div>
+      <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.maLabel} · ${p.catLabel}${p.fab?' · '+p.fab:''}</div>
+      <div style="display:flex;gap:8px;margin-top:3px;flex-wrap:wrap">
+        <span style="font-size:10px;background:#d4edda;color:var(--vert);padding:1px 6px;border-radius:4px">DAR ${p.dar}j</span>
+        <span style="font-size:10px;background:#d4e8f4;color:var(--bleu);padding:1px 6px;border-radius:4px">ZNT ${p.znt}m</span>
+        <span style="font-size:10px;background:#fdf3d0;color:#8a6a10;padding:1px 6px;border-radius:4px">${p.dose_ref} ${p.unite}</span>
+      </div>
+    </div>`).join('');
+  // Stocker les résultats pour accès par index
+  window.PHYTO_LAST_RESULTS = matches;
+}
+
+function selectPhytoProd(idx, query) {
+  const p = window.PHYTO_LAST_RESULTS[idx];
+  if (!p) return;
+  // Fermer les résultats
+  document.getElementById('mpSearchResults').style.display = 'none';
+  document.getElementById('mpSearch').value = p.nomProd;
+  // Remplir tous les champs
+  setVal('mpNom', p.nomProd);
+  setVal('mpFab', p.fab || '');
+  setVal('mpAMM', p.amm || '');
+  setVal('mpForma', p.forme || '');
+  setVal('mpDoseRef', p.dose || p.dose_ref);
+  setVal('mpDAR', p.dar);
+  setVal('mpZNT', p.znt);
+  setVal('mpCibles', p.cibles || '');
+  // Unité
+  const uniteEl = document.getElementById('mpUnite');
+  if (uniteEl) {
+    const u = p.unite || 'kg/ha';
+    uniteEl.value = u.includes('L') ? 'L/ha' : u.includes('g/ha') ? 'g/ha' : 'kg/ha';
+    document.getElementById('mpDoseUnit').textContent = uniteEl.value;
+    document.getElementById('mpQteUnit').textContent = uniteEl.value.replace('/ha','');
+  }
+  // Catégorie
+  const categEl = document.getElementById('mpCateg');
+  if (categEl && p.categ) categEl.value = p.categ;
+  // Alerte réglementaire
+  const warnings = [];
+  if (p.dar > 21) warnings.push(`⏰ DAR long : ${p.dar} jours avant récolte`);
+  if (p.znt >= 20) warnings.push(`🌊 ZNT ${p.znt}m — Zones non traitées obligatoires`);
+  if (p.restriction) warnings.push(`⚠️ ${p.restriction}`);
+  if (p.nb_applic) warnings.push(`🔢 Limites : ${p.nb_applic}`);
+  const alertEl = document.getElementById('mpPhytoAlert');
+  const alertContent = document.getElementById('mpPhytoAlertContent');
+  if (alertEl && warnings.length) {
+    alertEl.style.display = 'flex';
+    if (alertContent) alertContent.innerHTML = warnings.map(w=>`<div style="margin-bottom:3px;font-size:12px">${w}</div>`).join('');
+  } else if (alertEl) {
+    alertEl.style.display = 'none';
+  }
+  toast(`✅ ${p.nomProd} — champs pré-remplis`);
+}
+
+// Fermer les résultats si on clique ailleurs
+document.addEventListener('click', e => {
+  const res = document.getElementById('mpSearchResults');
+  if (res && !res.contains(e.target) && e.target.id !== 'mpSearch') {
+    res.style.display = 'none';
+  }
+});
+
+// Anciennes fonctions cascade (gardées pour compatibilité)
+function onCategChange(){}
+function onMAChange(){}
+function onProdChange(){}
 
 function onCategChange() {
   const catKey = document.getElementById('mpCategPhyto').value;
