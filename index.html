@@ -2831,22 +2831,19 @@ function searchPhyto(query) {
   window.PHYTO_LAST_RESULTS = matches;
 }
 
-function selectPhytoProd(idx, query) {
+function selectPhytoProd(idx) {
   const p = window.PHYTO_LAST_RESULTS[idx];
   if (!p) return;
-  // Fermer les résultats
   document.getElementById('mpSearchResults').style.display = 'none';
   document.getElementById('mpSearch').value = p.nomProd;
-  // Remplir tous les champs
-  setVal('mpNom', p.nomProd);
-  setVal('mpFab', p.fab || '');
-  setVal('mpAMM', p.amm || '');
-  setVal('mpForma', p.forme || '');
-  setVal('mpDoseRef', p.dose || p.dose_ref);
-  setVal('mpDAR', p.dar);
-  setVal('mpZNT', p.znt);
-  setVal('mpCibles', p.cibles || '');
-  // Unité
+  sv('mpNom', p.nomProd);
+  sv('mpFab', p.fab || '');
+  sv('mpAMM', p.amm || '');
+  sv('mpForma', p.forme || '');
+  sv('mpDoseRef', p.dose || p.dose_ref);
+  sv('mpDAR', p.dar);
+  sv('mpZNT', p.znt);
+  sv('mpCibles', p.cibles || '');
   const uniteEl = document.getElementById('mpUnite');
   if (uniteEl) {
     const u = p.unite || 'kg/ha';
@@ -2854,24 +2851,20 @@ function selectPhytoProd(idx, query) {
     document.getElementById('mpDoseUnit').textContent = uniteEl.value;
     document.getElementById('mpQteUnit').textContent = uniteEl.value.replace('/ha','');
   }
-  // Catégorie
   const categEl = document.getElementById('mpCateg');
   if (categEl && p.categ) categEl.value = p.categ;
-  // Alerte réglementaire
   const warnings = [];
   if (p.dar > 21) warnings.push(`⏰ DAR long : ${p.dar} jours avant récolte`);
   if (p.znt >= 20) warnings.push(`🌊 ZNT ${p.znt}m — Zones non traitées obligatoires`);
   if (p.restriction) warnings.push(`⚠️ ${p.restriction}`);
-  if (p.nb_applic) warnings.push(`🔢 Limites : ${p.nb_applic}`);
+  if (p.nb_applic) warnings.push(`🔢 ${p.nb_applic}`);
   const alertEl = document.getElementById('mpPhytoAlert');
   const alertContent = document.getElementById('mpPhytoAlertContent');
-  if (alertEl && warnings.length) {
-    alertEl.style.display = 'flex';
+  if (alertEl) {
+    alertEl.style.display = warnings.length ? 'flex' : 'none';
     if (alertContent) alertContent.innerHTML = warnings.map(w=>`<div style="margin-bottom:3px;font-size:12px">${w}</div>`).join('');
-  } else if (alertEl) {
-    alertEl.style.display = 'none';
   }
-  toast(`✅ ${p.nomProd} — champs pré-remplis`);
+  toast(`✅ ${p.nomProd} sélectionné`);
 }
 
 // Fermer les résultats si on clique ailleurs
