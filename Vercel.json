@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/scan.js": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 30
+    }
+  }
+}
