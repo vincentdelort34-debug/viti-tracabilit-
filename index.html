@@ -640,7 +640,11 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 
   <!-- INFOS PARCELLE -->
   <div class="card" id="sParcInfos">
-    <div class="ch"><span class="ct">📍 Informations parcelle</span><button class="btn btghost btsm" onclick="showM('mAP')">✏️ Modifier</button></div>
+    <div class="ch"><span class="ct">📍 Informations parcelle</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btghost btsm" onclick="showM('mSousParc')">✂️ Sous-parcelle</button>
+      </div>
+    </div>
     <div id="sParcInfosContent"></div>
   </div>
 
@@ -1160,6 +1164,22 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <div class="sro"><span style="font-size:14px;font-weight:500">🍄 Alertes météo risque</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
     <button class="btn btp" onclick="saveProfil()" style="margin-top:8px">💾 Sauvegarder dans Supabase</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mProfil')">Fermer</button>
+  </div>
+</div>
+
+<div class="ov" id="mSousParc" onclick="closeM(event,'mSousParc')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">✂️ Ajouter une sous-parcelle</div>
+    <div class="al alb" style="margin-bottom:14px"><span class="al-i">ℹ️</span><div>La sous-parcelle héritera des coordonnées GPS de l'îlot parent. Elle apparaîtra comme une parcelle indépendante dans votre registre.</div></div>
+    <div class="fg"><label>Code *</label><input type="text" id="spCode" placeholder="Ex : I11P1S2"></div>
+    <div class="fg"><label>Cépage *</label><input type="text" id="spCepage" placeholder="Ex : Pinot Noir N"></div>
+    <div class="row2">
+      <div class="fg"><label>Surface (ha)</label><div class="ig"><input type="number" id="spSurface" step="0.01" placeholder="0.50"><span class="isuf">ha</span></div></div>
+      <div class="fg"><label>Couleur</label><select id="spCouleur"><option>Noir</option><option>Blanc</option><option>Rosé</option></select></div>
+    </div>
+    <div class="fg"><label>AOC / Produit</label><input type="text" id="spAOC" placeholder="Pays d'Oc, AOP…"></div>
+    <button class="btn btp" onclick="saveSousParcelle()">💾 Créer la sous-parcelle</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mSousParc')">Annuler</button>
   </div>
 </div>
 
@@ -3234,27 +3254,110 @@ function setShpLoading(txt) {
   document.getElementById('shpLoadingTxt').textContent = txt;
 }
 
-function afficherShpResult() {
-  document.getElementById('shpLoadingContent').style.display = 'none';
-  document.getElementById('shpDropContent').style.display = 'block';
-  document.getElementById('shpResult').style.display = 'block';
-  document.getElementById('shpResultMsg').className = 'al alg';
+function renderShpParcList() {
+  let totalImport = 0;
+  shpParcelles.forEach(p => {
+    totalImport += (p.subdivisions && p.subdivisions.length > 0) ? p.subdivisions.length : 1;
+  });
   const totalHa = shpParcelles.reduce((s,p) => s+(p.surface_ha||0), 0);
-  document.getElementById('shpResultTxt').innerHTML = `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b> Vérifiez avant d’importer.`;
-  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p,i) => `
-    <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:7px">
+  document.getElementById('shpResultTxt').innerHTML = `<b>${totalImport} parcelle(s) à importer — ${totalHa.toFixed(2)} ha total</b> Subdivisez les îlots si besoin.`;
+  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p,i) => {
+    const hasSubs = p.subdivisions && p.subdivisions.length > 0;
+    const subsHtml = hasSubs ? p.subdivisions.map((s,j) => `
+      <div style="display:flex;align-items:center;gap:6px;margin-top:7px;padding:8px 10px;background:var(--blanc);border-radius:8px;border-left:3px solid var(--or);flex-wrap:wrap">
+        <input type="text" value="${s.code}" placeholder="Code" style="width:65px;padding:4px 6px;font-size:12px" onchange="shpParcelles[${i}].subdivisions[${j}].code=this.value">
+        <input type="text" value="${s.cepage}" placeholder="Cépage" style="width:110px;padding:4px 6px;font-size:12px" onchange="shpParcelles[${i}].subdivisions[${j}].cepage=this.value">
+        <input type="number" value="${s.surface_ha}" placeholder="ha" step="0.01" style="width:65px;padding:4px 6px;font-size:12px" onchange="shpParcelles[${i}].subdivisions[${j}].surface_ha=parseFloat(this.value)||0">
+        <span style="font-size:10px;color:var(--gris)">ha</span>
+        <select style="padding:4px 6px;font-size:11px" onchange="shpParcelles[${i}].subdivisions[${j}].couleur=this.value">
+          <option ${s.couleur==='Noir'?'selected':''}>Noir</option>
+          <option ${s.couleur==='Blanc'?'selected':''}>Blanc</option>
+          <option ${s.couleur==='Rosé'?'selected':''}>Rosé</option>
+        </select>
+        <button onclick="supprimerSub(${i},${j})" style="background:none;border:none;cursor:pointer;color:var(--rouge);font-size:14px;padding:2px;margin-left:auto">🗑️</button>
+      </div>`).join('') : '';
+    return `
+    <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:9px">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <div style="flex:1;min-width:120px">
           <div style="font-weight:700;font-size:13px">${p.nom}</div>
           <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune} · ${p.coords.length} pts GPS</div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" value="${p.code}" placeholder="Code" style="width:70px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].code=this.value">
-          <input type="text" value="${p.nom}" placeholder="Nom" style="width:140px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].nom=this.value">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          ${!hasSubs ? `
+            <input type="text" value="${p.code}" placeholder="Code" style="width:65px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].code=this.value">
+            <input type="text" value="${p.cepage||''}" placeholder="Cépage" style="width:100px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].cepage=this.value">
+          ` : `<span style="font-size:11px;color:var(--vigne);font-weight:700">✂️ ${p.subdivisions.length} sous-parcelles</span>`}
+          <button onclick="ajouterSub(${i})" style="background:var(--or);border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;color:var(--noir);white-space:nowrap">✂️ Subdiviser</button>
         </div>
       </div>
-    </div>`).join('');
-  toast(`✅ ${shpParcelles.length} parcelles extraites`);
+      ${subsHtml}
+      ${hasSubs ? `<button onclick="ajouterSub(${i})" style="background:none;border:1px dashed var(--gris2);border-radius:7px;padding:4px 10px;font-size:11px;color:var(--gris);cursor:pointer;margin-top:7px;width:100%">+ Ajouter une sous-parcelle</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function afficherShpResult() {
+  document.getElementById('shpLoadingContent').style.display = 'none';
+  document.getElementById('shpDropContent').style.display = 'block';
+  document.getElementById('shpResult').style.display = 'block';
+  document.getElementById('shpResultMsg').className = 'al alg';
+  shpParcelles.forEach(p => { if (!p.subdivisions) p.subdivisions = []; });
+  renderShpParcList();
+  toast(`✅ ${shpParcelles.length} îlot(s) extraits — subdivisez si besoin`);
+}
+
+function ajouterSub(i) {
+  const p = shpParcelles[i];
+  if (!p.subdivisions) p.subdivisions = [];
+  const j = p.subdivisions.length + 1;
+  const surfRestante = Math.max(0, Math.round(((p.surface_ha||0) - p.subdivisions.reduce((s,x)=>s+(x.surface_ha||0),0)) * 100) / 100);
+  p.subdivisions.push({
+    code: `${p.code}S${j}`,
+    cepage: '',
+    surface_ha: surfRestante,
+    couleur: 'Noir',
+    coords: p.coords,
+    color: ['#c8a84c','#4a8a42','#7a3060','#1a5a8a','#d4751a'][j % 5]
+  });
+  renderShpParcList();
+}
+
+function supprimerSub(i, j) {
+  shpParcelles[i].subdivisions.splice(j, 1);
+  renderShpParcList();
+}
+
+async function saveSousParcelle() {
+  const code = g('spCode'), cepage = g('spCepage');
+  if (!code || !cepage) { toast('⚠️ Code et cépage obligatoires'); return; }
+  const parcParent = PARCS.find(p => p.code === window.CURRENT_PARC_CODE);
+  if (!parcParent) { toast('⚠️ Parcelle parent introuvable'); return; }
+  syncSaving();
+  try {
+    const {data, error} = await sb.from('parcelles').insert({
+      domaine_id: DOM_ID,
+      code, 
+      nom: `${parcParent.nom.split('·')[0].trim()} · ${cepage}`,
+      commune: parcParent.commune,
+      surface_ha: parseFloat(g('spSurface')) || null,
+      cepage,
+      couleur: document.getElementById('spCouleur')?.value || 'Noir',
+      produit_aoc: g('spAOC') || parcParent.produit_aoc,
+      ref_cadastrale: `${parcParent.ref_cadastrale||''}-sub`,
+      coords: parcParent.coords,
+      color: '#7a3060',
+    }).select().single();
+    if (error) throw error;
+    PARCS.push(data);
+    syncOK();
+    fillSelects(); renderDash(); renderIFT();
+    toast(`✅ Sous-parcelle ${code} · ${cepage} créée`);
+    closeM(null,'mSousParc');
+    ['spCode','spCepage','spSurface','spAOC'].forEach(id => sv(id,''));
+    // Rafraîchir la fiche
+    showPD(window.CURRENT_PARC_CODE);
+  } catch(e) { syncErr(); toast('❌ Erreur : ' + e.message); }
 }
 
 async function confirmShpImport() {
@@ -3262,20 +3365,43 @@ async function confirmShpImport() {
   syncSaving();
   let ok=0, err=0;
   const COLORS=['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040','#4a6aaa','#aa4a4a','#6aaa4a','#aa8a4a','#4aaa8a','#8a4aaa'];
+
   for (let i=0; i<shpParcelles.length; i++) {
     const p = shpParcelles[i];
-    try {
-      const {data,error} = await sb.from('parcelles').insert({
-        domaine_id: DOM_ID, code: p.code, nom: p.nom,
-        commune: p.commune, surface_ha: p.surface_ha || null,
-        cepage: p.culture, produit_aoc: 'PAC 2025',
-        ref_cadastrale: `PAC2025-${p.code}`,
-        coords: p.coords, color: p.color || COLORS[i%COLORS.length]
-      }).select().single();
-      if (error) throw error;
-      PARCS.push(data); ok++;
-    } catch(e) { err++; console.error(e); }
+    const hasSubs = p.subdivisions && p.subdivisions.length > 0;
+
+    if (hasSubs) {
+      // Importer chaque sous-parcelle avec les coords de l'îlot parent
+      for (let j=0; j<p.subdivisions.length; j++) {
+        const s = p.subdivisions[j];
+        try {
+          const {data,error} = await sb.from('parcelles').insert({
+            domaine_id: DOM_ID, code: s.code, nom: `${p.nom.split('·')[0].trim()} · ${s.cepage||'Sous-parcelle '+(j+1)}`,
+            commune: p.commune, surface_ha: s.surface_ha || null,
+            cepage: s.cepage, couleur: s.couleur, produit_aoc: 'PAC 2025',
+            ref_cadastrale: `PAC2025-${p.code}`,
+            coords: p.coords, color: s.color || COLORS[(i+j)%COLORS.length]
+          }).select().single();
+          if (error) throw error;
+          PARCS.push(data); ok++;
+        } catch(e) { err++; console.error(e); }
+      }
+    } else {
+      // Importer l'îlot tel quel
+      try {
+        const {data,error} = await sb.from('parcelles').insert({
+          domaine_id: DOM_ID, code: p.code, nom: p.nom,
+          commune: p.commune, surface_ha: p.surface_ha || null,
+          cepage: p.cepage || p.culture, produit_aoc: 'PAC 2025',
+          ref_cadastrale: `PAC2025-${p.code}`,
+          coords: p.coords, color: p.color || COLORS[i%COLORS.length]
+        }).select().single();
+        if (error) throw error;
+        PARCS.push(data); ok++;
+      } catch(e) { err++; console.error(e); }
+    }
   }
+
   const totalHa = PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
   await sb.from('domaines').update({surface_ha:Math.round(totalHa*100)/100}).eq('id',DOM_ID);
   DOM.surface_ha = Math.round(totalHa*100)/100;
@@ -3286,7 +3412,6 @@ async function confirmShpImport() {
   resetShpImport();
   document.getElementById('shpImportCard').style.display = 'none';
 }
-
 function resetShpImport() {
   shpParcelles = [];
   document.getElementById('shpDropContent').style.display = 'block';
