@@ -2194,7 +2194,7 @@ function afficherConseil(d) {
   // Conseils agronomiques
   const conseils = d.conseils_agronomiques || [];
   document.getElementById('cAgroContent').innerHTML = conseils.length ?
-    conseils.map(c => `<div style="display:flex;gap:10px;margin-bottom:8px;font-size:13px"><span>${c.emoji||'•'}</span><div><b>${c.titre||''}</b>${c.texte ? '<br><span style='color:var(--gris);font-size:12px'>' + c.texte + '</span>' : ''}</div></div>`).join('') :
+    conseils.map(c => `<div style="display:flex;gap:10px;margin-bottom:8px;font-size:13px"><span>${c.emoji||'•'}</span><div><b>${c.titre||''}</b>${c.texte ? '<br><span style="color:var(--gris);font-size:12px">' + c.texte + '</span>' : ''}</div></div>`).join('') :
     '<div style="font-size:13px;color:var(--gris);padding:8px">—</div>';
 
   document.getElementById('cR').scrollIntoView({behavior:'smooth'});
@@ -3361,7 +3361,7 @@ function searchPhyto(query) {
       style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--gris2);transition:background .15s"
       onmouseenter="this.style.background='var(--gris3)'"
       onmouseleave="this.style.background=''">
-      <div style="font-weight:700;font-size:13px;color:var(--terre)">${p.nomProd}${p.isMA?' <span style='font-size:10px;color:var(--gris);font-weight:400'>(matière active)</span>':''}</div>
+      <div style="font-weight:700;font-size:13px;color:var(--terre)">${p.nomProd}${p.isMA?' <span style="font-size:10px;color:var(--gris);font-weight:400">(matière active)</span>':''}</div>
       <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.maLabel} · ${p.catLabel}${p.fab?' · '+p.fab:''}</div>
       <div style="display:flex;gap:8px;margin-top:3px;flex-wrap:wrap">
         <span style="font-size:10px;background:#d4edda;color:var(--vert);padding:1px 6px;border-radius:4px">DAR ${p.dar}j</span>
