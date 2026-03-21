@@ -1584,8 +1584,22 @@ function fillScanResult(d){
   if(d.date_peremption)sv('rPe',d.date_peremption);
   document.getElementById('rDU').textContent=d.dose_unite||'kg/ha';
   document.getElementById('rQU').textContent=(d.dose_unite||'kg/ha').replace('/ha','');
+
+  // Chercher dans PHYTO_DB pour compléter les infos manquantes
+  if(d.nom && window.PHYTO_INDEX) {
+    const q = d.nom.toLowerCase().split(' ')[0];
+    const match = window.PHYTO_INDEX.find(p => p.searchText.includes(q) && !p.isMA);
+    if(match) {
+      if(!d.dar || d.dar===0) sv('rDA', match.dar);
+      if(!d.znt || d.znt===0) sv('rZ', match.znt);
+      if(!d.cibles) sv('rCi', match.cibles);
+      const catEl = document.getElementById('rC');
+      if(catEl && match.categ) catEl.value = match.categ;
+    }
+  }
+
   document.getElementById('sR').scrollIntoView({behavior:'smooth'});
-  toast(`✅ Extraction IA · Confiance ${d.confiance||88}%`);
+  toast(`✅ Extraction IA · Confiance ${d.confiance||88}% · Vérifiez les données`);
 }
 
 async function saveScan(){
@@ -2767,30 +2781,61 @@ const PHYTO_DB = {
   }
 };
 
-// ══════════════════════════════════════════
-//  FONCTIONS DE SÉLECTION CASCADE
-// ══════════════════════════════════════════
+// Extension base — produits supplémentaires fréquents en vigne
+const PHYTO_EXTRA = [
+  // Fongicides mildiou
+  {nomProd:'Mildicut',fab:'UPL',amm:'FR-2019-1847',forme:'SC (cyazofamid)',dose_ref:0.25,dose_max:0.3,unite:'L/ha',dar:7,znt:5,categ:'Fongicide',cibles:'Mildiou',nb_applic:'4/an',restriction:'Max 2 applications consécutives',searchText:'mildicut upl cyazofamid mildiou fongicide'},
+  {nomProd:'Equation Pro',fab:'Corteva',amm:'FR-2017-0923',forme:'WG (famoxadone+cymoxanil)',dose_ref:0.4,dose_max:0.4,unite:'kg/ha',dar:21,znt:5,categ:'Fongicide',cibles:'Mildiou',nb_applic:'4/an',restriction:'Max 2 consécutives - rotation obligatoire',searchText:'equation pro corteva famoxadone cymoxanil mildiou fongicide'},
+  {nomProd:'Pergado MZ',fab:'Syngenta',amm:'FR-2018-0445',forme:'WG (mandipropamid+mancozèbe)',dose_ref:2.5,dose_max:2.5,unite:'kg/ha',dar:28,znt:5,categ:'Fongicide',cibles:'Mildiou',nb_applic:'3/an',restriction:'CMR2 - EPI complet',searchText:'pergado syngenta mandipropamid mancozebe mildiou fongicide'},
+  {nomProd:'Infinito',fab:'Bayer',amm:'FR-2016-0678',forme:'SC (fluopicolide+propamocarbe)',dose_ref:1.6,dose_max:1.6,unite:'L/ha',dar:14,znt:5,categ:'Fongicide',cibles:'Mildiou',nb_applic:'3/an',restriction:'Rotation FRAC 43+28',searchText:'infinito bayer fluopicolide propamocarbe mildiou fongicide'},
+  {nomProd:'Enervin',fab:'BASF',amm:'FR-2019-0234',forme:'SC (ametoctradine+dimethomorphe)',dose_ref:1.5,dose_max:1.5,unite:'L/ha',dar:14,znt:5,categ:'Fongicide',cibles:'Mildiou',nb_applic:'3/an',restriction:'',searchText:'enervin basf ametoctradine dimethomorphe mildiou fongicide'},
+  {nomProd:'Valis M',fab:'Gowan',amm:'FR-2020-0567',forme:'WG (valifenalate+mancozèbe)',dose_ref:2.0,dose_max:2.0,unite:'kg/ha',dar:28,znt:5,categ:'Fongicide',cibles:'Mildiou',nb_applic:'3/an',restriction:'',searchText:'valis gowan valifenalate mancozebe mildiou fongicide'},
+  {nomProd:'Verita',fab:'BASF',amm:'FR-2017-0891',forme:'WG (fenamidone+fosétyl)',dose_ref:2.0,dose_max:2.0,unite:'kg/ha',dar:28,znt:5,categ:'Fongicide',cibles:'Mildiou',nb_applic:'4/an',restriction:'',searchText:'verita basf fenamidone fosetyl mildiou fongicide'},
+  {nomProd:'Profiler',fab:'Bayer',amm:'FR-2018-1023',forme:'WG (fluopicolide+fosétyl)',dose_ref:1.75,dose_max:1.75,unite:'kg/ha',dar:28,znt:5,categ:'Fongicide',cibles:'Mildiou',nb_applic:'3/an',restriction:'',searchText:'profiler bayer fluopicolide fosetyl mildiou fongicide'},
+  // Fongicides oïdium
+  {nomProd:'Vivando',fab:'BASF',amm:'FR-2016-0445',forme:'SC (metrafenone)',dose_ref:0.16,dose_max:0.2,unite:'L/ha',dar:21,znt:5,categ:'Fongicide',cibles:'Oïdium',nb_applic:'2/an',restriction:'Max 2 consécutives',searchText:'vivando basf metrafenone oidium fongicide'},
+  {nomProd:'Dynali',fab:'Syngenta',amm:'FR-2019-0789',forme:'EC (difénoconazole+cyflufénamide)',dose_ref:0.175,dose_max:0.175,unite:'L/ha',dar:28,znt:5,categ:'Fongicide',cibles:'Oïdium',nb_applic:'3/an',restriction:'CMR1B - EPI complet',searchText:'dynali syngenta difenoconazole cyflufenamide oidium fongicide'},
+  {nomProd:'Luna Experience',fab:'Bayer',amm:'FR-2018-0334',forme:'SC (fluopyram+tebuconazole)',dose_ref:0.75,dose_max:0.75,unite:'L/ha',dar:14,znt:5,categ:'Fongicide',cibles:'Oïdium Botrytis',nb_applic:'2/an',restriction:'CMR1B',searchText:'luna experience bayer fluopyram tebuconazole oidium botrytis fongicide'},
+  {nomProd:'Cisero',fab:'Syngenta',amm:'FR-2020-0892',forme:'WG (cyflufénamide)',dose_ref:0.05,dose_max:0.05,unite:'kg/ha',dar:21,znt:5,categ:'Fongicide',cibles:'Oïdium',nb_applic:'2/an',restriction:'Max 2 consécutives',searchText:'cisero syngenta cyflufenamide oidium fongicide'},
+  // Biocontrôle / Huiles essentielles
+  {nomProd:'Citrothiol',fab:'De Sangosse',amm:'FR-2021-0456',forme:'EC (huile essentielle citrus)',dose_ref:1.0,dose_max:2.0,unite:'L/ha',dar:0,znt:5,categ:'Biocontrôle',cibles:'Oïdium Acariens',nb_applic:'Sans limite',restriction:'T° < 25°C - Ne pas mélanger avec produits acides',searchText:'citrothiol de sangosse huile essentielle citrus oidium acariens biocontrole ab'},
+  {nomProd:'Timorex Gold',fab:'Stockton',amm:'FR-2019-0678',forme:'EC (huile tea tree)',dose_ref:0.6,dose_max:0.8,unite:'L/ha',dar:3,znt:5,categ:'Biocontrôle',cibles:'Oïdium Mildiou Botrytis',nb_applic:'Sans limite',restriction:'Autorisé AB',searchText:'timorex gold stockton tea tree oidium mildiou botrytis biocontrole ab'},
+  {nomProd:'Serenade ASO',fab:'Bayer',amm:'FR-2018-0234',forme:'AS (Bacillus subtilis)',dose_ref:4.0,dose_max:4.0,unite:'L/ha',dar:0,znt:5,categ:'Biocontrôle',cibles:'Botrytis Oïdium',nb_applic:'Sans limite',restriction:'Autorisé AB - efficacité préventive',searchText:'serenade bayer bacillus subtilis botrytis oidium biocontrole ab'},
+  {nomProd:'Botector',fab:'Bio-Ferm',amm:'FR-2017-0345',forme:'WG (Aureobasidium pullulans)',dose_ref:0.15,dose_max:0.15,unite:'kg/ha',dar:0,znt:5,categ:'Biocontrôle',cibles:'Botrytis',nb_applic:'Sans limite',restriction:'Autorisé AB',searchText:'botector bio-ferm aureobasidium botrytis biocontrole ab'},
+  {nomProd:'Sonata',fab:'Bayer',amm:'FR-2020-0123',forme:'AS (Bacillus pumilus)',dose_ref:4.0,dose_max:4.0,unite:'L/ha',dar:0,znt:5,categ:'Biocontrôle',cibles:'Oïdium',nb_applic:'Sans limite',restriction:'Autorisé AB',searchText:'sonata bayer bacillus pumilus oidium biocontrole ab'},
+  // Insecticides
+  {nomProd:'Coragen',fab:'Corteva',amm:'FR-2016-0567',forme:'SC (chlorantraniliprole)',dose_ref:0.175,dose_max:0.175,unite:'L/ha',dar:7,znt:20,categ:'Insecticide',cibles:'Vers de la grappe Tordeuses',nb_applic:'2/an',restriction:'ZNT 20m - Dangereux abeilles',searchText:'coragen corteva chlorantraniliprole vers grappe tordeuse insecticide'},
+  {nomProd:'Affirm',fab:'Syngenta',amm:'FR-2017-0891',forme:'WG (emamectine benzoate)',dose_ref:1.5,dose_max:1.5,unite:'kg/ha',dar:7,znt:20,categ:'Insecticide',cibles:'Vers de la grappe',nb_applic:'2/an',restriction:'ZNT 20m',searchText:'affirm syngenta emamectine vers grappe insecticide'},
+  {nomProd:'Movento',fab:'Bayer',amm:'FR-2018-0345',forme:'SC (spirotetramat)',dose_ref:0.75,dose_max:0.75,unite:'L/ha',dar:14,znt:20,categ:'Insecticide',cibles:'Cicadelles Cochenilles',nb_applic:'1/an',restriction:'ZNT 20m',searchText:'movento bayer spirotetramat cicadelle cochenille insecticide'},
+  {nomProd:'Sivanto Prime',fab:'Bayer',amm:'FR-2019-0678',forme:'SL (flupyradifurone)',dose_ref:0.3,dose_max:0.3,unite:'L/ha',dar:7,znt:10,categ:'Insecticide',cibles:'Cicadelles Pucerons',nb_applic:'2/an',restriction:'ZNT 10m - Moins dangereux abeilles',searchText:'sivanto bayer flupyradifurone cicadelle puceron insecticide'},
+  // Herbicides
+  {nomProd:'Katana',fab:'ISK Biosciences',amm:'FR-2015-0567',forme:'WG 25% (flazasulfuron)',dose_ref:0.1,dose_max:0.1,unite:'kg/ha',dar:0,znt:20,categ:'Herbicide',cibles:'Adventices annuelles vivaces Liseron Chiendent',nb_applic:'1/an',restriction:'ZNT 20m',searchText:'katana isk flazasulfuron liseron chiendent adventice herbicide'},
+  {nomProd:'Basta F1',fab:'Bayer',amm:'FR-2016-0789',forme:'SL (glufosinate)',dose_ref:3.0,dose_max:3.0,unite:'L/ha',dar:0,znt:20,categ:'Herbicide',cibles:'Adventices annuelles vivaces',nb_applic:'2/an',restriction:'ZNT 20m - Pas avant vendange',searchText:'basta bayer glufosinate adventice herbicide'},
+  {nomProd:'Centurion',fab:'Gowan',amm:'FR-2017-0234',forme:'EC (cléthodime)',dose_ref:0.5,dose_max:0.5,unite:'L/ha',dar:0,znt:5,categ:'Herbicide',cibles:'Graminées vivaces',nb_applic:'1/an',restriction:'Anti-graminées sélectif',searchText:'centurion gowan clethodime graminee herbicide'},
+];
+
+// Fusionner dans l'index global
+if(typeof window !== 'undefined') {
+  window.PHYTO_EXTRA = PHYTO_EXTRA;
+}
+
+
 
 function initPhytoSelects() {
   // Construire l'index de recherche plat à partir de la base
   window.PHYTO_INDEX = [];
   Object.entries(PHYTO_DB.categories).forEach(([catKey, cat]) => {
     Object.entries(cat.matieres).forEach(([maKey, ma]) => {
-      // Ajouter chaque produit commercial
       ma.produits.forEach(p => {
         window.PHYTO_INDEX.push({
-          // Données pour la recherche
           searchText: [p.nom, ma.label, cat.label, p.fab, ma.cibles].join(' ').toLowerCase(),
-          // Données d'affichage
           nomProd: p.nom, fab: p.fab, amm: p.amm, forme: p.forme,
           dose: p.dose, catLabel: cat.label, maLabel: ma.label,
-          // Données réglementaires
           dose_ref: ma.dose_ref, dose_max: ma.dose_max, unite: ma.unite,
           dar: ma.dar, znt: ma.znt, categ: ma.categ,
           cibles: ma.cibles, nb_applic: ma.nb_applic, restriction: ma.restriction,
         });
       });
-      // Ajouter aussi la matière active elle-même (sans produit spécifique)
       window.PHYTO_INDEX.push({
         searchText: [ma.label, cat.label, ma.cibles].join(' ').toLowerCase(),
         nomProd: ma.label.split(' (')[0], fab: '', amm: '', forme: '',
@@ -2802,19 +2847,36 @@ function initPhytoSelects() {
       });
     });
   });
+  // Ajouter les produits supplémentaires
+  (window.PHYTO_EXTRA || []).forEach(p => {
+    window.PHYTO_INDEX.push({
+      searchText: p.searchText,
+      nomProd: p.nomProd, fab: p.fab, amm: p.amm, forme: p.forme,
+      dose: p.dose_ref, catLabel: p.categ, maLabel: p.cibles,
+      dose_ref: p.dose_ref, dose_max: p.dose_max, unite: p.unite,
+      dar: p.dar, znt: p.znt, categ: p.categ,
+      cibles: p.cibles, nb_applic: p.nb_applic, restriction: p.restriction,
+    });
+  });
 }
 
 function searchPhyto(query) {
   const res = document.getElementById('mpSearchResults');
   if (!query || query.length < 2) { res.style.display = 'none'; return; }
-  const q = query.toLowerCase();
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const q = norm(query);
   const matches = (window.PHYTO_INDEX || [])
-    .filter(p => p.searchText.includes(q))
-    .slice(0, 12);
+    .filter(p => norm(p.searchText).includes(q))
+    .sort((a,b) => {
+      const ta = norm(a.nomProd), tb = norm(b.nomProd);
+      return (ta.startsWith(q)?0:1) - (tb.startsWith(q)?0:1);
+    })
+    .slice(0, 15);
   if (!matches.length) {
     res.style.display = 'block';
     res.innerHTML = `<div style="padding:12px;font-size:13px;color:var(--gris);text-align:center">
-      Aucun produit trouvé — vous pouvez saisir manuellement ci-dessous
+      Aucun produit trouvé pour "<b>${query}</b>"<br>
+      <span style="font-size:11px">Saisir manuellement ci-dessous</span>
     </div>`;
     return;
   }
@@ -2832,7 +2894,6 @@ function searchPhyto(query) {
         <span style="font-size:10px;background:#fdf3d0;color:#8a6a10;padding:1px 6px;border-radius:4px">${p.dose_ref} ${p.unite}</span>
       </div>
     </div>`).join('');
-  // Stocker les résultats pour accès par index
   window.PHYTO_LAST_RESULTS = matches;
 }
 
