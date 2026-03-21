@@ -670,12 +670,45 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 </section>
 <!-- MÉTÉO -->
 <section id="sMeteo" class="sec">
-  <div class="stitle">Météo & risques phyto</div><div class="ssub" id="mS">Localisation automatique</div>
-  <div class="al alo"><span class="al-i">🍄</span><div><b>Risque mildiou — surveiller</b>Conditions à risque selon modèle EPI.</div></div>
-  <div class="card"><div class="ch"><span class="ct">Prévision 7 jours</span></div><div class="ms" id="mSt"><div class="md today"><div class="mdl">Auj.</div><div class="mdi">⛅</div><div class="mdt">—°C</div><div class="mdp">—mm</div></div></div></div>
-  <div class="card"><div class="ch"><span class="ct">Créneaux traitement</span><span class="badge bb">Restriction horaire</span></div>
-    <div class="li"><div class="lic" style="background:#d4edda">✅</div><div class="lib"><div class="lit">Matin 6h–11h</div><div class="lim">Privilégier les traitements tôt le matin</div></div><span class="badge bg">Idéal</span></div>
-    <div class="li"><div class="lic" style="background:#fde8c8">⚠️</div><div class="lib"><div class="lit">Après-midi par forte chaleur</div><div class="lim">Risque évaporation et dérive</div></div><span class="badge bo">Déconseillé</span></div>
+  <div class="stitle">Météo & risques phyto</div>
+  <div class="ssub" id="mS">Puisserguier · Hérault · Données Open-Meteo</div>
+
+  <!-- ALERTES RISQUES -->
+  <div id="mAlertes"></div>
+
+  <!-- PRÉVISION 7 JOURS -->
+  <div class="card">
+    <div class="ch"><span class="ct">Prévision 7 jours</span><button class="btn btghost btsm" onclick="loadMeteo()">🔄</button></div>
+    <div class="ms" id="mSt">
+      <div style="font-size:13px;color:var(--gris);padding:16px;text-align:center">Chargement…</div>
+    </div>
+  </div>
+
+  <!-- DÉTAIL AUJOURD'HUI -->
+  <div class="card" id="mDetailCard" style="display:none">
+    <div class="ch"><span class="ct" id="mDetailTitre">Aujourd'hui</span></div>
+    <div id="mDetail"></div>
+  </div>
+
+  <!-- MODÈLE RISQUE MILDIOU -->
+  <div class="card">
+    <div class="ch"><span class="ct">🍄 Modèle risque mildiou</span><span class="badge bb">EPI simplifié</span></div>
+    <div id="mMildiou" style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Chargement…</div>
+  </div>
+
+  <!-- MODÈLE RISQUE OÏDIUM -->
+  <div class="card">
+    <div class="ch"><span class="ct">⚪ Modèle risque oïdium</span></div>
+    <div id="mOidium" style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Chargement…</div>
+  </div>
+
+  <!-- CRÉNEAUX TRAITEMENT -->
+  <div class="card">
+    <div class="ch"><span class="ct">🕐 Créneaux traitement</span><span class="badge bb">Restriction horaire</span></div>
+    <div id="mCreneaux">
+      <div class="li"><div class="lic" style="background:#d4edda">✅</div><div class="lib"><div class="lit">Matin 6h–11h</div><div class="lim">Privilégier les traitements tôt le matin</div></div><span class="badge bg">Idéal</span></div>
+      <div class="li"><div class="lic" style="background:#fde8c8">⚠️</div><div class="lib"><div class="lit">Après-midi par forte chaleur</div><div class="lim">Risque évaporation et dérive</div></div><span class="badge bo">Déconseillé</span></div>
+    </div>
   </div>
 </section>
 <!-- REGISTRE -->
@@ -1446,6 +1479,7 @@ function go(id, btn) {
   const tbEl = document.getElementById('tbTitle');
   if (tbEl) tbEl.textContent = titles[id] || '';
   if (id === 'sCarto') initMap();
+  if (id === 'sMeteo') loadMeteo();
   if (id === 'sIFT') renderIFT();
   if (id === 'sHVE') calcHVE();
   if (id === 'sCave') renderCave();
@@ -1540,7 +1574,10 @@ function renderIFT() {
     return`<div class="pc ${pst}" onclick="showPD('${p.code}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
         <div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:1px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${nb} traitement(s)</div></div>
-        <div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1;color:${col}">${v.toFixed(1).replace('.',',')} <span style="font-size:13px;color:var(--gris);font-weight:400">/ ${ref}</span></div></div>
+        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1;color:${col}">${v.toFixed(1).replace('.',',')} <span style="font-size:13px;color:var(--gris);font-weight:400">/ ${ref}</span></div>
+          <button class="btn btgold btsm" onclick="event.stopPropagation();traiterParc('${p.code}')">🌿 Traiter</button>
+        </div>
       </div>
       <div class="pb"><div class="pbf" style="width:${pct}%;background:${col}"></div><div class="pbr" style="left:${(4/4.8*100).toFixed(0)}%"></div></div>
       <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10.5px">
@@ -1649,7 +1686,6 @@ async function chargerObsParc(parcId, parcCode) {
 }
 
 function saisirTraitementParc() {
-  // Aller sur l'onglet traitement et pré-sélectionner la parcelle
   go('sTrait', document.getElementById('sb-sTrait'));
   if (window.CURRENT_PARC_CODE) {
     setTimeout(() => {
@@ -1657,6 +1693,317 @@ function saisirTraitementParc() {
       if (sel) { sel.value = window.CURRENT_PARC_CODE; uTP(); }
     }, 100);
   }
+}
+
+function saisirTraitementDepuisListe(code) {
+  window.CURRENT_PARC_CODE = code;
+  go('sTrait', document.getElementById('sb-sTrait'));
+  setTimeout(() => {
+    const sel = document.getElementById('tPa');
+    if (sel) { sel.value = code; uTP(); }
+    toast(`🌿 Parcelle ${code} pré-sélectionnée`);
+  }, 100);
+}
+
+// ══════════════════════════════════════════
+//  MÉTÉO — Open-Meteo API (gratuit, sans clé)
+//  Coordonnées : Puisserguier 43.3667°N, 3.0500°E
+// ══════════════════════════════════════════
+const METEO_LAT = 43.3667, METEO_LON = 3.0500;
+let meteoData = null;
+
+async function loadMeteo() {
+  const mSt = document.getElementById('mSt');
+  const mAlertes = document.getElementById('mAlertes');
+  const mMildiou = document.getElementById('mMildiou');
+  const mOidium = document.getElementById('mOidium');
+  mSt.innerHTML = '<div style="font-size:13px;color:var(--gris);padding:16px;text-align:center">⏳ Chargement météo…</div>';
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${METEO_LAT}&longitude=${METEO_LON}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,weathercode&hourly=temperature_2m,relativehumidity_2m,precipitation,windspeed_10m&timezone=Europe%2FParis&forecast_days=7`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('API indisponible');
+    meteoData = await res.json();
+    renderMeteo(meteoData);
+  } catch(e) {
+    mSt.innerHTML = `<div class="al alo"><span class="al-i">⚠️</span><div><b>Météo indisponible</b><br>${e.message}</div></div>`;
+    mMildiou.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Données météo nécessaires</div>';
+    mOidium.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Données météo nécessaires</div>';
+  }
+}
+
+function wmoToEmoji(code) {
+  if (code === 0) return '☀️';
+  if (code <= 2) return '🌤️';
+  if (code <= 3) return '☁️';
+  if (code <= 49) return '🌫️';
+  if (code <= 59) return '🌦️';
+  if (code <= 69) return '🌧️';
+  if (code <= 79) return '🌨️';
+  if (code <= 84) return '🌧️';
+  if (code <= 99) return '⛈️';
+  return '🌥️';
+}
+
+function wmoToLabel(code) {
+  if (code === 0) return 'Soleil';
+  if (code <= 2) return 'Peu nuageux';
+  if (code <= 3) return 'Nuageux';
+  if (code <= 49) return 'Brouillard';
+  if (code <= 59) return 'Bruine';
+  if (code <= 69) return 'Pluie';
+  if (code <= 79) return 'Neige';
+  if (code <= 84) return 'Averses';
+  if (code <= 99) return 'Orage';
+  return 'Variable';
+}
+
+function renderMeteo(d) {
+  const daily = d.daily;
+  const hourly = d.hourly;
+  const today = new Date();
+  const jours = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+  // Prévision 7 jours
+  const mSt = document.getElementById('mSt');
+  mSt.innerHTML = daily.time.map((dateStr, i) => {
+    const date = new Date(dateStr);
+    const isToday = i === 0;
+    const label = isToday ? 'Auj.' : jours[date.getDay()];
+    const tmax = Math.round(daily.temperature_2m_max[i]);
+    const tmin = Math.round(daily.temperature_2m_min[i]);
+    const pluie = daily.precipitation_sum[i] || 0;
+    const code = daily.weathercode[i] || 0;
+    return `<div class="md ${isToday?'today':''}" onclick="showMeteoDetail(${i})" style="cursor:pointer">
+      <div class="mdl">${label}</div>
+      <div class="mdi">${wmoToEmoji(code)}</div>
+      <div class="mdt">${tmax}°<span style="color:var(--gris);font-size:10px">/${tmin}°</span></div>
+      <div class="mdp">${pluie > 0 ? pluie.toFixed(1)+'mm' : '—'}</div>
+    </div>`;
+  }).join('');
+
+  // Modèle mildiou — règle des 3×10 simplifiée
+  // Risque si : T > 10°C ET humidité > 85% ET pluie cumulée > 10mm sur 3 jours
+  renderModeleMildiou(daily, hourly);
+  renderModeleOidium(daily, hourly);
+  renderAlertes(daily, hourly);
+  renderCreneaux(hourly);
+
+  // Afficher détail du jour
+  showMeteoDetail(0);
+}
+
+function renderModeleMildiou(daily, hourly) {
+  const el = document.getElementById('mMildiou');
+  const risques = [];
+
+  for (let i = 0; i < daily.time.length; i++) {
+    const tmax = daily.temperature_2m_max[i] || 0;
+    const tmin = daily.temperature_2m_min[i] || 0;
+    const tmoy = (tmax + tmin) / 2;
+    const pluie = daily.precipitation_sum[i] || 0;
+    // Humidité horaire moyenne du jour
+    const hStart = i * 24, hEnd = hStart + 24;
+    const humSlice = hourly.relativehumidity_2m.slice(hStart, hEnd).filter(h => h != null);
+    const humMoy = humSlice.length ? humSlice.reduce((a,b)=>a+b,0)/humSlice.length : 0;
+
+    const condTemp = tmoy > 10 && tmoy < 30;
+    const condHum = humMoy > 85;
+    const condPluie = pluie > 5;
+
+    const score = (condTemp ? 1 : 0) + (condHum ? 1 : 0) + (condPluie ? 1 : 0);
+    const date = new Date(daily.time[i]);
+    const label = i === 0 ? "Aujourd'hui" : ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][date.getDay()];
+    risques.push({ label, score, tmoy: tmoy.toFixed(1), humMoy: humMoy.toFixed(0), pluie: pluie.toFixed(1), condTemp, condHum, condPluie });
+  }
+
+  const maxScore = Math.max(...risques.map(r=>r.score));
+  const alertColor = maxScore >= 3 ? 'var(--rouge)' : maxScore >= 2 ? 'var(--orange)' : 'var(--vert)';
+  const alertLabel = maxScore >= 3 ? '🚨 Risque élevé' : maxScore >= 2 ? '⚠️ Risque modéré' : '✅ Risque faible';
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px;background:var(--gris3);border-radius:10px;border-left:4px solid ${alertColor}">
+      <div style="font-size:24px">${maxScore >= 3 ? '🍄' : maxScore >= 2 ? '⚠️' : '✅'}</div>
+      <div><div style="font-weight:700;font-size:14px;color:${alertColor}">${alertLabel}</div>
+      <div style="font-size:11px;color:var(--gris);margin-top:2px">Règle : T>10°C + humidité>85% + pluie>5mm</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+      ${risques.map(r => {
+        const col = r.score >= 3 ? '#fde8e6' : r.score >= 2 ? '#fde8c8' : '#d4edda';
+        const tc = r.score >= 3 ? 'var(--rouge)' : r.score >= 2 ? 'var(--orange)' : 'var(--vert)';
+        return `<div style="background:${col};border-radius:8px;padding:6px 4px;text-align:center">
+          <div style="font-size:9px;font-weight:700;color:var(--gris)">${r.label}</div>
+          <div style="font-size:18px;margin:3px 0">${r.score >= 3 ? '🍄' : r.score >= 2 ? '⚠️' : '✅'}</div>
+          <div style="font-size:9px;color:${tc};font-weight:700">${r.score}/3</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--gris);margin-top:10px;line-height:1.5">
+      💡 <b>Période à risque :</b> Surveiller 10–15 jours après contamination primaire (oeufs en sol). Traitement préventif recommandé avant pluie si T>10°C.
+    </div>`;
+}
+
+function renderModeleOidium(daily, hourly) {
+  const el = document.getElementById('mOidium');
+  const risques = [];
+
+  for (let i = 0; i < daily.time.length; i++) {
+    const tmax = daily.temperature_2m_max[i] || 0;
+    const tmin = daily.temperature_2m_min[i] || 0;
+    const tmoy = (tmax + tmin) / 2;
+    const pluie = daily.precipitation_sum[i] || 0;
+    const hStart = i * 24, hEnd = hStart + 24;
+    const humSlice = hourly.relativehumidity_2m.slice(hStart, hEnd).filter(h=>h!=null);
+    const humMoy = humSlice.length ? humSlice.reduce((a,b)=>a+b,0)/humSlice.length : 0;
+
+    // Oïdium : T entre 20 et 35°C, humidité < 80% (sec), pas de pluie forte
+    const condTemp = tmoy >= 18 && tmoy <= 35;
+    const condSec = humMoy < 80 && pluie < 10;
+    const condChaud = tmax >= 25;
+
+    const score = (condTemp ? 1 : 0) + (condSec ? 1 : 0) + (condChaud ? 1 : 0);
+    const date = new Date(daily.time[i]);
+    const label = i === 0 ? "Auj." : ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][date.getDay()];
+    risques.push({ label, score, tmoy: tmoy.toFixed(1) });
+  }
+
+  const maxScore = Math.max(...risques.map(r=>r.score));
+  const alertColor = maxScore >= 3 ? 'var(--rouge)' : maxScore >= 2 ? 'var(--orange)' : 'var(--vert)';
+  const alertLabel = maxScore >= 3 ? '🚨 Risque élevé' : maxScore >= 2 ? '⚠️ Risque modéré' : '✅ Risque faible';
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px;background:var(--gris3);border-radius:10px;border-left:4px solid ${alertColor}">
+      <div style="font-size:24px">⚪</div>
+      <div><div style="font-weight:700;font-size:14px;color:${alertColor}">${alertLabel}</div>
+      <div style="font-size:11px;color:var(--gris);margin-top:2px">Conditions : T 18–35°C + temps sec + chaleur</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+      ${risques.map(r => {
+        const col = r.score >= 3 ? '#fde8e6' : r.score >= 2 ? '#fde8c8' : '#d4edda';
+        const tc = r.score >= 3 ? 'var(--rouge)' : r.score >= 2 ? 'var(--orange)' : 'var(--vert)';
+        return `<div style="background:${col};border-radius:8px;padding:6px 4px;text-align:center">
+          <div style="font-size:9px;font-weight:700;color:var(--gris)">${r.label}</div>
+          <div style="font-size:18px;margin:3px 0">${r.score >= 3 ? '⚪🔴' : r.score >= 2 ? '⚠️' : '✅'}</div>
+          <div style="font-size:9px;color:${tc};font-weight:700">${r.score}/3</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--gris);margin-top:10px;line-height:1.5">
+      💡 <b>Oïdium :</b> Temps chaud et sec favorise le développement. Soufre mouillable recommandé en préventif dès BBCH 53. Intervenir avant 35°C.
+    </div>`;
+}
+
+function renderAlertes(daily, hourly) {
+  const el = document.getElementById('mAlertes');
+  const alertes = [];
+
+  // Vent fort
+  const maxVent = Math.max(...daily.windspeed_10m_max.filter(v=>v!=null));
+  if (maxVent > 40) alertes.push({type:'alr', icon:'💨', titre:`Vent fort — ${maxVent.toFixed(0)} km/h`, msg:'Traitement déconseillé — risque de dérive'});
+
+  // Canicule
+  const maxT = Math.max(...daily.temperature_2m_max.filter(t=>t!=null));
+  if (maxT > 35) alertes.push({type:'alr', icon:'🌡️', titre:`Canicule — ${maxT.toFixed(0)}°C`, msg:'Soufre interdit — risque de phytotoxicité'});
+
+  // Pluie à venir
+  const pluieDemain = daily.precipitation_sum[1] || 0;
+  if (pluieDemain > 15) alertes.push({type:'alo', icon:'🌧️', titre:`Pluie demain — ${pluieDemain.toFixed(0)}mm`, msg:'Adapter la date de traitement — risque lessivage'});
+
+  // Gel
+  const minT = Math.min(...daily.temperature_2m_min.filter(t=>t!=null));
+  if (minT < 2) alertes.push({type:'alb', icon:'❄️', titre:`Gel possible — ${minT.toFixed(0)}°C`, msg:'Surveiller les bourgeons en période de débourrement'});
+
+  el.innerHTML = alertes.map(a => `
+    <div class="al ${a.type}"><span class="al-i">${a.icon}</span><div><b>${a.titre}</b><br>${a.msg}</div></div>
+  `).join('') || '';
+}
+
+function renderCreneaux(hourly) {
+  const el = document.getElementById('mCreneaux');
+  // Prendre les heures du jour 0 (aujourd'hui)
+  const now = new Date().getHours();
+  const vent6h = hourly.windspeed_10m[6] || 0;
+  const vent10h = hourly.windspeed_10m[10] || 0;
+  const vent14h = hourly.windspeed_10m[14] || 0;
+  const t6h = hourly.temperature_2m[6] || 0;
+  const t14h = hourly.temperature_2m[14] || 0;
+  const hum6h = hourly.relativehumidity_2m[6] || 0;
+
+  const matin_ok = vent6h < 20 && t6h < 32;
+  const apresmidi_ok = vent14h < 20 && t14h < 35;
+
+  el.innerHTML = `
+    <div class="li">
+      <div class="lic" style="background:${matin_ok?'#d4edda':'#fde8e6'}">${matin_ok?'✅':'❌'}</div>
+      <div class="lib">
+        <div class="lit">Matin 6h–11h</div>
+        <div class="lim">Vent ${vent6h.toFixed(0)} km/h · Temp ${t6h.toFixed(0)}°C · Humidité ${hum6h.toFixed(0)}%</div>
+      </div>
+      <span class="badge ${matin_ok?'bg':'br'}">${matin_ok?'Idéal':'Déconseillé'}</span>
+    </div>
+    <div class="li">
+      <div class="lic" style="background:${apresmidi_ok?'#fde8c8':'#fde8e6'}">${apresmidi_ok?'⚠️':'❌'}</div>
+      <div class="lib">
+        <div class="lit">Après-midi 13h–18h</div>
+        <div class="lim">Vent ${vent14h.toFixed(0)} km/h · Temp ${t14h.toFixed(0)}°C</div>
+      </div>
+      <span class="badge ${apresmidi_ok?'bo':'br'}">${apresmidi_ok?'Possible':'Déconseillé'}</span>
+    </div>`;
+}
+
+function showMeteoDetail(dayIndex) {
+  if (!meteoData) return;
+  const daily = meteoData.daily;
+  const hourly = meteoData.hourly;
+  const date = new Date(daily.time[dayIndex]);
+  const jours = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const label = dayIndex === 0 ? "Aujourd'hui" : jours[date.getDay()];
+
+  const card = document.getElementById('mDetailCard');
+  const titre = document.getElementById('mDetailTitre');
+  const detail = document.getElementById('mDetail');
+  card.style.display = 'block';
+  titre.textContent = `${label} — ${wmoToLabel(daily.weathercode[dayIndex])}`;
+
+  const hStart = dayIndex * 24;
+  const heuresKey = [6, 9, 12, 15, 18, 21];
+  const hoursHtml = heuresKey.map(h => {
+    const idx = hStart + h;
+    const t = hourly.temperature_2m[idx] != null ? hourly.temperature_2m[idx].toFixed(0) : '—';
+    const hum = hourly.relativehumidity_2m[idx] != null ? hourly.relativehumidity_2m[idx].toFixed(0) : '—';
+    const pluie = hourly.precipitation[idx] != null ? hourly.precipitation[idx].toFixed(1) : '0';
+    const vent = hourly.windspeed_10m[idx] != null ? hourly.windspeed_10m[idx].toFixed(0) : '—';
+    return `<div style="text-align:center;background:var(--gris3);border-radius:8px;padding:8px 4px">
+      <div style="font-size:10px;font-weight:700;color:var(--gris)">${h}h</div>
+      <div style="font-size:15px;font-weight:700;margin:3px 0">${t}°</div>
+      <div style="font-size:10px;color:var(--bleu)">💧${hum}%</div>
+      <div style="font-size:10px;color:${parseFloat(pluie)>0?'var(--bleu)':'var(--gris)'}">${parseFloat(pluie)>0?pluie+'mm':'—'}</div>
+      <div style="font-size:10px;color:var(--gris)">💨${vent}</div>
+    </div>`;
+  }).join('');
+
+  detail.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;font-size:13px">
+      <div style="background:var(--gris3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--gris);text-transform:uppercase;font-weight:700">Max / Min</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700">${Math.round(daily.temperature_2m_max[dayIndex])}° / ${Math.round(daily.temperature_2m_min[dayIndex])}°</div>
+      </div>
+      <div style="background:var(--gris3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--gris);text-transform:uppercase;font-weight:700">Pluie / Vent max</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700">${(daily.precipitation_sum[dayIndex]||0).toFixed(1)}mm · ${Math.round(daily.windspeed_10m_max[dayIndex]||0)}km/h</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px">${hoursHtml}</div>`;
+}
+
+function traiterParc(code) {
+  window.CURRENT_PARC_CODE = code;
+  go('sTrait', document.getElementById('sb-sTrait'));
+  setTimeout(() => {
+    const sel = document.getElementById('tPa');
+    if (sel) { sel.value = code; uTP(); }
+    toast(`🌿 Parcelle ${code} pré-sélectionnée`);
+  }, 100);
 }
 // ══════════════════════════════════════════
 //  TRAITEMENT
@@ -1998,12 +2345,20 @@ function initMap(){
   }
   // Dessiner les parcelles
   PARCS.forEach(p=>{
-    if(p.coords&&p.coords.length>=3){
-      const poly=L.polygon(p.coords,{color:'#1a1410',weight:2,fillColor:p.color||'#4a8a42',fillOpacity:.55}).addTo(mL);
-      const c=poly.getBounds().getCenter();
-      L.marker(c,{icon:L.divIcon({className:'',html:`<div style="background:rgba(255,255,255,.92);border-radius:6px;padding:3px 7px;font-family:Outfit,sans-serif;font-size:11px;font-weight:700;color:#1a1410;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2)">${p.code} · IFT ${iftP(p.code).toFixed(1)}</div>`,iconAnchor:[30,10]})}).addTo(mL);
-      poly.bindPopup(`<b>${p.nom}</b><br>${p.surface_ha} ha · ${p.cepage||'—'}<br>IFT : <b>${iftP(p.code).toFixed(2)}</b>`);
-    }
+    // Supabase jsonb peut retourner string ou array — normaliser
+    let coords = p.coords;
+    if (typeof coords === 'string') { try { coords = JSON.parse(coords); } catch(e) { coords = []; } }
+    if (!Array.isArray(coords) || coords.length < 3) return;
+    // Vérifier que les coords sont des [lat, lon] valides
+    const validCoords = coords.filter(c => Array.isArray(c) && c.length >= 2 && !isNaN(c[0]) && !isNaN(c[1]));
+    if (validCoords.length < 3) return;
+    const poly=L.polygon(validCoords,{color:'#1a1410',weight:2,fillColor:p.color||'#4a8a42',fillOpacity:.55}).addTo(mL);
+    poly.on('click', () => showPD(p.code));
+    const c=poly.getBounds().getCenter();
+    const iftVal = iftP(p.code);
+    const iftColor = iftVal > 4 ? '#c0392b' : iftVal > 3.2 ? '#d4751a' : '#2d5a27';
+    L.marker(c,{icon:L.divIcon({className:'',html:`<div style="background:rgba(255,255,255,.95);border-radius:6px;padding:3px 8px;font-family:Outfit,sans-serif;font-size:11px;font-weight:700;color:#1a1410;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2);border-left:3px solid ${iftColor};cursor:pointer">${p.code} · IFT ${iftVal.toFixed(1)}</div>`,iconAnchor:[30,10]})}).addTo(mL).on('click', () => showPD(p.code));
+    poly.bindPopup(`<b>${p.nom}</b><br>${p.surface_ha||'—'} ha · ${p.cepage||'—'}<br>IFT : <b style="color:${iftColor}">${iftP(p.code).toFixed(2)}</b><br><button onclick="showPD('${p.code}')" style="margin-top:6px;background:var(--vigne,#1c3d1c);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">📋 Voir la fiche</button>`);
   });
   const cl=document.getElementById('cL');
   if(!PARCS.length){
@@ -2014,7 +2369,22 @@ function initMap(){
   document.getElementById('cS').textContent=`${PARCS.length} parcelle(s) · ${PARCS.reduce((s,p)=>s+(p.surface_ha||0),0).toFixed(2)} ha`;
   cl.innerHTML=PARCS.map(p=>{
     const v=iftP(p.code),st=iftSt(v),col=iftCol(st);
-    return`<div class="card" onclick="showPD('${p.code}')"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div></div>`;
+    const nb=TRAITS.filter(t=>t.parcelle_code===p.code).length;
+    return`<div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer" onclick="showPD('${p.code}')">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px">${p.nom}</div>
+          <div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div>
+          <div style="font-size:11px;color:var(--gris);margin-top:2px">${nb} traitement(s)</div>
+        </div>
+        <span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span>
+      </div>
+      <div style="display:flex;gap:7px;margin-top:10px;padding-top:10px;border-top:1px solid var(--gris2)">
+        <button class="btn btghost btsm" style="flex:1" onclick="showPD('${p.code}')">📋 Fiche</button>
+        <button class="btn btgold btsm" style="flex:1" onclick="saisirTraitementDepuisListe('${p.code}')">🌿 Traitement</button>
+        <button class="btn btsm" style="flex:1;background:#e8f4fd;color:var(--bleu)" onclick="showM('mAddObs');setTimeout(()=>{const s=document.getElementById('obParc');if(s)s.value='${p.code}'},100)">👁️ Obs.</button>
+      </div>
+    </div>`;
   }).join('');
 }
 function mSat(){if(!mL)return;try{mL.removeLayer(tOSM);}catch(e){}tSAT.addTo(mL);toast('🛰️ Vue satellite');}
@@ -2867,6 +3237,239 @@ async function saveRendement() {
     ['rdEstim','rdReel','rdDate','rdDest'].forEach(id=>{sv(id,'');});
   } catch(e) { syncErr(); toast('❌ Erreur : '+e.message); }
 }
+// ══════════════════════════════════════════
+//  MÉTÉO — Open-Meteo (gratuit, sans clé)
+//  Coordonnées : Puisserguier 43.37°N 3.05°E
+// ══════════════════════════════════════════
+const METEO_LAT = 43.37, METEO_LON = 3.05;
+let meteoData = null, meteoLoaded = false;
+
+async function loadMeteo() {
+  if (meteoLoaded && meteoData) { renderMeteo(meteoData); return; }
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${METEO_LAT}&longitude=${METEO_LON}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,weathercode&hourly=temperature_2m,relativehumidity_2m,precipitation,windspeed_10m&timezone=Europe%2FParis&forecast_days=7`;
+    const res = await fetch(url);
+    const data = await res.json();
+    meteoData = data;
+    meteoLoaded = true;
+    renderMeteo(data);
+  } catch(e) {
+    document.getElementById('mSt').innerHTML = '<div style="font-size:13px;color:var(--rouge);padding:12px;text-align:center">⚠️ Météo indisponible — vérifier la connexion</div>';
+    console.error('Meteo error:', e);
+  }
+}
+
+function wmoIcon(code) {
+  if (code === 0) return '☀️';
+  if (code <= 2) return '🌤️';
+  if (code <= 3) return '☁️';
+  if (code <= 49) return '🌫️';
+  if (code <= 59) return '🌦️';
+  if (code <= 67) return '🌧️';
+  if (code <= 77) return '❄️';
+  if (code <= 82) return '🌧️';
+  if (code <= 99) return '⛈️';
+  return '🌡️';
+}
+
+function wmoLabel(code) {
+  if (code === 0) return 'Ensoleillé';
+  if (code <= 2) return 'Peu nuageux';
+  if (code <= 3) return 'Nuageux';
+  if (code <= 49) return 'Brouillard';
+  if (code <= 59) return 'Bruine';
+  if (code <= 67) return 'Pluie';
+  if (code <= 77) return 'Neige';
+  if (code <= 82) return 'Averses';
+  if (code <= 99) return 'Orage';
+  return '—';
+}
+
+function renderMeteo(data) {
+  const daily = data.daily;
+  const jours = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const mois = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+
+  // Prévision 7 jours
+  const stEl = document.getElementById('mSt');
+  stEl.innerHTML = daily.time.map((date, i) => {
+    const d = new Date(date);
+    const isToday = i === 0;
+    const pluie = daily.precipitation_sum[i];
+    const tmax = Math.round(daily.temperature_2m_max[i]);
+    const tmin = Math.round(daily.temperature_2m_min[i]);
+    const icon = wmoIcon(daily.weathercode[i]);
+    return `<div class="md ${isToday?'today':''}" onclick="showMeteoDetail(${i})" style="cursor:pointer;min-width:62px">
+      <div class="mdl">${isToday?'Auj.':jours[d.getDay()]+' '+d.getDate()}</div>
+      <div class="mdi">${icon}</div>
+      <div class="mdt" style="color:var(--rouge)">${tmax}°</div>
+      <div style="font-size:10px;color:var(--gris)">${tmin}°</div>
+      <div class="mdp" style="color:${pluie>5?'var(--bleu)':pluie>0?'var(--gris)':'transparent'}">${pluie>0?pluie.toFixed(1)+'mm':'·'}</div>
+    </div>`;
+  }).join('');
+
+  // Calcul risques mildiou et oïdium sur 7 jours
+  calcRisques(data);
+}
+
+function showMeteoDetail(i) {
+  if (!meteoData) return;
+  const daily = meteoData.daily;
+  const hourly = meteoData.hourly;
+  const date = new Date(daily.time[i]);
+  const jours = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const label = i === 0 ? "Aujourd'hui" : jours[date.getDay()] + ' ' + date.getDate();
+
+  document.getElementById('mDetailTitre').textContent = label + ' — ' + wmoLabel(daily.weathercode[i]);
+  document.getElementById('mDetailCard').style.display = 'block';
+
+  // Heures du jour (index 0-23 pour jour 0, 24-47 pour jour 1, etc.)
+  const startH = i * 24;
+  const hours = [6,9,12,15,18,21].map(h => {
+    const idx = startH + h;
+    const t = Math.round(hourly.temperature_2m[idx] || 0);
+    const rh = Math.round(hourly.relativehumidity_2m[idx] || 0);
+    const p = (hourly.precipitation[idx] || 0).toFixed(1);
+    const w = Math.round(hourly.windspeed_10m[idx] || 0);
+    return `<div style="text-align:center;flex:1;min-width:50px">
+      <div style="font-size:11px;font-weight:700;color:var(--gris)">${h}h</div>
+      <div style="font-size:15px;font-weight:700;color:var(--vigne);margin:3px 0">${t}°</div>
+      <div style="font-size:10px;color:var(--bleu)">${rh}%</div>
+      <div style="font-size:10px;color:${parseFloat(p)>0?'var(--bleu)':'var(--gris)'}">${parseFloat(p)>0?p+'mm':'—'}</div>
+      <div style="font-size:10px;color:var(--gris)">${w}km/h</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('mDetail').innerHTML = `
+    <div style="display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px">${hours}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px">
+      <div style="text-align:center;background:var(--gris3);border-radius:8px;padding:8px">
+        <div style="font-size:10px;color:var(--gris);margin-bottom:3px">T° max/min</div>
+        <div style="font-weight:700;color:var(--rouge)">${Math.round(daily.temperature_2m_max[i])}° / ${Math.round(daily.temperature_2m_min[i])}°</div>
+      </div>
+      <div style="text-align:center;background:var(--gris3);border-radius:8px;padding:8px">
+        <div style="font-size:10px;color:var(--gris);margin-bottom:3px">Précipitations</div>
+        <div style="font-weight:700;color:var(--bleu)">${daily.precipitation_sum[i].toFixed(1)} mm</div>
+      </div>
+      <div style="text-align:center;background:var(--gris3);border-radius:8px;padding:8px">
+        <div style="font-size:10px;color:var(--gris);margin-bottom:3px">Vent max</div>
+        <div style="font-weight:700;color:var(--gris)">${Math.round(daily.windspeed_10m_max[i])} km/h</div>
+      </div>
+    </div>`;
+}
+
+function calcRisques(data) {
+  const daily = data.daily;
+  const hourly = data.hourly;
+
+  // MODÈLE MILDIOU (EPI simplifié)
+  // Conditions favorables : T° 13-25°C + humidité > 70% + pluie > 1mm
+  let mildiouRisk = 0, mildiouJours = [];
+  for (let i = 0; i < 7; i++) {
+    const tmax = daily.temperature_2m_max[i];
+    const tmin = daily.temperature_2m_min[i];
+    const pluie = daily.precipitation_sum[i];
+    const tmoy = (tmax + tmin) / 2;
+    // Calcul humidité moyenne sur le jour
+    const startH = i * 24;
+    const rhValues = Array.from({length:24}, (_,h) => hourly.relativehumidity_2m[startH+h] || 0);
+    const rhMoy = rhValues.reduce((a,b)=>a+b,0) / 24;
+
+    let score = 0;
+    if (tmoy >= 13 && tmoy <= 25) score += 2;
+    else if (tmoy >= 10 && tmoy <= 30) score += 1;
+    if (pluie > 5) score += 3;
+    else if (pluie > 1) score += 2;
+    else if (pluie > 0) score += 1;
+    if (rhMoy > 85) score += 2;
+    else if (rhMoy > 70) score += 1;
+
+    if (score >= 5) mildiouJours.push({i, score, niveau: 'élevé'});
+    else if (score >= 3) mildiouJours.push({i, score, niveau: 'moyen'});
+    mildiouRisk = Math.max(mildiouRisk, score);
+  }
+
+  // MODÈLE OÏDIUM
+  // Conditions favorables : T° 20-30°C + faible humidité + pas de pluie
+  let oidiumRisk = 0, oidiumJours = [];
+  for (let i = 0; i < 7; i++) {
+    const tmax = daily.temperature_2m_max[i];
+    const tmin = daily.temperature_2m_min[i];
+    const pluie = daily.precipitation_sum[i];
+    const tmoy = (tmax + tmin) / 2;
+    const startH = i * 24;
+    const rhValues = Array.from({length:24}, (_,h) => hourly.relativehumidity_2m[startH+h] || 0);
+    const rhMoy = rhValues.reduce((a,b)=>a+b,0) / 24;
+
+    let score = 0;
+    if (tmoy >= 20 && tmoy <= 30) score += 3;
+    else if (tmoy >= 15 && tmoy <= 35) score += 1;
+    if (pluie < 0.5) score += 2;
+    if (rhMoy >= 40 && rhMoy <= 70) score += 2;
+    else if (rhMoy < 40) score += 1;
+
+    if (score >= 5) oidiumJours.push({i, score, niveau: 'élevé'});
+    else if (score >= 3) oidiumJours.push({i, score, niveau: 'moyen'});
+    oidiumRisk = Math.max(oidiumRisk, score);
+  }
+
+  const jours = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const niveauMildiou = mildiouRisk >= 5 ? 'élevé' : mildiouRisk >= 3 ? 'moyen' : 'faible';
+  const niveauOidium = oidiumRisk >= 5 ? 'élevé' : oidiumRisk >= 3 ? 'moyen' : 'faible';
+
+  // Alertes globales
+  const alertesEl = document.getElementById('mAlertes');
+  let alertes = '';
+  if (niveauMildiou === 'élevé') alertes += `<div class="al alr"><span class="al-i">🍄</span><div><b>Risque mildiou ÉLEVÉ</b>Conditions très favorables détectées — traitement préventif recommandé dans les 48h.</div></div>`;
+  else if (niveauMildiou === 'moyen') alertes += `<div class="al alo"><span class="al-i">🍄</span><div><b>Risque mildiou modéré</b>Surveiller l'évolution — prévoir un traitement préventif.</div></div>`;
+  if (niveauOidium === 'élevé') alertes += `<div class="al alr"><span class="al-i">⚪</span><div><b>Risque oïdium ÉLEVÉ</b>Températures et hygrométrie favorables — soufre recommandé.</div></div>`;
+  else if (niveauOidium === 'moyen') alertes += `<div class="al alo"><span class="al-i">⚪</span><div><b>Risque oïdium modéré</b>Conditions partiellement favorables.</div></div>`;
+  if (!alertes) alertes = `<div class="al alg"><span class="al-i">✅</span><div><b>Risques phyto faibles</b>Conditions peu favorables aux maladies sur 7 jours.</div></div>`;
+  alertesEl.innerHTML = alertes;
+
+  // Détail mildiou
+  const mildiouEl = document.getElementById('mMildiou');
+  const pctMildiou = Math.min(100, mildiouRisk / 7 * 100);
+  const colMildiou = niveauMildiou === 'élevé' ? 'var(--rouge)' : niveauMildiou === 'moyen' ? 'var(--orange)' : 'var(--vert2)';
+  mildiouEl.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:700">Niveau de risque : <span style="color:${colMildiou}">${niveauMildiou.toUpperCase()}</span></div>
+      <span class="badge ${niveauMildiou==='élevé'?'br':niveauMildiou==='moyen'?'bo':'bg'}">${niveauMildiou}</span>
+    </div>
+    <div style="height:8px;background:var(--gris2);border-radius:4px;overflow:hidden;margin-bottom:10px">
+      <div style="height:100%;width:${pctMildiou}%;background:${colMildiou};border-radius:4px;transition:width 1s ease"></div>
+    </div>
+    <div style="font-size:12px;color:var(--gris);margin-bottom:8px">Conditions favorables : T° 13–25°C · Pluie > 1mm · Humidité > 70%</div>
+    ${mildiouJours.length ? '<div style="font-size:12px;font-weight:600;margin-bottom:6px">Jours à risque :</div>' + mildiouJours.map(j => {
+      const d = new Date(data.daily.time[j.i]);
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--gris2);font-size:12px">
+        <span>${j.i===0?"Aujourd'hui":jours[d.getDay()]+' '+d.getDate()}</span>
+        <span class="badge ${j.niveau==='élevé'?'br':'bo'}">${j.niveau}</span>
+      </div>`;
+    }).join('') : '<div style="font-size:12px;color:var(--vert);font-weight:600">✓ Aucun jour à risque élevé sur 7 jours</div>'}`;
+
+  // Détail oïdium
+  const oidiumEl = document.getElementById('mOidium');
+  const pctOidium = Math.min(100, oidiumRisk / 7 * 100);
+  const colOidium = niveauOidium === 'élevé' ? 'var(--rouge)' : niveauOidium === 'moyen' ? 'var(--orange)' : 'var(--vert2)';
+  oidiumEl.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:700">Niveau de risque : <span style="color:${colOidium}">${niveauOidium.toUpperCase()}</span></div>
+      <span class="badge ${niveauOidium==='élevé'?'br':niveauOidium==='moyen'?'bo':'bg'}">${niveauOidium}</span>
+    </div>
+    <div style="height:8px;background:var(--gris2);border-radius:4px;overflow:hidden;margin-bottom:10px">
+      <div style="height:100%;width:${pctOidium}%;background:${colOidium};border-radius:4px;transition:width 1s ease"></div>
+    </div>
+    <div style="font-size:12px;color:var(--gris);margin-bottom:8px">Conditions favorables : T° 20–30°C · Peu de pluie · Humidité 40–70%</div>
+    ${oidiumJours.length ? '<div style="font-size:12px;font-weight:600;margin-bottom:6px">Jours à risque :</div>' + oidiumJours.map(j => {
+      const d = new Date(data.daily.time[j.i]);
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--gris2);font-size:12px">
+        <span>${j.i===0?"Aujourd'hui":jours[d.getDay()]+' '+d.getDate()}</span>
+        <span class="badge ${j.niveau==='élevé'?'br':'bo'}">${j.niveau}</span>
+      </div>`;
+    }).join('') : '<div style="font-size:12px;color:var(--vert);font-weight:600">✓ Aucun jour à risque élevé sur 7 jours</div>'}`;
+}
+
 function showM(id){document.getElementById(id).classList.add('op');}
 function closeM(e,id){if(!e||e.target.classList.contains('ov'))document.getElementById(id).classList.remove('op');}
 function g(id){return(document.getElementById(id)?.value||'').trim();}
