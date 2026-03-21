@@ -679,69 +679,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   </div>
   <div id="hCons"></div>
 </section>
-<!-- PERSONNALISATION -->
-<!-- CONSEILS ASSOCIATIONS -->
-<section id="sConseil" class="sec">
-  <div class="print-header"><h1>💡 Conseils associations</h1><p id="phSubConseil"></p></div>
-  <div class="stitle">💡 Conseils associations</div>
-  <div class="ssub">Herbicides · Traitements phyto · Saison · Compatibilités</div>
 
-  <!-- SÉLECTEUR TYPE -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-    <div id="csBtnHerb" class="card" style="text-align:center;cursor:pointer;border:2px solid var(--or);background:var(--gris3)" onclick="switchConseil('herb')">
-      <div style="font-size:28px;margin-bottom:6px">🌿</div>
-      <div style="font-weight:700;font-size:14px">Herbicides</div>
-      <div style="font-size:11px;color:var(--gris);margin-top:3px">Associations par adventice & saison</div>
-    </div>
-    <div id="csBtnPhyto" class="card" style="text-align:center;cursor:pointer;border:2px solid transparent" onclick="switchConseil('phyto')">
-      <div style="font-size:28px;margin-bottom:6px">🍄</div>
-      <div style="font-weight:700;font-size:14px">Traitements phyto</div>
-      <div style="font-size:11px;color:var(--gris);margin-top:3px">Associations anti-résistance & stades</div>
-    </div>
-  </div>
-
-  <!-- PANNEAU HERBICIDES -->
-  <div id="csHerb">
-    <!-- Saison -->
-    <div class="card" style="margin-bottom:12px">
-      <div class="ch"><span class="ct">🗓️ Saison de traitement</span></div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        <div class="cs-saison on" id="cs-hiver" onclick="selectSaison('hiver')">❄️<br><span>Hiver</span><br><small>Nov–Fév</small></div>
-        <div class="cs-saison" id="cs-printemps" onclick="selectSaison('printemps')">🌱<br><span>Printemps</span><br><small>Mar–Mai</small></div>
-        <div class="cs-saison" id="cs-ete" onclick="selectSaison('ete')">☀️<br><span>Été</span><br><small>Juin–Août</small></div>
-        <div class="cs-saison" id="cs-automne" onclick="selectSaison('automne')">🍂<br><span>Automne</span><br><small>Sep–Oct</small></div>
-      </div>
-    </div>
-
-    <!-- Adventices -->
-    <div class="card" style="margin-bottom:12px">
-      <div class="ch"><span class="ct">🌾 Type d'adventices</span></div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px" id="csAdventList"></div>
-    </div>
-
-    <!-- Résultats herbicides -->
-    <div id="csHerbResult"></div>
-  </div>
-
-  <!-- PANNEAU PHYTO -->
-  <div id="csPhyto" style="display:none">
-    <!-- Stade phénologique -->
-    <div class="card" style="margin-bottom:12px">
-      <div class="ch"><span class="ct">🌿 Stade phénologique</span></div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px" id="csStadeList"></div>
-    </div>
-
-    <!-- Maladie cible -->
-    <div class="card" style="margin-bottom:12px">
-      <div class="ch"><span class="ct">🦠 Maladie / Ravageur cible</span></div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px" id="csMaladieList"></div>
-    </div>
-
-    <!-- Résultats phyto -->
-    <div id="csPhytoResult"></div>
-  </div>
-
-</section>
 
 <!-- CONSEIL IA -->
 <section id="sConseil" class="sec">
