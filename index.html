@@ -314,8 +314,8 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <div class="ob-body">
     <div class="ob-card">
       <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--vigne);margin-bottom:4px">Bienvenue !</div>
-      <div style="font-size:12px;color:var(--gris);margin-bottom:16px">Configurez votre domaine. Tout est facultatif — l'app fonctionne même si vous ne remplissez rien.</div>
-      <div class="fg"><label>Nom de l'exploitant</label><input type="text" id="obNom" placeholder="Ex : Jean Dupont"></div>
+      <div style="font-size:12px;color:var(--gris);margin-bottom:16px">Configurez votre domaine. Tout est facultatif — l’app fonctionne même si vous ne remplissez rien.</div>
+      <div class="fg"><label>Nom de l’exploitant</label><input type="text" id="obNom" placeholder="Ex : Jean Dupont"></div>
       <div class="fg"><label>Raison sociale</label><input type="text" id="obRaison" placeholder="EARL, SCEA… (facultatif)"></div>
       <div class="fg"><label>Commune principale</label><input type="text" id="obCommune" placeholder="Ex : Puisserguier (34225)"></div>
       <div class="row2">
@@ -324,7 +324,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       </div>
       <div class="fg"><label>Surface totale (ha)</label><div class="ig"><input type="number" id="obHa" placeholder="7.5" step="0.01"><span class="isuf">ha</span></div></div>
     </div>
-    <div class="al alb"><span class="al-i">💾</span><div><b>Cloud Supabase activé</b>Traitements, IFT, stock, cave — tout est sauvegardé en temps réel. Accessible depuis n'importe quel appareil.</div></div>
+    <div class="al alb"><span class="al-i">💾</span><div><b>Cloud Supabase activé</b>Traitements, IFT, stock, cave — tout est sauvegardé en temps réel. Accessible depuis n’importe quel appareil.</div></div>
     <button class="btn btp" style="font-size:16px;padding:16px;margin-bottom:10px" onclick="saveOnboarding()">🚀 Créer mon domaine VitiTrace</button>
     <a class="ob-skip" onclick="saveOnboarding()">Passer et configurer plus tard →</a>
   </div>
@@ -480,9 +480,9 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 <section id="sScan" class="sec">
   <div class="stitle">Scan étiquette IA</div><div class="ssub">Photo → Extraction automatique · Stock Supabase</div>
   <div class="card">
-    <div class="ch"><span class="ct">📷 Photographier l'étiquette</span></div>
+    <div class="ch"><span class="ct">📷 Photographier l’étiquette</span></div>
     <div class="uz" id="dZ" onclick="triggerUpload()">
-      <div id="uC"><div style="font-size:46px;margin-bottom:8px">📦</div><div style="font-size:15px;font-weight:700;color:var(--terre);margin-bottom:4px">Photo de l'étiquette produit</div><div style="font-size:12px;color:var(--gris)">Bidon, sachet, boîte phyto…</div></div>
+      <div id="uC"><div style="font-size:46px;margin-bottom:8px">📦</div><div style="font-size:15px;font-weight:700;color:var(--terre);margin-bottom:4px">Photo de l’étiquette produit</div><div style="font-size:12px;color:var(--gris)">Bidon, sachet, boîte phyto…</div></div>
       <img id="pi" style="display:none">
       <div id="iO" style="display:none;position:absolute;inset:0;background:rgba(26,20,16,.5);border-radius:12px;align-items:center;justify-content:center;cursor:pointer" onclick="event.stopPropagation();triggerUpload()"><span style="color:#fff;font-size:13px;font-weight:700;background:rgba(0,0,0,.5);padding:7px 14px;border-radius:20px">📷 Changer</span></div>
       <div class="sb" id="sB" style="display:none"></div>
@@ -494,7 +494,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <button class="btn btghost" style="flex-direction:column;gap:4px;padding:14px 10px" onclick="triggerUpload()"><span style="font-size:24px">🖼️</span><span>Galerie</span></button>
     </div>
   </div>
-  <button class="btn btp" id="aB" onclick="lancerAnalyse()" disabled style="margin-bottom:14px">🔍 Analyser avec l'IA</button>
+  <button class="btn btp" id="aB" onclick="lancerAnalyse()" disabled style="margin-bottom:14px">🔍 Analyser avec l’IA</button>
   <div class="ldc" id="lC">
     <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--vigne);margin-bottom:6px">Analyse en cours…</div>
     <div class="spin"></div>
@@ -521,7 +521,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       </div>
     </div>
     <div class="card">
-      <div class="ch"><span class="ct">Conditions d'emploi vigne</span></div>
+      <div class="ch"><span class="ct">Conditions d’emploi vigne</span></div>
       <div class="row2">
         <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Dose max</label><span class="ait">IA ✓</span></div><div class="ig"><input type="text" id="rD" class="aif"><span class="isuf" id="rDU">kg/ha</span></div></div>
         <div class="fg"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin-bottom:0">Nb applic.</label><span class="ait">IA ✓</span></div><input type="text" id="rNA" class="aif"></div>
@@ -773,7 +773,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 
 <section id="sPerso" class="sec">
   <div class="stitle">Personnalisation</div>
-  <div class="ssub">Modifiez l'apparence depuis l'app · Sauvegardé automatiquement</div>
+  <div class="ssub">Modifiez l’apparence depuis l’app · Sauvegardé automatiquement</div>
 
   <!-- APERÇU EN TEMPS RÉEL -->
   <div id="persoPreview" style="background:var(--noir);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh2)">
@@ -787,14 +787,14 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 
   <!-- IDENTITÉ -->
   <div class="card">
-    <div class="ch"><span class="ct">🏷️ Identité de l'app</span></div>
+    <div class="ch"><span class="ct">🏷️ Identité de l’app</span></div>
     <div class="fg">
-      <label>Nom affiché dans l'app</label>
+      <label>Nom affiché dans l’app</label>
       <input type="text" id="pNomApp" placeholder="Ex : VitiTrace · Domaine Dupont" oninput="persoPreview()">
     </div>
     <div class="fg">
       <label>Sous-titre (commune, appellation…)</label>
-      <input type="text" id="pSousNom" placeholder="Ex : Puisserguier · Pays d'Oc" oninput="persoPreview()">
+      <input type="text" id="pSousNom" placeholder="Ex : Puisserguier · Pays d’Oc" oninput="persoPreview()">
     </div>
     <div class="fg">
       <label>Emoji logo</label>
@@ -814,7 +814,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <!-- COULEURS -->
   <div class="card">
     <div class="ch"><span class="ct">🎨 Couleurs</span><span class="badge bgold">Aperçu instantané</span></div>
-    <div style="font-size:12px;color:var(--gris);margin-bottom:12px">Les couleurs s'appliquent à toute l'app en temps réel.</div>
+    <div style="font-size:12px;color:var(--gris);margin-bottom:12px">Les couleurs s’appliquent à toute l’app en temps réel.</div>
 
     <!-- THÈMES PRÉDÉFINIS -->
     <div class="fg">
@@ -879,7 +879,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 
   <!-- TEXTES CLÉS -->
   <div class="card">
-    <div class="ch"><span class="ct">✏️ Textes de l'app</span></div>
+    <div class="ch"><span class="ct">✏️ Textes de l’app</span></div>
     <div class="fg"><label>Titre onglet Accueil</label><input type="text" id="ptDash" placeholder="🏠 Accueil"></div>
     <div class="fg"><label>Message de bienvenue</label><input type="text" id="ptBienvenue" placeholder="Bonjour 👋"></div>
     <div class="fg"><label>Libellé campagne en cours</label><input type="text" id="ptCampagne" placeholder="Campagne 2025"></div>
@@ -999,7 +999,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     </div>
     <div class="fg"><label>Description *</label><textarea id="obDesc" placeholder="Décrire ce que vous observez…" style="min-height:90px"></textarea></div>
     <div class="fg"><label>Traitement recommandé</label><input type="text" id="obTrait" placeholder="Facultatif"></div>
-    <button class="btn btp" onclick="saveObs()">💾 Enregistrer l'observation</button>
+    <button class="btn btp" onclick="saveObs()">💾 Enregistrer l’observation</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddObs')">Annuler</button>
   </div>
 </div>
@@ -1032,7 +1032,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <div class="fg"><label>Cépage principal</label><input type="text" id="pCe" placeholder="Ex : Chardonnay B"></div>
     <div class="row2">
       <div class="fg"><label>Couleur</label><select id="pCl"><option>Blanc</option><option>Noir</option><option>Rosé</option></select></div>
-      <div class="fg"><label>Produit / AOC</label><input type="text" id="pPr" placeholder="Pays d'Oc, AOP…"></div>
+      <div class="fg"><label>Produit / AOC</label><input type="text" id="pPr" placeholder="Pays d’Oc, AOP…"></div>
     </div>
     <div class="fg"><label>Référence cadastrale</label><input type="text" id="pCd" placeholder="Ex : 340225 G0207"></div>
     <div class="fg"><label>Année de plantation</label><input type="number" id="pPl" placeholder="2005"></div>
@@ -1091,7 +1091,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 <div class="ov" id="mProfil" onclick="closeM(event,'mProfil')">
   <div class="mo2" onclick="event.stopPropagation()">
     <div class="mh"></div><div class="mt">Mon domaine & paramètres</div>
-    <div class="fg"><label>Exploitant</label><input type="text" id="prN" placeholder="Nom de l'exploitant"></div>
+    <div class="fg"><label>Exploitant</label><input type="text" id="prN" placeholder="Nom de l’exploitant"></div>
     <div class="fg"><label>Raison sociale</label><input type="text" id="prR" placeholder="EARL, SCEA…"></div>
     <div class="fg"><label>Commune</label><input type="text" id="prC" placeholder="Commune principale"></div>
     <div class="row2">
@@ -1458,7 +1458,7 @@ function renderIFT() {
   document.getElementById('iAl').innerHTML=al;
   // Par parcelle
   const pl=document.getElementById('iPL');
-  if(!PARCS.length){pl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Ajoutez des parcelles dans l'onglet Parcelles</div>';return;}
+  if(!PARCS.length){pl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Ajoutez des parcelles dans l’onglet Parcelles</div>';return;}
   pl.innerHTML=PARCS.map(p=>{
     const v=iftP(p.code),pst=iftSt(v),col=iftCol(pst),pct=Math.min(100,v/4.8*100),nb=TRAITS.filter(t=>t.parcelle_code===p.code).length;
     return`<div class="pc ${pst}" onclick="showPD('${p.code}')">
@@ -1648,7 +1648,7 @@ dz.addEventListener('drop',e=>{
 });
 
 async function lancerAnalyse(){
-  if(!img64){toast('⚠️ Charger une image d'abord');return;}
+  if(!img64){toast('⚠️ Charger une image d’abord');return;}
   document.getElementById('lC').classList.add('show');
   document.getElementById('sR').style.display='none';
   document.getElementById('aB').disabled=true;
@@ -1948,7 +1948,7 @@ function calcHVE(){
   let pA2=0;if(TRAITS.length){if(partBio>=30)pA2=10;else if(partBio>=20)pA2=7;else if(partBio>=10)pA2=4;else if(partBio>=5)pA2=2;}
   document.getElementById('hA2B').style.width=(pA2/10*100)+'%';
   document.getElementById('hA2S').textContent=pA2+'/10 pts';
-  document.getElementById('hA2D').textContent=TRAITS.length?`Biocontrôle : ${partBio.toFixed(1)}% de l'IFT total`:'—';
+  document.getElementById('hA2D').textContent=TRAITS.length?`Biocontrôle : ${partBio.toFixed(1)}% de l’IFT total`:'—';
   const pA3=2.5,pA4=2.5,pA=Math.round(pA1+pA2+pA3+pA4);
   document.getElementById('hAB').textContent=pA+'/30 pts';
   document.getElementById('hAB').className='badge '+(pA>=24?'bg':pA>=15?'bo':'br');
@@ -1975,7 +1975,7 @@ function calcHVE(){
   document.getElementById('hNB').textContent=nb;
   document.getElementById('hSb').textContent=tot>=75?`Certification accessible · Contacter votre organisme`:tot>=50?`${75-tot} pts pour le N3`:`${50-tot} pts pour le N2`;
   const tips=[];
-  if(TRAITS.length&&ift>3.5)tips.push('🎯 <b>Réduire l'IFT</b> — Doses à 70–80% de la référence. Gain : +6 pts domaine A.');
+  if(TRAITS.length&&ift>3.5)tips.push('🎯 <b>Réduire l’IFT</b> — Doses à 70–80% de la référence. Gain : +6 pts domaine A.');
   if(partBio<20&&TRAITS.length)tips.push('🌱 <b>Augmenter le biocontrôle</b> — Viser ≥ 20%. Gain : +5 pts A2.');
   if(sie<7)tips.push('🌿 <b>Augmenter les SIE</b> — Porter à 7% via enherbement ou haies. Gain : +4 pts D.');
   if(tot>=75)tips.push('🏆 <b>Score N3 atteint !</b> Contactez Ecocert, Bureau Veritas ou Certisud.');
@@ -2044,7 +2044,7 @@ const SECTION_TITLES = {
 let currentSection = 'sDash';
 
 function printSection() {
-  // Mettre à jour l'en-tête d'impression
+  // Mettre à jour l’en-tête d’impression
   const nom = DOM?.nom || DOM?.raison_sociale || 'Domaine';
   const titre = SECTION_TITLES[currentSection] || 'VitiTrace';
   const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
@@ -2119,7 +2119,7 @@ function handleConseilFile(input) {
 }
 
 async function lancerConseil() {
-  if (!conseilImg64) { toast('⚠️ Charger une photo d'abord'); return; }
+  if (!conseilImg64) { toast('⚠️ Charger une photo d’abord'); return; }
   document.getElementById('cAB').disabled = true;
   document.getElementById('cAB').textContent = '⏳ Analyse en cours…';
   document.getElementById('cR').style.display = 'none';
@@ -2929,7 +2929,7 @@ function afficherShpResult() {
   document.getElementById('shpResult').style.display = 'block';
   document.getElementById('shpResultMsg').className = 'al alg';
   const totalHa = shpParcelles.reduce((s,p) => s+(p.surface_ha||0), 0);
-  document.getElementById('shpResultTxt').innerHTML = `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b> Vérifiez avant d'importer.`;
+  document.getElementById('shpResultTxt').innerHTML = `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b> Vérifiez avant d’importer.`;
   document.getElementById('shpParcList').innerHTML = shpParcelles.map((p,i) => `
     <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:7px">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
@@ -3168,7 +3168,7 @@ const PHYTO_DB = {
           dar: 0, znt: 5, categ: 'Herbicide',
           cibles: 'Adventices annuelles et vivaces — Désherbage rang',
           nb_applic: '2 passages max/an',
-          restriction: 'Interdit < 3m cours d'eau — Pas avant vendange — CMR suspecté',
+          restriction: 'Interdit < 3m cours d'eau - Pas avant vendange - CMR suspecté',
           produits: [
             { nom: 'Roundup Star', fab: 'Bayer', amm: 'FR-2018-0445', forme: 'SL 360 g/L', dose: 1.44 },
             { nom: 'Glyphogan 480 SL', fab: 'Nufarm', amm: 'FR-2016-0678', forme: 'SL 480 g/L', dose: 1.08 },
@@ -3288,7 +3288,7 @@ const PHYTO_EXTRA = [
   {nomProd:'Centurion',fab:'Gowan',amm:'FR-2017-0234',forme:'EC (cléthodime)',dose_ref:0.5,dose_max:0.5,unite:'L/ha',dar:0,znt:5,categ:'Herbicide',cibles:'Graminées vivaces',nb_applic:'1/an',restriction:'Anti-graminées sélectif',searchText:'centurion gowan clethodime graminee herbicide'},
 ];
 
-// Fusionner dans l'index global
+// Fusionner dans l’index global
 if(typeof window !== 'undefined') {
   window.PHYTO_EXTRA = PHYTO_EXTRA;
 }
@@ -3296,7 +3296,7 @@ if(typeof window !== 'undefined') {
 
 
 function initPhytoSelects() {
-  // Construire l'index de recherche plat à partir de la base
+  // Construire l’index de recherche plat à partir de la base
   window.PHYTO_INDEX = [];
   Object.entries(PHYTO_DB.categories).forEach(([catKey, cat]) => {
     Object.entries(cat.matieres).forEach(([maKey, ma]) => {
