@@ -1950,7 +1950,7 @@ function calcHVE(){
   document.getElementById('hA2S').textContent=pA2+'/10 pts';
   document.getElementById('hA2D').textContent=TRAITS.length?`Biocontrôle : ${partBio.toFixed(1)}% de l'IFT total`:'—';
   const pA3=2.5,pA4=2.5,pA=Math.round(pA1+pA2+pA3+pA4);
-  document.getElementById('hAB').textContent=pA+'/30 pts';
+  document.getElementById(\'hAB').textContent=pA+'/30 pts';
   document.getElementById('hAB').className='badge '+(pA>=24?'bg':pA>=15?'bo':'br');
   document.getElementById('hA3D').textContent=`${TRAITS.length} intervention(s) · Registre conforme`;
   const b1=document.getElementById('hB1').classList.contains('on')?1:0;
@@ -2047,7 +2047,7 @@ function printSection() {
   // Mettre à jour l\'en-tête d'impression
   const nom = DOM?.nom || DOM?.raison_sociale || 'Domaine';
   const titre = SECTION_TITLES[currentSection] || 'VitiTrace';
-  const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
+  const date = new Date().toLocaleDateString(\'fr-FR', {day:'2-digit',month:'long',year:'numeric'});
   const phTitle = document.getElementById('phTitle');
   const phSub = document.getElementById('phSub');
   const phDate = document.getElementById('phDate');
@@ -2371,7 +2371,7 @@ const CONSEILS_HERB = {
   ete: {
     graminee: {titre:'Graminées — Été',niveau:'warn',conseil:'Efficacité réduite. Traiter tôt le matin ou le soir. Graminées en épiaison.',associations:[{produits:['Cléthodime (0.5 L/ha)'],compat:'⚠️ Efficacité réduite',detail:'Résultats moins bons sur graminées matures.'},{produits:['Glyphosate (1.44 L/ha)'],compat:'⚠️ Risque volatilisation',detail:'T° > 30°C = risque phytotoxicité vigne. Appliquer tôt le matin.'}],attention:'Éviter les heures chaudes. T° > 30°C = risque volatilisation glyphosate.'},
     dicot_annuelles: {titre:'Dicots annuelles — Été',niveau:'ok',conseil:'Traitement courant pour entretien du rang. Cibler les jeunes repousses.',associations:[{produits:['Glufosinate (3 L/ha)'],compat:'✅ Contact rapide',detail:'Moins de risque de volatilisation que glyphosate.'},{produits:['Glyphosate (1.08 L/ha)'],compat:'⚠️ Tôt le matin uniquement',detail:'Éviter la chaleur.'}],attention:'Respecter le DAR avant vendange.'},
-    liseron: {titre:'Liseron — Été',niveau:'warn',conseil:'Moins efficace qu'au printemps. Plante en floraison.',associations:[{produits:['Glyphosate (2.16 L/ha)'],compat:'⚠️ Moins efficace',detail:'Appliquer tôt le matin. Résultats inférieurs au printemps.'}],attention:'Risque phytotoxicité vigne élevé en été. Protéger soigneusement.'},
+    liseron: {titre:'Liseron — Été',niveau:'warn',conseil:'Moins efficace qu\'au printemps. Plante en floraison.',associations:[{produits:['Glyphosate (2.16 L/ha)'],compat:'⚠️ Moins efficace',detail:'Appliquer tôt le matin. Résultats inférieurs au printemps.'}],attention:'Risque phytotoxicité vigne élevé en été. Protéger soigneusement.'},
     chardon: {titre:'Chardon — Été',niveau:'warn',conseil:'Traiter entre floraison et formation des graines.',associations:[{produits:['Glyphosate (2.16 L/ha)'],compat:'⚠️ Post-floraison',detail:'Traiter avant formation des graines pour éviter dissémination.'}],attention:'Si capitules formés : faucher avant traitement.'},
     chiendent: {titre:'Chiendent — Été',niveau:'warn',conseil:'Attendre que le chiendent soit vert et actif.',associations:[{produits:['Glyphosate (1.44 L/ha) + mouillant'],compat:'⚠️ Efficacité variable',detail:'Si vert et actif : efficace. Si sec et stressé : attendre pluie.'}],attention:'Sur feuillage sec = perte de produit.'},
     ronces: {titre:'Ronces — Été',niveau:'warn',conseil:'Moins efficace — plante mobilise énergie pour fructification.',associations:[{produits:['Glyphosate (2.16 L/ha)'],compat:'⚠️ Efficacité réduite',detail:'Préférer traitement automnal.'}],attention:'Préférer traitement automnal pour action racinaire optimale.'},
@@ -2384,7 +2384,7 @@ const CONSEILS_HERB = {
     graminee: {titre:'Graminées — Automne',niveau:'ok',conseil:'Traiter les levées d\'automne avant tallage.',associations:[{produits:['Glyphosate (1.08 L/ha)'],compat:'✅ Levées jeunes',detail:'Jeunes levées très sensibles. Dose réduite suffisante.'},{produits:['Pendiméthaline (2.6 L/ha)'],compat:'✅ Préventif',detail:'Empêche nouvelles levées après récolte.'}],attention:'Respecter la sélectivité sur couvert inter-rang voulu.'},
     ronces: {titre:'Ronces — Automne',niveau:'ok',conseil:'MEILLEURE PÉRIODE. Translocation vers rhizomes pour l\'hiver.',associations:[{produits:['Glyphosate (2.16 L/ha) + mouillant'],compat:'✅ Optimal automne',detail:'Septembre-octobre = efficacité maximale.'},{produits:['Glufosinate + Glyphosate (2 passages)'],compat:'⚠️ Possible',detail:'Contact rapide + systémique.'}],attention:'Dernière occasion avant l\'hiver pour affaiblir durablement les ronces.'},
     dicot_annuelles: {titre:'Dicots annuelles — Automne',niveau:'ok',conseil:'Post-récolte pour réduire le stock semencier.',associations:[{produits:['Glyphosate (1.44 L/ha)'],compat:'✅ Efficace',detail:'Avant levée des rosettes hivernales.'},{produits:['Pendiméthaline (2.6 L/ha)'],compat:'✅ Préventif hivernage',detail:'Empêche levées d\'automne-hiver.'}],attention:'Attention au DAR si vendange tardive.'},
-    chiendent: {titre:'Chiendent — Automne',niveau:'ok',conseil:'Bonne période, rhizomes actifs.',associations:[{produits:['Glyphosate (1.44-2.16 L/ha)'],compat:'✅ Efficace',detail:'Végétation encore active jusqu'aux gelées.'}],attention:'Ne pas travailler le sol dans les 3 semaines après traitement.'},
+    chiendent: {titre:'Chiendent — Automne',niveau:'ok',conseil:'Bonne période, rhizomes actifs.',associations:[{produits:['Glyphosate (1.44-2.16 L/ha)'],compat:'✅ Efficace',detail:'Végétation encore active jusqu\'aux gelées.'}],attention:'Ne pas travailler le sol dans les 3 semaines après traitement.'},
     mousses: {titre:'Mousses — Automne',niveau:'ok',conseil:'Meilleure période — humidité automnale favorable.',associations:[{produits:['Sulfate de fer (20 kg/ha)'],compat:'✅ Optimal automne',detail:'Automne humide = conditions idéales.'}],attention:'Traiter en conditions humides.'},
     rumex: {titre:'Rumex — Automne',niveau:'ok',conseil:'MEILLEURE PÉRIODE. Translocation maximale vers racines.',associations:[{produits:['Glyphosate (2.16 L/ha)'],compat:'✅ Optimal',detail:'Translocation racinaire maximale en automne.'},{produits:['Flazasulfuron + Glyphosate'],compat:'✅ Synergie forte',detail:'Curatif + préventif repousse.'}],attention:'Traiter avant gelées. Dernier traitement efficace.'},
   },
@@ -2395,7 +2395,7 @@ const CONSEILS_PHYTO = {
     bbch05: {titre:'Mildiou — Débourrement',niveau:'ok',conseil:'Risque faible. Surveiller les conditions (pluie > 10mm + T° > 11°C). Pas de traitement nécessaire.',associations:[],attention:'Premier traitement cuivre dès 3-4 feuilles étalées si hiver pluvieux.'},
     bbch13: {titre:'Mildiou — Feuillaison',niveau:'ok',conseil:'Démarrer la protection préventive cuivre dès 3-4 feuilles.',associations:[{produits:['Cuivre (2.5 kg/ha)'],compat:'✅ Base préventive',detail:'Renouveler tous les 10-14 jours ou après 25mm de pluie.'},{produits:['Cuivre + Folpet (1.5 kg/ha)'],compat:'✅ Spectre élargi',detail:'Cuivre anti-mildiou + Folpet black-rot/excoriose.'},{produits:['Métirame (Polyram)'],compat:'✅ Alternatif',detail:'Bon spectre mildiou + black-rot + excoriose.'}],attention:'Démarrer si hiver pluvieux. Fenêtre contamination : pluie > 10mm + T > 11°C.'},
     bbch65: {titre:'Mildiou — Floraison ⚠️ CRITIQUE',niveau:'warn',conseil:'PÉRIODE LA PLUS SENSIBLE. Protection obligatoire. Risque contamination grappe maximal.',associations:[{produits:['Cymoxanil (0.25 kg/ha) + Cuivre'],compat:'✅ Curatif + préventif',detail:'Si contamination < 72h : cymoxanil curatif. Cuivre pour résiduel.'},{produits:['Métalaxyl-M + Mancozèbe (Ridomil Gold MZ)'],compat:'✅ Systémique fort',detail:'Protection pénétrante. Max 3 applications. Alterner familles.'},{produits:['Mandipropamide (Pergado MZ 2.5 kg/ha)'],compat:'✅ Excellent floraison',detail:'Bon mouvement translaminaire. Adapté aux conditions humides.'}],attention:'⚠️ Ne jamais sauter le traitement de floraison. 1 contamination floraison = perte totale potentielle.'},
-    bbch71: {titre:'Mildiou — Nouaison → fermeture',niveau:'ok',conseil:'Maintenir la protection jusqu'à la fermeture de la grappe.',associations:[{produits:['Cuivre (2.5 kg/ha)'],compat:'✅ Standard',detail:'Fenêtre 10-14 jours selon pluviométrie.'},{produits:['Famoxadone + Cymoxanil (Equation Pro 0.4 kg/ha)'],compat:'✅ FRAC 11+27',detail:'Double mode d\'action. Max 4 applications saison.'},{produits:['Enervin (1.5 L/ha)'],compat:'✅ FRAC 45+40',detail:'Double mode d\'action différent. Bon en rotation.'}],attention:'Réduire doses cuivre après fermeture. Attention DAR si vendange proche.'},
+    bbch71: {titre:'Mildiou — Nouaison → fermeture',niveau:'ok',conseil:'Maintenir la protection jusqu\'à la fermeture de la grappe.',associations:[{produits:['Cuivre (2.5 kg/ha)'],compat:'✅ Standard',detail:'Fenêtre 10-14 jours selon pluviométrie.'},{produits:['Famoxadone + Cymoxanil (Equation Pro 0.4 kg/ha)'],compat:'✅ FRAC 11+27',detail:'Double mode d\'action. Max 4 applications saison.'},{produits:['Enervin (1.5 L/ha)'],compat:'✅ FRAC 45+40',detail:'Double mode d\'action différent. Bon en rotation.'}],attention:'Réduire doses cuivre après fermeture. Attention DAR si vendange proche.'},
     bbch81: {titre:'Mildiou — Véraison',niveau:'ok',conseil:'Risque diminue mais reste possible. Respecter le DAR.',associations:[{produits:['Cuivre (1.5 kg/ha réduit)'],compat:'✅ Si pression maintenue',detail:'Vérifier DAR selon date vendange prévue.'},{produits:['Fosétyl-aluminium (Mikal Flash)'],compat:'✅ DAR 28j',detail:'Bon si vendange pas trop proche.'}],attention:'Calculer le DAR systématiquement. Ne pas traiter si vendange dans les 21 jours.'},
     bbch93: {titre:'Mildiou — Post-récolte',niveau:'ok',conseil:'Optionnel pour protéger les feuilles et éviter défoliation précoce.',associations:[{produits:['Cuivre (2.5 kg/ha)'],compat:'✅ Protection feuilles',detail:'Maintient surface foliaire active pour la maturation des bois.'}],attention:'Utile si pression forte et végétation encore active.'},
   },
@@ -2403,8 +2403,8 @@ const CONSEILS_PHYTO = {
     bbch05: {titre:'Oïdium — Débourrement',niveau:'ok',conseil:'Surveiller les drapeaux. Débuter avec soufre dès 3-4 feuilles.',associations:[{produits:['Soufre poudrable (20 kg/ha)'],compat:'✅ Préventif débourrement',detail:'Action de contact. Efficace si T° > 18°C.'}],attention:'Efficacité soufre nulle < 15°C, optimale 20-30°C.'},
     bbch13: {titre:'Oïdium — Feuillaison',niveau:'ok',conseil:'Protection préventive soufre. Surveiller les drapeaux (feuilles déformées duvet blanc).',associations:[{produits:['Soufre WG (3 kg/ha)'],compat:'✅ Base programme',detail:'Renouveler tous les 10-14 jours. 6-8 applications soufre/saison possible.'},{produits:['Soufre + Quinoxyfène (Talendo 0.075 L/ha)'],compat:'✅ Renforcement',detail:'En cas de forte pression. Quinoxyfène FRAC 13.'}],attention:'Soufre seul insuffisant si forte pression. Alterner avec SDHI ou IBS.'},
     bbch65: {titre:'Oïdium — Floraison ⚠️ CRITIQUE',niveau:'warn',conseil:'Contamination floraison = craquelures sur baies. Protection renforcée obligatoire.',associations:[{produits:['Tébuconazole (Folicur 0.1 L/ha)'],compat:'✅ IBS efficace',detail:'Curatif et préventif. Max 2 applications. CMR1B — EPI complet.'},{produits:['Métrafénone (Vivando 0.16 L/ha)'],compat:'✅ FRAC U8 unique',detail:'Excellent sur oïdium difficile. Max 2 applications.'},{produits:['Cyflufénamide (Cisero 0.05 kg/ha)'],compat:'✅ FRAC U6',detail:'Très efficace sur souches résistantes. Max 2 applications.'}],attention:'Rotation obligatoire : soufre M2 → IBS FRAC3 → SDHI FRAC7 → U8/U6.'},
-    bbch71: {titre:'Oïdium — Nouaison → fermeture',niveau:'ok',conseil:'Maintenir jusqu'à fermeture de la grappe.',associations:[{produits:['Soufre (3 kg/ha)'],compat:'✅ Si T > 20°C',detail:'Conditions favorables. Renouveler après pluie.'},{produits:['Luna Experience (0.75 L/ha)'],compat:'✅ SDHI+IBS FRAC 7+3',detail:'Double mode d\'action. Protège aussi contre botrytis. Max 2 applications.'}],attention:'Après fermeture grappe : passer aux systémiques, soufre ne peut plus pénétrer.'},
-    bbch81: {titre:'Oïdium — Véraison',niveau:'ok',conseil:'Dernier traitement systémique avant DAR.',associations:[{produits:['Bicarbonate potassium (Armicarb 3 kg/ha)'],compat:'✅ Biocontrôle DAR 0',detail:'Aucun DAR. Efficace si pression modérée. Jusqu'à vendange.'},{produits:['Soufre liquide (3 L/ha)'],compat:'✅ DAR court',detail:'Vérifier DAR selon spécialité (28j généralement).'}],attention:'Préférer Armicarb (DAR 0) si vendange dans les 3 semaines.'},
+    bbch71: {titre:'Oïdium — Nouaison → fermeture',niveau:'ok',conseil:'Maintenir jusqu\'à fermeture de la grappe.',associations:[{produits:['Soufre (3 kg/ha)'],compat:'✅ Si T > 20°C',detail:'Conditions favorables. Renouveler après pluie.'},{produits:['Luna Experience (0.75 L/ha)'],compat:'✅ SDHI+IBS FRAC 7+3',detail:'Double mode d\'action. Protège aussi contre botrytis. Max 2 applications.'}],attention:'Après fermeture grappe : passer aux systémiques, soufre ne peut plus pénétrer.'},
+    bbch81: {titre:'Oïdium — Véraison',niveau:'ok',conseil:'Dernier traitement systémique avant DAR.',associations:[{produits:['Bicarbonate potassium (Armicarb 3 kg/ha)'],compat:'✅ Biocontrôle DAR 0',detail:'Aucun DAR. Efficace si pression modérée. Jusqu\'à vendange.'},{produits:['Soufre liquide (3 L/ha)'],compat:'✅ DAR court',detail:'Vérifier DAR selon spécialité (28j généralement).'}],attention:'Préférer Armicarb (DAR 0) si vendange dans les 3 semaines.'},
     bbch93: {titre:'Oïdium — Post-récolte',niveau:'ok',conseil:'Facultatif pour protéger les bois.',associations:[{produits:['Soufre (3 kg/ha)'],compat:'✅ Sans contrainte',detail:'Protection feuilles et bois.'}],attention:'Utile uniquement si forte pression et végétation active.'},
   },
   botrytis: {
@@ -2421,8 +2421,8 @@ const CONSEILS_PHYTO = {
     bbch13: {titre:'Cicadelle FD — Lutte obligatoire',niveau:'warn',conseil:'Lutte OBLIGATOIRE en zones réglementées. 2-3 traitements en période de vol.',associations:[{produits:['Acétamipride (Mospilan SG 0.125 kg/ha)'],compat:'✅ 1er traitement juin',detail:'Systémique translaminaire. ZNT 20m.'},{produits:['Lambda-cyhalothrine (Karaté 0.015 L/ha)'],compat:'✅ Contact rapide 2ème passage',detail:'ZNT 20m. 14 jours après 1er passage.'},{produits:['Spirotetramat (Movento 0.75 L/ha)'],compat:'✅ Rémanence 3-4 semaines',detail:'Moins de passages. ZNT 20m.'}],attention:'OBLIGATOIRE zones délimitées FD. Fenêtre larves = juin-août. Contrôle préfectoral.'},
   },
   acariens: {
-    bbch05: {titre:'Acariens — Traitement préventif hiver',niveau:'ok',conseil:'Surveiller œufs d\'hiver sur bois. Traiter si > 30% bourgeons porteurs.',associations:[{produits:['Huile minérale (15 L/ha)'],compat:'✅ Ovicide hiver',detail:'Avant débourrement. Détruit les œufs d'hiver.'}],attention:'Éviter les produits destructeurs d'auxiliaires (typhlodromes).'},
-    bbch71: {titre:'Acariens — Traitement curatif',niveau:'ok',conseil:'Traiter si > 30% feuilles avec colonies ou > 5 acariens actifs/feuille.',associations:[{produits:['Spiromésifène (Oberon)'],compat:'✅ Ovicide + larvicide + adulte',detail:'Max 2 applications. Bonne rémanence.'},{produits:['Citrothiol / Limocide (1-2 L/ha)'],compat:'✅ Biocontrôle DAR 0',detail:'Huile essentielle. Autorisé AB. Adultes et oeufs.'}],attention:'Rotation obligatoire — pas deux fois le même mode d'action. Préserver typhlodromes.'},
+    bbch05: {titre:'Acariens — Traitement préventif hiver',niveau:'ok',conseil:'Surveiller œufs d\'hiver sur bois. Traiter si > 30% bourgeons porteurs.',associations:[{produits:['Huile minérale (15 L/ha)'],compat:'✅ Ovicide hiver',detail:'Avant débourrement. Détruit les œufs d\'hiver.'}],attention:'Éviter les produits destructeurs d\'auxiliaires (typhlodromes).'},
+    bbch71: {titre:'Acariens — Traitement curatif',niveau:'ok',conseil:'Traiter si > 30% feuilles avec colonies ou > 5 acariens actifs/feuille.',associations:[{produits:['Spiromésifène (Oberon)'],compat:'✅ Ovicide + larvicide + adulte',detail:'Max 2 applications. Bonne rémanence.'},{produits:['Citrothiol / Limocide (1-2 L/ha)'],compat:'✅ Biocontrôle DAR 0',detail:'Huile essentielle. Autorisé AB. Adultes et oeufs.'}],attention:'Rotation obligatoire — pas deux fois le même mode d\'action. Préserver typhlodromes.'},
   },
   excoriose: {
     bbch05: {titre:'Excoriose — Débourrement BBCH 05-09',niveau:'ok',conseil:'Traiter pendant débourrement sur cépages sensibles (Chardonnay, Merlot).',associations:[{produits:['Folpet (1.5 kg/ha)'],compat:'✅ Standard',detail:'Action sur nécroses primaires. Stade pointe verte / bourgeon dans coton.'},{produits:['Métirame (Polyram)'],compat:'✅ Alternatif',detail:'Bon spectre excoriose + mildiou + black-rot.'}],attention:'Fenêtre TRÈS courte : BBCH 05-09 soit 7-10 jours. Ne pas rater.'},
@@ -3012,7 +3012,7 @@ function afficherShpResult() {
   document.getElementById('shpResultMsg').className = 'al alg';
   const totalHa = shpParcelles.reduce((s,p) => s+(p.surface_ha||0), 0);
   document.getElementById('shpResultTxt').innerHTML = `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b> Vérifiez avant d'importer.`;
-  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p,i) => `
+  document.getElementById(\'shpParcList').innerHTML = shpParcelles.map((p,i) => `
     <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:7px">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <div style="flex:1;min-width:120px">
@@ -3371,7 +3371,7 @@ const PHYTO_EXTRA = [
 ];
 
 // Fusionner dans l'index global
-if(typeof window !== 'undefined') {
+if(typeof window !== \'undefined') {
   window.PHYTO_EXTRA = PHYTO_EXTRA;
 }
 
@@ -3417,7 +3417,7 @@ function initPhytoSelects() {
 }
 
 function searchPhyto(query) {
-  const res = document.getElementById('mpSearchResults');
+  const res = document.getElementById(\'mpSearchResults');
   if (!query || query.length < 2) { res.style.display = 'none'; return; }
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const q = norm(query);
@@ -3437,7 +3437,7 @@ function searchPhyto(query) {
     </div>`;
     return;
   }
-  res.style.display = 'block';
+  res.style.display = \'block';
   res.innerHTML = matches.map((p, i) => `
     <div onclick="selectPhytoProd(${i})"
       style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--gris2);transition:background .15s"
