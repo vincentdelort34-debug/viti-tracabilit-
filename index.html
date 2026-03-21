@@ -580,11 +580,14 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <div id="shpDropContent">
         <div style="font-size:38px;margin-bottom:8px">🗂️</div>
         <div style="font-size:14px;font-weight:700;color:var(--terre);margin-bottom:4px">Déposer les fichiers Télépac ici</div>
-        <div style="font-size:12px;color:var(--gris)">Glisse les 3 fichiers ensemble (.shp + .dbf + .shx)<br>ou un ZIP, ou un GeoJSON</div>
-        <div style="display:flex;justify-content:center;gap:6px;margin-top:10px">
-          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">.shp+.dbf</span>
-          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">.zip</span>
-          <span style="background:var(--gris3);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--gris)">GeoJSON</span>
+        <div style="font-size:12px;color:var(--gris)">Glisse les 3 fichiers ensemble (.shp + .dbf + .shx)<br>ou un ZIP, GeoJSON, KML/KMZ, GPX<br>ou une <b>photo/scan</b> du relevé de propriété</div>
+        <div style="display:flex;justify-content:center;gap:5px;margin-top:10px;flex-wrap:wrap">
+          <span style="background:var(--gris3);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;color:var(--gris)">.shp+.dbf</span>
+          <span style="background:var(--gris3);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;color:var(--gris)">.zip</span>
+          <span style="background:var(--gris3);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;color:var(--gris)">GeoJSON</span>
+          <span style="background:var(--gris3);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;color:var(--gris)">KML/KMZ</span>
+          <span style="background:var(--gris3);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;color:var(--gris)">GPX</span>
+          <span style="background:#fde8f0;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;color:#8a2040">📷 Photo relevé</span>
         </div>
       </div>
       <div id="shpLoadingContent" style="display:none">
@@ -592,7 +595,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
         <div style="font-size:13px;font-weight:600;color:var(--terre)" id="shpLoadingTxt">Lecture du fichier…</div>
       </div>
     </div>
-    <input type="file" id="shpFile" accept=".zip,.shp,.dbf,.shx,.geojson,.json" style="display:none" multiple onchange="handleShpFile(this)">
+    <input type="file" id="shpFile" accept=".zip,.shp,.dbf,.shx,.geojson,.json,.kml,.kmz,.gpx,image/*" style="display:none" multiple onchange="handleShpFile(this)">
 
     <!-- RÉSULTAT IMPORT -->
     <div id="shpResult" style="display:none;margin-top:12px">
@@ -2457,6 +2460,155 @@ function renderConseilPhyto() {
 }
 
 
+// ══════════════════════════════════════════
+//  PARSEURS KML / GPX / PHOTO RELEVÉ
+// ══════════════════════════════════════════
+
+function parseKML(kmlText) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(kmlText, 'text/xml');
+  const parcelles = [];
+  const COLORS = ['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030'];
+
+  // Chercher tous les Placemark
+  const placemarks = doc.querySelectorAll('Placemark');
+  placemarks.forEach((pm, i) => {
+    const nom = pm.querySelector('name')?.textContent || `Parcelle ${i+1}`;
+    const desc = pm.querySelector('description')?.textContent || '';
+
+    // Polygon
+    const coordsEl = pm.querySelector('Polygon outerBoundaryIs coordinates, coordinates');
+    if (!coordsEl) return;
+
+    const coordText = coordsEl.textContent.trim();
+    const coords = coordText.split(/\s+/).map(c => {
+      const parts = c.split(',');
+      if (parts.length >= 2) {
+        const lon = parseFloat(parts[0]);
+        const lat = parseFloat(parts[1]);
+        if (!isNaN(lat) && !isNaN(lon)) return [parseFloat(lat.toFixed(7)), parseFloat(lon.toFixed(7))];
+      }
+      return null;
+    }).filter(Boolean);
+
+    if (coords.length >= 3) {
+      parcelles.push({
+        code: `K${i+1}`,
+        nom: nom.slice(0, 50),
+        surface_ha: 0,
+        commune: '',
+        culture: '',
+        coords,
+        color: COLORS[i % COLORS.length]
+      });
+    }
+  });
+  return parcelles;
+}
+
+function parseGPX(gpxText) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(gpxText, 'text/xml');
+  const parcelles = [];
+  const COLORS = ['#c8a84c','#d4a840','#4a8a42','#7a3060','#a08030'];
+
+  // Tracks
+  const tracks = doc.querySelectorAll('trk');
+  tracks.forEach((trk, i) => {
+    const nom = trk.querySelector('name')?.textContent || `Trace ${i+1}`;
+    const points = [];
+    trk.querySelectorAll('trkpt').forEach(pt => {
+      const lat = parseFloat(pt.getAttribute('lat'));
+      const lon = parseFloat(pt.getAttribute('lon'));
+      if (!isNaN(lat) && !isNaN(lon)) points.push([parseFloat(lat.toFixed(7)), parseFloat(lon.toFixed(7))]);
+    });
+    if (points.length >= 3) {
+      // Fermer le polygone si nécessaire
+      if (points[0][0] !== points[points.length-1][0]) points.push(points[0]);
+      parcelles.push({ code: `G${i+1}`, nom: nom.slice(0,50), surface_ha: 0, commune: '', culture: '', coords: points, color: COLORS[i%COLORS.length] });
+    }
+  });
+
+  // Routes (comme polygones)
+  const routes = doc.querySelectorAll('rte');
+  routes.forEach((rte, i) => {
+    const nom = rte.querySelector('name')?.textContent || `Route ${i+1}`;
+    const points = [];
+    rte.querySelectorAll('rtept').forEach(pt => {
+      const lat = parseFloat(pt.getAttribute('lat'));
+      const lon = parseFloat(pt.getAttribute('lon'));
+      if (!isNaN(lat) && !isNaN(lon)) points.push([parseFloat(lat.toFixed(7)), parseFloat(lon.toFixed(7))]);
+    });
+    if (points.length >= 3) {
+      if (points[0][0] !== points[points.length-1][0]) points.push(points[0]);
+      parcelles.push({ code: `R${i+1}`, nom: nom.slice(0,50), surface_ha: 0, commune: '', culture: '', coords: points, color: COLORS[i%COLORS.length] });
+    }
+  });
+
+  return parcelles;
+}
+
+async function analyserPhotoReleve(file) {
+  setShpLoading('Analyse IA du document cadastral…');
+  try {
+    const base64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    const response = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image: base64,
+        mimeType: file.type || 'image/jpeg',
+        mode: 'cadastre'
+      })
+    });
+
+    if (!response.ok) throw new Error('Erreur serveur');
+    const data = await response.json();
+
+    if (data.parcelles && data.parcelles.length) {
+      shpParcelles = data.parcelles.map((p, i) => ({
+        code: p.code || `C${i+1}`,
+        nom: p.nom || p.section || `Parcelle ${i+1}`,
+        surface_ha: parseFloat(p.surface_ha) || 0,
+        commune: p.commune || '',
+        culture: p.nature || '',
+        coords: [],
+        color: ['#c8a84c','#d4a840','#4a8a42','#7a3060'][i % 4]
+      }));
+      afficherShpResult();
+      toast(`✅ ${shpParcelles.length} parcelle(s) extraites du document`);
+    } else if (data.info) {
+      // Afficher les infos extraites sans coordonnées GPS
+      document.getElementById('shpLoadingContent').style.display = 'none';
+      document.getElementById('shpDropContent').style.display = 'block';
+      document.getElementById('shpResult').style.display = 'block';
+      document.getElementById('shpResultMsg').className = 'al alb';
+      document.getElementById('shpResultTxt').innerHTML = `<b>📄 Document analysé par l'IA</b><br>${data.info}`;
+      document.getElementById('shpParcList').innerHTML = `
+        <div class="al alo" style="margin-top:8px"><span class="al-i">ℹ️</span>
+        <div>Ce document ne contient pas de coordonnées GPS. Les informations sont extraites mais sans géolocalisation précise. 
+        Pour importer avec les coordonnées GPS, utilisez le fichier ZIP Télépac.</div></div>`;
+      toast('ℹ️ Document analysé — pas de coordonnées GPS');
+    } else {
+      throw new Error('Document non reconnu — utiliser ZIP Télépac pour les coordonnées GPS');
+    }
+  } catch(e) {
+    document.getElementById('shpLoadingContent').style.display = 'none';
+    document.getElementById('shpDropContent').style.display = 'block';
+    document.getElementById('shpResult').style.display = 'block';
+    document.getElementById('shpResultMsg').className = 'al alr';
+    document.getElementById('shpResultTxt').innerHTML = `<b>Analyse impossible</b> — ${e.message}`;
+    document.getElementById('shpParcList').innerHTML = '';
+    toast('❌ ' + e.message);
+  }
+}
+
 function fillObsSelects() {
   ['obParc','rdParc'].forEach(id => {
     const sel = document.getElementById(id);
@@ -2856,7 +3008,7 @@ async function handleShpFile(input) {
         const coords = f.geometry?.coordinates?.[0]?.map(c => [parseFloat(c[1].toFixed(7)), parseFloat(c[0].toFixed(7))]) || [];
         return {
           code: `P${i+1}`,
-          nom: p.NOM_COM || p.COMMUNE || p.nom || `Parcelle ${i+1}`,
+          nom: p.NOM_COM || p.COMMUNE || p.nom || p.name || `Parcelle ${i+1}`,
           surface_ha: parseFloat(p.SURF || p.surface || 0),
           commune: p.COMMUNE || p.NOM_COM || '',
           culture: p.TYPE || p.CULT_COD || '',
@@ -2865,8 +3017,36 @@ async function handleShpFile(input) {
       }).filter(p => p.coords.length >= 3);
       afficherShpResult();
       return;
+    } else if (name.endsWith('.kml') || name.endsWith('.kmz')) {
+      setShpLoading('Lecture KML/KMZ…');
+      let kmlText;
+      if (name.endsWith('.kmz')) {
+        // KMZ = ZIP contenant un KML
+        const entries = await readZipEntries(buffer);
+        const kmlKey = Object.keys(entries).find(k => k.endsWith('.kml'));
+        if (!kmlKey) throw new Error('Aucun fichier KML dans le KMZ');
+        kmlText = new TextDecoder().decode(entries[kmlKey]);
+      } else {
+        kmlText = new TextDecoder().decode(buffer);
+      }
+      shpParcelles = parseKML(kmlText);
+      if (!shpParcelles.length) throw new Error('Aucune géométrie dans le KML');
+      afficherShpResult();
+      return;
+    } else if (name.endsWith('.gpx')) {
+      setShpLoading('Lecture GPX…');
+      const gpxText = new TextDecoder().decode(buffer);
+      shpParcelles = parseGPX(gpxText);
+      if (!shpParcelles.length) throw new Error('Aucune trace dans le GPX');
+      afficherShpResult();
+      return;
+    } else if (file.type.startsWith('image/')) {
+      // Photo/scan du relevé de propriété → analyse IA
+      setShpLoading('Analyse IA du relevé de propriété…');
+      await analyserPhotoReleve(file);
+      return;
     } else {
-      throw new Error('Format non supporté — utiliser .zip (Télépac), .shp ou .geojson');
+      throw new Error('Format non supporté. Formats acceptés : ZIP Télépac, .shp+.dbf, GeoJSON, KML/KMZ, GPX, ou photo du relevé de propriété');
     }
 
     if (!shpBuf) throw new Error('Impossible de lire le shapefile');
