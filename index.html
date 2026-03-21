@@ -363,6 +363,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <button class="sb-tab" onclick="go('sScan',this)" id="sb-sScan"><span class="sb-tab-icon">📷</span>Scan IA</button>
     <button class="sb-tab" onclick="go('sStock',this)" id="sb-sStock"><span class="sb-tab-icon">🧪</span>Stock</button>
     <button class="sb-tab" onclick="go('sCarto',this)" id="sb-sCarto"><span class="sb-tab-icon">🗺️</span>Parcelles</button>
+    <button class="sb-tab" onclick="" id="sb-sParc" style="display:none"><span class="sb-tab-icon">📋</span><span id="sb-sParc-nom">Fiche parcelle</span></button>
     <button class="sb-tab" onclick="go('sMeteo',this)" id="sb-sMeteo"><span class="sb-tab-icon">🌤️</span>Météo</button>
     <button class="sb-tab" onclick="go('sRegistre',this)" id="sb-sRegistre"><span class="sb-tab-icon">📋</span>Registre</button>
     <button class="sb-tab" onclick="go('sCave',this)" id="sb-sCave"><span class="sb-tab-icon">🍷</span>Cave</button>
@@ -611,6 +612,57 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <div id="mc"><div class="mo">📍 GPS</div><div class="mct"><button class="mcb" onclick="mSat()">🛰️</button><button class="mcb" onclick="mOSM()">🗺️</button><button class="mcb" onclick="mCenter()">◎</button><button class="mcb" onclick="reloadMap()" title="Recharger depuis Supabase">🔄</button></div><div id="map"></div><button class="map-fullscreen-btn" onclick="toggleMapFullscreen()">⛶ Plein écran</button></div>
   <div id="cL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter manuellement</button></div></div>
   <button class="btn btp" onclick="showM('mAP')" style="margin-top:4px">+ Ajouter une parcelle manuellement</button>
+</section>
+<!-- FICHE PARCELLE -->
+<section id="sParc" class="sec">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <button class="btn btghost btsm" onclick="go('sCarto',document.getElementById('sb-sCarto'))">← Retour</button>
+    <div class="stitle" id="sParcTitle" style="margin-bottom:0">Fiche parcelle</div>
+  </div>
+
+  <!-- EN-TÊTE IFT -->
+  <div id="sParcIFT" style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);border-radius:18px;padding:18px;color:#fff;margin-bottom:14px;box-shadow:0 6px 24px rgba(28,61,28,.35)">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px">IFT cumulé campagne en cours</div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div>
+        <div id="sParcIFTVal" style="font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:700;line-height:1">—</div>
+        <div id="sParcIFTSub" style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">sur 4,0 référence HVE</div>
+      </div>
+      <div style="text-align:right">
+        <div id="sParcBadge" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(255,255,255,.15)">—</div>
+        <button class="btn btgold btsm" style="margin-top:10px" onclick="saisirTraitementParc()">+ Traitement</button>
+      </div>
+    </div>
+    <div style="height:8px;background:rgba(255,255,255,.15);border-radius:4px;margin-top:12px;overflow:hidden">
+      <div id="sParcIFTBar" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#4a8a42,#6db865);transition:width 1.2s ease;width:0%"></div>
+    </div>
+  </div>
+
+  <!-- INFOS PARCELLE -->
+  <div class="card" id="sParcInfos">
+    <div class="ch"><span class="ct">📍 Informations parcelle</span><button class="btn btghost btsm" onclick="showM('mAP')">✏️ Modifier</button></div>
+    <div id="sParcInfosContent"></div>
+  </div>
+
+  <!-- TRAITEMENTS -->
+  <div class="card">
+    <div class="ch">
+      <span class="ct">🌿 Traitements</span>
+      <button class="btn btgold btsm" onclick="saisirTraitementParc()">+ Nouveau</button>
+    </div>
+    <div id="sParcTraits"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement sur cette parcelle</div></div>
+  </div>
+
+  <!-- OBSERVATIONS -->
+  <div class="card">
+    <div class="ch">
+      <span class="ct">👁️ Observations</span>
+      <button class="btn btghost btsm" onclick="showM('mAddObs')">+ Ajouter</button>
+    </div>
+    <div id="sParcObs"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune observation</div></div>
+  </div>
+
+  <button class="btn btghost" style="width:100%;margin-top:4px" onclick="go('sCarto',document.getElementById('sb-sCarto'))">← Retour aux parcelles</button>
 </section>
 <!-- MÉTÉO -->
 <section id="sMeteo" class="sec">
@@ -1368,7 +1420,8 @@ function go(id, btn) {
     sDash:'🏠 Accueil', sTrait:'🌿 Traitement', sIFT:'📊 IFT',
     sScan:'📷 Scan IA', sStock:'🧪 Stock phytosanitaire',
     sCarto:'🗺️ Parcelles', sMeteo:'🌤️ Météo', sRegistre:'📋 Registre',
-    sCave:'🍷 Cave & Négoce', sHVE:'🏅 HVE / AB', sConseil:'💡 Conseils associations', sPerso:'⚙️ Personnaliser'
+    sCave:'🍷 Cave & Négoce', sHVE:'🏅 HVE / AB', sConseil:'💡 Conseils associations', sPerso:'⚙️ Personnaliser',
+    sParc:'📋 Fiche parcelle'
   };
   const tbEl = document.getElementById('tbTitle');
   if (tbEl) tbEl.textContent = titles[id] || '';
@@ -1483,29 +1536,107 @@ function renderIFT() {
 }
 
 function showPD(code) {
-  const p=PARCS.find(x=>x.code===code);if(!p)return;
-  const v=iftP(code),col=iftCol(iftSt(v));
-  const ts=TRAITS.filter(t=>t.parcelle_code===code).sort((a,b)=>b.date_application.localeCompare(a.date_application));
-  document.getElementById('mPDT').textContent=`${p.code} · ${p.nom}`;
-  document.getElementById('mPDC').innerHTML=`
-    <div style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);border-radius:12px;padding:14px;color:#fff;text-align:center;margin-bottom:14px">
-      <div style="font-size:11px;opacity:.6;text-transform:uppercase;margin-bottom:4px">IFT cumulé campagne ${AN}</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;color:${col};line-height:1">${v.toFixed(2).replace('.',',')}</div>
-      <div style="font-size:13px;opacity:.7">sur 4,0 référence · ${(v/4*100).toFixed(0)}%</div>
-    </div>
-    <div style="background:var(--gris3);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px">
-      <div><b>Cépage :</b> ${p.cepage||'—'} · <b>Surface :</b> ${p.surface_ha||'—'} ha</div>
-      <div style="margin-top:3px"><b>Commune :</b> ${p.commune||'—'}</div>
-      ${p.ref_cadastrale?`<div style="margin-top:3px"><b>Réf. cadastrale :</b> ${p.ref_cadastrale}</div>`:''}
-    </div>
-    ${ts.length?ts.map(t=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${t.produit_nom||'—'}</div><div class="lim">${t.date_application} · ${t.dose_appliquee||'—'} ${t.dose_unite||'kg/ha'} · BBCH ${t.bbch||'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">${t.dose_appliquee} ÷ ${t.dose_reference} = <b style="color:var(--vigne)">IFT ${(t.ift||0).toFixed(2)}</b></div></div><button onclick="delTrait('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gris);padding:4px">🗑️</button></div>`).join(''):'<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement sur cette parcelle</div>'}`;
-  showM('mPD');
+  const p = PARCS.find(x => x.code === code); if (!p) return;
+  const v = iftP(code), col = iftCol(iftSt(v));
+  const ts = TRAITS.filter(t => t.parcelle_code === code).sort((a,b) => b.date_application.localeCompare(a.date_application));
+
+  // Mettre à jour la sidebar
+  const sbParc = document.getElementById('sb-sParc');
+  if (sbParc) { sbParc.style.display = 'flex'; }
+  const sbParcNom = document.getElementById('sb-sParc-nom');
+  if (sbParcNom) sbParcNom.textContent = p.nom;
+
+  // Titre
+  document.getElementById('sParcTitle').textContent = `${p.code} · ${p.nom}`;
+
+  // IFT
+  const pct = Math.min(100, v / 4.8 * 100);
+  document.getElementById('sParcIFTVal').textContent = v.toFixed(2).replace('.', ',');
+  document.getElementById('sParcIFTVal').style.color = col;
+  document.getElementById('sParcIFTSub').textContent = `sur 4,0 référence · ${(v/4*100).toFixed(0)}% utilisé`;
+  const badge = document.getElementById('sParcBadge');
+  badge.textContent = iftSt(v) === 'ok' ? '✓ Conforme HVE' : iftSt(v) === 'warn' ? '⚠️ Proche limite' : '🚨 Dépassé';
+  badge.style.background = col;
+  setTimeout(() => { document.getElementById('sParcIFTBar').style.width = pct + '%'; document.getElementById('sParcIFTBar').style.background = `linear-gradient(90deg,${col},${col}88)`; }, 100);
+
+  // Infos
+  document.getElementById('sParcInfosContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+      <div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Surface</div><div style="font-weight:700;font-size:16px">${p.surface_ha || '—'} ha</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Cépage</div><div style="font-weight:700;font-size:16px">${p.cepage || '—'}</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Commune</div><div style="font-weight:600">${p.commune || '—'}</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Couleur</div><div style="font-weight:600">${p.couleur || '—'}</div></div>
+      ${p.produit_aoc ? `<div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">AOC / Produit</div><div style="font-weight:600">${p.produit_aoc}</div></div>` : ''}
+      ${p.ref_cadastrale ? `<div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Cadastre</div><div style="font-weight:600;font-size:12px">${p.ref_cadastrale}</div></div>` : ''}
+    </div>`;
+
+  // Traitements
+  const traitsEl = document.getElementById('sParcTraits');
+  traitsEl.innerHTML = ts.length ? ts.map(t => `
+    <div class="li">
+      <div class="lic" style="background:#fde8c8">🌿</div>
+      <div class="lib">
+        <div class="lit">${t.produit_nom || '—'}</div>
+        <div class="lim">${t.date_application} · ${t.dose_appliquee || '—'} ${t.dose_unite || 'kg/ha'} · BBCH ${t.bbch || '—'}</div>
+        <div style="font-size:11px;color:var(--gris);margin-top:2px">${t.dose_appliquee} ÷ ${t.dose_reference} = <b style="color:var(--vigne)">IFT ${(t.ift||0).toFixed(2)}</b></div>
+      </div>
+      <button onclick="delTrait('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gris);padding:4px;flex-shrink:0">🗑️</button>
+    </div>`).join('') : '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement sur cette parcelle</div>';
+
+  // Charger observations depuis Supabase
+  chargerObsParc(p.id || null, p.code);
+
+  // Stocker le code courant pour le bouton "+ Traitement"
+  window.CURRENT_PARC_CODE = code;
+
+  // Naviguer
+  go('sParc', null);
+  // Sync topbar title
+  const tbEl = document.getElementById('tbTitle');
+  if (tbEl) tbEl.textContent = `📋 ${p.nom}`;
 }
 
 async function delTrait(id) {
   if(!confirm('Supprimer ce traitement ?')) return;
   const {error}=await sb.from('traitements').delete().eq('id',id);
-  if(!error){TRAITS=TRAITS.filter(t=>t.id!==id);renderDash();renderIFT();renderRegistre();toast('🗑️ Supprimé · IFT recalculé');closeM(null,'mPD');}
+  if(!error){TRAITS=TRAITS.filter(t=>t.id!==id);renderDash();renderIFT();renderRegistre();toast('🗑️ Supprimé · IFT recalculé');
+  // Rafraîchir la fiche si on est dessus
+  if (window.CURRENT_PARC_CODE) showPD(window.CURRENT_PARC_CODE);
+  else closeM(null,'mPD');}
+}
+
+async function chargerObsParc(parcId, parcCode) {
+  const obsEl = document.getElementById('sParcObs');
+  obsEl.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Chargement…</div>';
+  try {
+    let query = sb.from('observations').select('*').eq('domaine_id', DOM_ID).order('date_observation', {ascending:false}).limit(10);
+    if (parcId) query = query.eq('parcelle_id', parcId);
+    const {data} = await query;
+    if (!data?.length) { obsEl.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune observation</div>'; return; }
+    const gravCol = g => g==='Élevé'?'var(--rouge)':g==='Moyen'?'var(--orange)':'var(--vert)';
+    obsEl.innerHTML = data.map(o => `
+      <div class="li">
+        <div class="lic" style="background:#fde8f0">👁️</div>
+        <div class="lib">
+          <div class="lit">${o.type_obs || '—'}</div>
+          <div class="lim">${o.date_observation} · Gravité : ${o.gravite || '—'}</div>
+          ${o.description ? `<div style="font-size:12px;color:var(--terre);margin-top:3px">${o.description.substring(0,80)}${o.description.length>80?'…':''}</div>` : ''}
+          ${o.traitement_recommande ? `<div style="font-size:11px;color:var(--gris);margin-top:2px">💊 ${o.traitement_recommande}</div>` : ''}
+        </div>
+        <span class="badge" style="background:${gravCol(o.gravite)};color:#fff;flex-shrink:0">${o.gravite||'—'}</span>
+      </div>`).join('');
+  } catch(e) { obsEl.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Erreur chargement</div>'; }
+}
+
+function saisirTraitementParc() {
+  // Aller sur l'onglet traitement et pré-sélectionner la parcelle
+  go('sTrait', document.getElementById('sb-sTrait'));
+  if (window.CURRENT_PARC_CODE) {
+    setTimeout(() => {
+      const sel = document.getElementById('tPa');
+      if (sel) { sel.value = window.CURRENT_PARC_CODE; uTP(); }
+    }, 100);
+  }
 }
 // ══════════════════════════════════════════
 //  TRAITEMENT
