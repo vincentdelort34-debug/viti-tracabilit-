@@ -1415,7 +1415,7 @@ function renderDash() {
   document.getElementById('rC').textContent=TRAITS.length;
   // Bars
   const ib=document.getElementById('dIB');
-  if(!PARCS.length) { ib.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Ajoutez des parcelles pour voir l'IFT</div>'; }
+  if(!PARCS.length) { ib.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Ajoutez des parcelles pour voir l’IFT</div>'; }
   else {
     ib.innerHTML=PARCS.map(p=>{
       const v=iftP(p.code),col=iftCol(iftSt(v)),pct=Math.min(100,v/4.8*100);
@@ -3168,7 +3168,7 @@ const PHYTO_DB = {
           dar: 0, znt: 5, categ: 'Herbicide',
           cibles: 'Adventices annuelles et vivaces — Désherbage rang',
           nb_applic: '2 passages max/an',
-          restriction: 'Interdit < 3m cours d'eau - Pas avant vendange - CMR suspecté',
+          restriction: 'Interdit < 3m cours d’eau - Pas avant vendange - CMR suspecté',
           produits: [
             { nom: 'Roundup Star', fab: 'Bayer', amm: 'FR-2018-0445', forme: 'SL 360 g/L', dose: 1.44 },
             { nom: 'Glyphogan 480 SL', fab: 'Nufarm', amm: 'FR-2016-0678', forme: 'SL 480 g/L', dose: 1.08 },
