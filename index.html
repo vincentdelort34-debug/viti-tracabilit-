@@ -1983,6 +1983,59 @@ function toggleEdit() {
   }
 }
 
+async function rechercherEphy(query) {
+  const res = document.getElementById('mpSearchResults');
+  res.innerHTML = `<div style="padding:12px;text-align:center"><div class="spin" style="width:24px;height:24px;border-width:2px;margin:0 auto 8px"></div><div style="font-size:12px;color:var(--gris)">Recherche E-phy ANSES…</div></div>`;
+  try {
+    const r = await fetch('/api/scan', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({mode:'ephy', query})
+    });
+    const data = await r.json();
+    const results = data.results || [];
+    if (!results.length) {
+      res.innerHTML = `<div style="padding:12px;font-size:13px;color:var(--gris);text-align:center">
+        Aucun résultat E-phy pour "<b>${query}</b>"<br>
+        <span style="font-size:11px">Saisir manuellement ci-dessous</span>
+      </div>`;
+      return;
+    }
+    window.PHYTO_LAST_RESULTS = results.map(p => ({
+      nomProd: p.nom_produit || p.libelle || query,
+      fab: p.firme || p.titulaire || '',
+      amm: p.numero_amm || '',
+      forme: p.formulation || '',
+      dose_ref: parseFloat(p.dose_max) || 0,
+      dose_max: parseFloat(p.dose_max) || 0,
+      unite: p.unite_dose || 'kg/ha',
+      dar: parseInt(p.dai) || 0,
+      znt: parseInt(p.znt) || 5,
+      categ: p.type_produit || 'Fongicide',
+      cibles: p.usages?.map(u=>u.cible||u.usage).join(', ') || '',
+      nb_applic: p.nombre_max_application || '',
+      restriction: '',
+      catLabel: p.type_produit || '',
+      maLabel: p.matieres_actives?.map(m=>m.nom).join(', ') || '',
+      searchText: (p.nom_produit||'').toLowerCase()
+    }));
+    res.innerHTML = window.PHYTO_LAST_RESULTS.map((p,i) => `
+      <div onclick="selectPhytoProd(${i})"
+        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--gris2)"
+        onmouseenter="this.style.background='var(--gris3)'"
+        onmouseleave="this.style.background=''">
+        <div style="font-weight:700;font-size:13px;color:var(--terre)">${p.nomProd} <span style="font-size:10px;background:#e8f4fd;color:#2a6a9a;padding:1px 5px;border-radius:3px">E-phy</span></div>
+        <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.maLabel} · ${p.fab}</div>
+        <div style="display:flex;gap:8px;margin-top:3px">
+          <span style="font-size:10px;background:#d4edda;color:var(--vert);padding:1px 6px;border-radius:4px">DAR ${p.dar}j</span>
+          <span style="font-size:10px;background:#d4e8f4;color:#2a6a9a;padding:1px 6px;border-radius:4px">ZNT ${p.znt}m</span>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    res.innerHTML = `<div style="padding:12px;font-size:12px;color:var(--rouge);text-align:center">E-phy indisponible — saisir manuellement</div>`;
+  }
+}
+
 function fillObsSelects() {
   ['obParc','rdParc'].forEach(id => {
     const sel = document.getElementById(id);
@@ -2875,8 +2928,9 @@ function searchPhyto(query) {
   if (!matches.length) {
     res.style.display = 'block';
     res.innerHTML = `<div style="padding:12px;font-size:13px;color:var(--gris);text-align:center">
-      Aucun produit trouvé pour "<b>${query}</b>"<br>
-      <span style="font-size:11px">Saisir manuellement ci-dessous</span>
+      Aucun produit local pour "<b>${query}</b>"<br>
+      <button class="btn btgold btsm" style="margin-top:8px" onclick="rechercherEphy('${query.replace(/'/g,"\\'")}')">🔍 Chercher sur E-phy ANSES</button>
+      <div style="font-size:11px;margin-top:6px;color:var(--gris)">ou saisir manuellement ci-dessous</div>
     </div>`;
     return;
   }
