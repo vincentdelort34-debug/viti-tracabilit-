@@ -636,9 +636,62 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 </section>
 <!-- CAVE -->
 <section id="sCave" class="sec">
-  <div class="stitle">Cave & Négoce</div><div class="ssub">Vinification · Cuves · Ventes · Traçabilité</div>
-  <div class="card"><div class="ch"><span class="ct">État des cuves</span><button class="btn btghost btsm" onclick="showM('mAC')">+ Cuve</button></div><div id="cVL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune cuve configurée</div></div></div>
-  <div class="card"><div class="ch"><span class="ct">Ventes & négoce</span><button class="btn btghost btsm" onclick="showM('mNV')">+ Vente</button></div><div id="vL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune vente</div></div></div>
+  <div class="stitle">Cave & Négoce</div><div class="ssub">Cuves · Mouvements · Retiraisons · Relogements</div>
+
+  <!-- RÉSUMÉ CUVES -->
+  <div class="sg" id="caveStats">
+    <div class="st"><div class="sv" id="cvNbCuves">—</div><div class="sl">Cuves</div></div>
+    <div class="st"><div class="sv" id="cvTotalCap">— hL</div><div class="sl">Capacité totale</div></div>
+    <div class="st"><div class="sv" id="cvTotalCont">— hL</div><div class="sl">En cave</div></div>
+    <div class="st"><div class="sv" id="cvTauxRemplissage">—%</div><div class="sl">Taux remplissage</div></div>
+  </div>
+
+  <!-- LISTE CUVES -->
+  <div class="card">
+    <div class="ch">
+      <span class="ct">État des cuves</span>
+      <button class="btn btgold btsm" onclick="showM('mAC')">+ Ajouter cuve</button>
+    </div>
+    <div id="cVL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune cuve configurée</div></div>
+  </div>
+
+  <!-- MOUVEMENTS RAPIDES -->
+  <div class="card">
+    <div class="ch"><span class="ct">Enregistrer un mouvement</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn" style="background:var(--rouge);color:#fff;flex-direction:column;gap:4px;padding:14px 10px" onclick="showM('mRetiraison')">
+        <span style="font-size:24px">🚚</span>
+        <span style="font-size:13px;font-weight:700">Retiraison</span>
+        <span style="font-size:11px;opacity:.8">Acheteur prend du vin</span>
+      </button>
+      <button class="btn" style="background:var(--bleu);color:#fff;flex-direction:column;gap:4px;padding:14px 10px" onclick="showM('mRelogement')">
+        <span style="font-size:24px">🔄</span>
+        <span style="font-size:13px;font-weight:700">Relogement</span>
+        <span style="font-size:11px;opacity:.8">Transfert cuve → cuve</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- HISTORIQUE MOUVEMENTS -->
+  <div class="card">
+    <div class="ch">
+      <span class="ct">Historique mouvements</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btghost btsm" id="mvfAll" onclick="filterMvt('all',this)">Tous</button>
+        <button class="btn btghost btsm" id="mvfRet" onclick="filterMvt('retiraison',this)">🚚 Retiraisons</button>
+        <button class="btn btghost btsm" id="mvfRel" onclick="filterMvt('relogement',this)">🔄 Relogements</button>
+      </div>
+    </div>
+    <div id="mvtList"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun mouvement enregistré</div></div>
+  </div>
+
+  <!-- VENTES -->
+  <div class="card">
+    <div class="ch"><span class="ct">Ventes & négoce</span><button class="btn btghost btsm" onclick="showM('mNV')">+ Vente</button></div>
+    <div id="vL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune vente</div></div>
+  </div>
+
+  <!-- DOCUMENTS -->
   <div class="card"><div class="ch"><span class="ct">Documents</span></div>
     <div class="er"><span style="font-size:22px">📋</span><div class="ei"><div class="en">Déclaration de récolte (DREV)</div></div><button class="btn btgold btsm" onclick="doExport('DREV')">Générer</button></div>
     <div class="er"><span style="font-size:22px">🏅</span><div class="ei"><div class="en">Certificat traçabilité vigne</div></div><button class="btn btgold btsm" onclick="doExport('Traçabilité')">PDF</button></div>
@@ -1052,17 +1105,130 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   </div>
 </div>
 
+<!-- MODAL AJOUTER CUVE -->
 <div class="ov" id="mAC" onclick="closeM(event,'mAC')">
   <div class="mo2" onclick="event.stopPropagation()">
-    <div class="mh"></div><div class="mt">+ Nouvelle cuve</div>
-    <div class="fg"><label>Nom de la cuve</label><input type="text" id="cN" placeholder="Ex : C1, Cuve Grenache…"></div>
+    <div class="mh"></div><div class="mt" id="mACTitle">+ Nouvelle cuve</div>
+    <input type="hidden" id="cEditId">
+
     <div class="row2">
-      <div class="fg"><label>Capacité (hL)</label><input type="number" id="cCa" placeholder="50"></div>
-      <div class="fg"><label>Contenu actuel (hL)</label><input type="number" id="cCo" placeholder="0"></div>
+      <div class="fg"><label>Numéro / Nom *</label><input type="text" id="cN" placeholder="Ex : C1, Inox 3…"></div>
+      <div class="fg"><label>Type</label>
+        <select id="cType">
+          <option value="inox">Inox</option>
+          <option value="acier">Acier</option>
+          <option value="beton">Béton</option>
+          <option value="polyester">Polyester</option>
+        </select>
+      </div>
     </div>
-    <div class="fg"><label>Cuvée / vin</label><input type="text" id="cV" placeholder="Ex : Combe Haute 2025"></div>
-    <button class="btn btp" onclick="saveCuve()">💾 Enregistrer</button>
+    <div class="row2">
+      <div class="fg"><label>Capacité (hL) *</label><input type="number" id="cCa" placeholder="50" min="0"></div>
+      <div class="fg"><label>Contenu actuel (hL)</label><input type="number" id="cCo" placeholder="0" min="0"></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Cépage</label><input type="text" id="cCepage" placeholder="Ex : Syrah, Grenache…"></div>
+      <div class="fg"><label>Millésime</label><input type="number" id="cMillesime" placeholder="2024" min="2000" max="2099"></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Degré (% vol.)</label><div class="ig"><input type="number" id="cDegre" placeholder="13.5" step="0.1" min="0" max="25"><span class="isuf">°</span></div></div>
+      <div class="fg"><label>Appellation</label>
+        <select id="cAppellation">
+          <option value="">— Choisir —</option>
+          <option value="IGP">IGP</option>
+          <option value="AOP">AOP</option>
+          <option value="Vin de France">Vin de France</option>
+          <option value="AOC">AOC</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>Cuvée / Nom commercial</label><input type="text" id="cV" placeholder="Ex : Combe Haute 2024"></div>
+    <div class="fg"><label>Notes</label><textarea id="cNotes" placeholder="Observations, étape vinification…" style="min-height:60px"></textarea></div>
+
+    <button class="btn btp" onclick="saveCuve()">💾 Enregistrer la cuve</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAC')">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL RETIRAISON -->
+<div class="ov" id="mRetiraison" onclick="closeM(event,'mRetiraison')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="width:40px;height:40px;border-radius:10px;background:#fde8e6;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🚚</div>
+      <div><div class="mt" style="margin-bottom:2px">Retiraison</div><div style="font-size:12px;color:var(--gris)">Un acheteur vient prendre du vin depuis une cuve</div></div>
+    </div>
+
+    <div class="fg"><label>Date *</label><input type="date" id="retDate"></div>
+    <div class="fg"><label>Cuve concernée *</label>
+      <select id="retCuve">
+        <option value="">— Choisir une cuve —</option>
+      </select>
+    </div>
+    <div id="retCuveInfo" style="display:none;background:var(--gris3);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px"></div>
+    <div class="row2">
+      <div class="fg"><label>Volume retiré (hL) *</label><input type="number" id="retVolume" placeholder="10" min="0.1" step="0.1" oninput="checkRetVolume()"></div>
+      <div class="fg"><label>Prix (€/hL)</label><input type="number" id="retPrix" placeholder="150" step="0.01"></div>
+    </div>
+    <div class="fg"><label>Acheteur *</label><input type="text" id="retAcheteur" placeholder="Nom du négociant, particulier…"></div>
+    <div class="fg"><label>Type de circuit</label>
+      <select id="retCircuit">
+        <option>Négoce en vrac</option>
+        <option>Vente directe particulier</option>
+        <option>CHR (restaurant, hôtel)</option>
+        <option>Cave coopérative</option>
+        <option>Grande distribution</option>
+        <option>Export</option>
+      </select>
+    </div>
+    <div class="fg"><label>Bon de livraison / Référence</label><input type="text" id="retRef" placeholder="Facultatif"></div>
+    <div class="fg"><label>Notes</label><textarea id="retNotes" placeholder="Observations…" style="min-height:50px"></textarea></div>
+    <div id="retAlert" class="al alr" style="display:none;margin-bottom:10px"><span class="al-i">⚠️</span><div id="retAlertTxt"></div></div>
+
+    <button class="btn btp" style="background:var(--rouge)" onclick="saveRetiraison()">🚚 Enregistrer la retiraison</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mRetiraison')">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL RELOGEMENT -->
+<div class="ov" id="mRelogement" onclick="closeM(event,'mRelogement')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="width:40px;height:40px;border-radius:10px;background:#d4e8f4;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🔄</div>
+      <div><div class="mt" style="margin-bottom:2px">Relogement</div><div style="font-size:12px;color:var(--gris)">Transfert de vin depuis une cuve vers une autre</div></div>
+    </div>
+
+    <div class="fg"><label>Date *</label><input type="date" id="relDate"></div>
+    <div class="row2">
+      <div class="fg"><label>Cuve source *</label>
+        <select id="relSource" onchange="updateRelSourceInfo()">
+          <option value="">— Cuve de départ —</option>
+        </select>
+      </div>
+      <div class="fg"><label>Cuve destination *</label>
+        <select id="relDest" onchange="updateRelDestInfo()">
+          <option value="">— Cuve d'arrivée —</option>
+        </select>
+      </div>
+    </div>
+    <div id="relSourceInfo" style="display:none;background:#fde8e6;border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:12px"></div>
+    <div id="relDestInfo" style="display:none;background:#d4e8f4;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px"></div>
+    <div class="fg"><label>Volume transféré (hL) *</label><input type="number" id="relVolume" placeholder="20" min="0.1" step="0.1" oninput="checkRelVolume()"></div>
+    <div id="relAlert" class="al alr" style="display:none;margin-bottom:10px"><span class="al-i">⚠️</span><div id="relAlertTxt"></div></div>
+    <div class="fg"><label>Motif</label>
+      <select id="relMotif">
+        <option>Soutirage</option>
+        <option>Assemblage</option>
+        <option>Mise en bouteille (préparation)</option>
+        <option>Libération cuve</option>
+        <option>Autre</option>
+      </select>
+    </div>
+    <div class="fg"><label>Notes</label><textarea id="relNotes" placeholder="Observations…" style="min-height:50px"></textarea></div>
+
+    <button class="btn btp" style="background:var(--bleu)" onclick="saveRelogement()">🔄 Enregistrer le relogement</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mRelogement')">Annuler</button>
   </div>
 </div>
 
@@ -1250,7 +1416,7 @@ const sb = supabase.createClient(SB_URL, SB_KEY);
 // ══════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════
-let DOM_ID=null, DOM=null, PARCS=[], TRAITS=[], STOCK=[], CUVES=[], VENTES=[];
+let DOM_ID=null, DOM=null, PARCS=[], TRAITS=[], STOCK=[], CUVES=[], VENTES=[], MOUVEMENTS=[];
 const AN = new Date().getFullYear().toString();
 
 // ══════════════════════════════════════════
@@ -1259,6 +1425,8 @@ const AN = new Date().getFullYear().toString();
 window.addEventListener('load', async () => {
   document.getElementById('tD').value = new Date().toISOString().split('T')[0];
   document.getElementById('rRe').value = new Date().toISOString().split('T')[0];
+  document.getElementById('retDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('relDate').value = new Date().toISOString().split('T')[0];
 
   // Timeout de sécurité — si rien en 8s, afficher onboarding
   const timeout = setTimeout(() => {
@@ -1286,18 +1454,20 @@ window.addEventListener('load', async () => {
 async function loadAll() {
   syncSaving();
   try {
-    const [p,t,s,c,v] = await Promise.all([
+    const [p,t,s,c,v,mv] = await Promise.all([
       sb.from('parcelles').select('*').eq('domaine_id',DOM_ID).order('code'),
       sb.from('traitements').select('*').eq('domaine_id',DOM_ID).order('date_application',{ascending:false}),
       sb.from('produits_phyto').select('*').eq('domaine_id',DOM_ID).eq('actif',true),
       sb.from('cuves').select('*').eq('domaine_id',DOM_ID),
       sb.from('ventes').select('*').eq('domaine_id',DOM_ID).order('created_at',{ascending:false}),
+      sb.from('mouvements_cave').select('*').eq('domaine_id',DOM_ID).order('date_mouvement',{ascending:false}).limit(100),
     ]);
     PARCS  = (p && p.data) ? p.data : [];
     TRAITS = (t && t.data) ? t.data : [];
     STOCK  = (s && s.data) ? s.data : [];
     CUVES  = (c && c.data) ? c.data : [];
     VENTES = (v && v.data) ? v.data : [];
+    MOUVEMENTS = (mv && mv.data) ? mv.data : [];
     syncOK();
   } catch(e) {
     console.error('loadAll error:', e);
@@ -1322,6 +1492,7 @@ function showApp() {
   updateSidebarNom();
   fillProfil();
   renderDash(); renderIFT(); renderStock('all'); renderRegistre(); fillSelects();
+  fillCuveSelects();
   loadPerso();
   // Remplir les selects des modals manuels
   fillObsSelects();
@@ -1924,31 +2095,462 @@ function renderRegistre(){
 }
 
 // ══════════════════════════════════════════
-//  CAVE
+//  CAVE — MOUVEMENTS (RETIRAISONS / RELOGEMENTS)
 // ══════════════════════════════════════════
-async function saveCuve(){
-  const nom=document.getElementById('cN').value.trim();if(!nom){toast('⚠️ Nom obligatoire');return;}
-  syncSaving();
-  try{
-    const {data,error}=await sb.from('cuves').insert({domaine_id:DOM_ID,nom,capacite_hl:parseFloat(document.getElementById('cCa').value)||null,contenu_actuel_hl:parseFloat(document.getElementById('cCo').value)||0,cuvee_nom:document.getElementById('cV').value,statut:'en_cours'}).select().single();
-    if(error)throw error;CUVES.push(data);syncOK();renderCave();toast('✅ Cuve enregistrée');closeM(null,'mAC');
-  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+let MOUVEMENTS = [];
+
+// Charger les mouvements depuis Supabase
+async function loadMouvements() {
+  try {
+    const { data } = await sb.from('mouvements_cave').select('*')
+      .eq('domaine_id', DOM_ID)
+      .order('date_mouvement', { ascending: false });
+    MOUVEMENTS = data || [];
+  } catch(e) {
+    console.error('loadMouvements:', e);
+    MOUVEMENTS = [];
+  }
 }
-async function saveVente(){
+
+// Icônes et labels types de cuve
+const CAVE_TYPE_ICONS = { inox:'🔵', acier:'⚙️', beton:'🟤', polyester:'🟡' };
+const CAVE_TYPE_LABELS = { inox:'Inox', acier:'Acier', beton:'Béton', polyester:'Polyester' };
+
+// ── SAVE CUVE ──────────────────────────────
+async function saveCuve() {
+  const nom = document.getElementById('cN').value.trim();
+  const cap = parseFloat(document.getElementById('cCa').value);
+  if (!nom) { toast('⚠️ Numéro/nom obligatoire'); return; }
+  if (!cap || cap <= 0) { toast('⚠️ Capacité obligatoire'); return; }
+
+  const contenu = parseFloat(document.getElementById('cCo').value) || 0;
+  if (contenu > cap) { toast('⚠️ Contenu ne peut pas dépasser la capacité'); return; }
+
+  const payload = {
+    domaine_id: DOM_ID,
+    nom,
+    type_cuve: document.getElementById('cType').value || 'inox',
+    capacite_hl: cap,
+    contenu_actuel_hl: contenu,
+    cepage: document.getElementById('cCepage').value.trim() || null,
+    millesime: parseInt(document.getElementById('cMillesime').value) || null,
+    degre: parseFloat(document.getElementById('cDegre').value) || null,
+    appellation: document.getElementById('cAppellation').value || null,
+    cuvee_nom: document.getElementById('cV').value.trim() || null,
+    notes: document.getElementById('cNotes').value.trim() || null,
+    statut: contenu > 0 ? 'en_cours' : 'vide',
+  };
+
   syncSaving();
-  const vol=parseFloat(document.getElementById('vVo').value)||0,prix=parseFloat(document.getElementById('vPx').value)||0;
-  try{
-    const {data,error}=await sb.from('ventes').insert({domaine_id:DOM_ID,cuvee_nom:document.getElementById('vVi').value,acheteur:document.getElementById('vAc').value,type_circuit:document.getElementById('vCi').value,volume_litres:vol,prix_litre:prix,montant_total:Math.round(vol*prix*100)/100,date_livraison:document.getElementById('vDa').value||null}).select().single();
-    if(error)throw error;VENTES.unshift(data);syncOK();renderCave();toast('✅ Vente enregistrée');closeM(null,'mNV');
-  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+  try {
+    const editId = document.getElementById('cEditId').value;
+    if (editId) {
+      const { data, error } = await sb.from('cuves').update(payload).eq('id', editId).select().single();
+      if (error) throw error;
+      const idx = CUVES.findIndex(c => c.id === editId);
+      if (idx >= 0) CUVES[idx] = data;
+    } else {
+      const { data, error } = await sb.from('cuves').insert(payload).select().single();
+      if (error) throw error;
+      CUVES.push(data);
+    }
+    syncOK();
+    renderCave();
+    fillCuveSelects();
+    toast(editId ? '✅ Cuve mise à jour' : '✅ Cuve enregistrée');
+    closeM(null, 'mAC');
+    resetCuveForm();
+  } catch(e) { syncErr(); toast('❌ Erreur : ' + e.message); }
 }
-function renderCave(){
-  const cl=document.getElementById('cVL');
-  if(!CUVES.length){cl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune cuve</div>';}
-  else{cl.innerHTML=`<div class="tw">${CUVES.map(c=>{const p=c.capacite_hl?Math.min(100,c.contenu_actuel_hl/c.capacite_hl*100):0;return`<div><div class="tank" style="height:68px"><div class="tf" style="height:${p}%;background:var(--raisin)"><div class="tl">${p.toFixed(0)}%</div></div></div><div class="tn">${c.nom}·${c.capacite_hl||'?'}hL</div></div>`;}).join('')}</div><div style="font-size:12px;color:var(--gris);margin-top:4px">Total : <b>${CUVES.reduce((s,c)=>s+(c.contenu_actuel_hl||0),0)} hL</b> / <b>${CUVES.reduce((s,c)=>s+(c.capacite_hl||0),0)} hL</b></div>`;}
-  const vl=document.getElementById('vL');
-  if(!VENTES.length){vl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune vente</div>';}
-  else{const ca=VENTES.reduce((s,v)=>s+(v.montant_total||0),0);vl.innerHTML=`<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--raisin);margin-bottom:10px">${ca.toLocaleString('fr-FR')} €</div>${VENTES.slice(0,5).map(v=>`<div class="nr"><div><div style="font-weight:600;font-size:14px">${v.acheteur||'—'}</div><div style="font-size:12px;color:var(--gris)">${v.cuvee_nom||'—'} · ${v.type_circuit||'—'}</div></div><div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--raisin);font-weight:600">${v.prix_litre||'—'} €/L</div><div style="font-size:11px;color:var(--gris)">${v.volume_litres||0} L · ${(v.montant_total||0).toLocaleString('fr-FR')} €</div></div></div>`).join('')}`;}
+
+function resetCuveForm() {
+  ['cN','cCa','cCo','cCepage','cMillesime','cDegre','cV','cNotes','cEditId'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('cType').value = 'inox';
+  document.getElementById('cAppellation').value = '';
+  document.getElementById('mACTitle').textContent = '+ Nouvelle cuve';
+}
+
+function editCuve(id) {
+  const c = CUVES.find(x => x.id === id); if (!c) return;
+  document.getElementById('cEditId').value = id;
+  document.getElementById('mACTitle').textContent = '✏️ Modifier la cuve';
+  document.getElementById('cN').value = c.nom || '';
+  document.getElementById('cType').value = c.type_cuve || 'inox';
+  document.getElementById('cCa').value = c.capacite_hl || '';
+  document.getElementById('cCo').value = c.contenu_actuel_hl || 0;
+  document.getElementById('cCepage').value = c.cepage || '';
+  document.getElementById('cMillesime').value = c.millesime || '';
+  document.getElementById('cDegre').value = c.degre || '';
+  document.getElementById('cAppellation').value = c.appellation || '';
+  document.getElementById('cV').value = c.cuvee_nom || '';
+  document.getElementById('cNotes').value = c.notes || '';
+  showM('mAC');
+}
+
+async function deleteCuve(id, nom) {
+  if (!confirm(`Supprimer la cuve "${nom}" ?\nTout l'historique des mouvements associés sera également supprimé.`)) return;
+  syncSaving();
+  try {
+    await sb.from('mouvements_cave').delete().or(`cuve_source_id.eq.${id},cuve_dest_id.eq.${id}`);
+    const { error } = await sb.from('cuves').delete().eq('id', id);
+    if (error) throw error;
+    CUVES = CUVES.filter(c => c.id !== id);
+    MOUVEMENTS = MOUVEMENTS.filter(m => m.cuve_source_id !== id && m.cuve_dest_id !== id);
+    syncOK(); renderCave(); fillCuveSelects();
+    toast(`🗑️ Cuve "${nom}" supprimée`);
+  } catch(e) { syncErr(); toast('❌ ' + e.message); }
+}
+
+// ── RETIRAISON ─────────────────────────────
+function checkRetVolume() {
+  const cuveId = document.getElementById('retCuve').value;
+  const vol = parseFloat(document.getElementById('retVolume').value) || 0;
+  const cuve = CUVES.find(c => c.id === cuveId);
+  const al = document.getElementById('retAlert');
+  if (!al) return;
+  if (cuve && vol > (cuve.contenu_actuel_hl || 0)) {
+    al.style.display = 'flex';
+    document.getElementById('retAlertTxt').innerHTML = `Volume demandé (${vol} hL) > contenu actuel (${cuve.contenu_actuel_hl} hL)`;
+  } else {
+    al.style.display = 'none';
+  }
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'retCuve') {
+    const cuveId = e.target.value;
+    const cuve = CUVES.find(c => c.id === cuveId);
+    const info = document.getElementById('retCuveInfo');
+    if (info) {
+      if (cuve) {
+        info.style.display = 'block';
+        const ic = CAVE_TYPE_ICONS[cuve.type_cuve] || '🍷';
+        info.innerHTML = `${ic} <b>${cuve.nom}</b> · Contenu : <b>${cuve.contenu_actuel_hl || 0} / ${cuve.capacite_hl || '?'} hL</b>
+          ${cuve.cepage ? ` · ${cuve.cepage}` : ''}${cuve.millesime ? ` ${cuve.millesime}` : ''}${cuve.degre ? ` · ${cuve.degre}°` : ''}${cuve.appellation ? ` · ${cuve.appellation}` : ''}`;
+      } else {
+        info.style.display = 'none';
+      }
+    }
+  }
+});
+
+async function saveRetiraison() {
+  const cuveId = document.getElementById('retCuve').value;
+  const vol = parseFloat(document.getElementById('retVolume').value);
+  const acheteur = document.getElementById('retAcheteur').value.trim();
+  const date = document.getElementById('retDate').value;
+  if (!cuveId || !vol || !acheteur || !date) { toast('⚠️ Cuve, volume, acheteur et date obligatoires'); return; }
+  const cuve = CUVES.find(c => c.id === cuveId);
+  if (!cuve) { toast('⚠️ Cuve introuvable'); return; }
+  if (vol > (cuve.contenu_actuel_hl || 0)) { toast(`⚠️ Volume trop élevé — max ${cuve.contenu_actuel_hl} hL`); return; }
+
+  const prix = parseFloat(document.getElementById('retPrix').value) || null;
+  const montant = prix ? Math.round(vol * prix * 100) / 100 : null;
+  syncSaving();
+  try {
+    // 1. Enregistrer le mouvement
+    const { data: mvt, error: e1 } = await sb.from('mouvements_cave').insert({
+      domaine_id: DOM_ID,
+      type_mouvement: 'retiraison',
+      date_mouvement: date,
+      cuve_source_id: cuveId,
+      cuve_source_nom: cuve.nom,
+      volume_hl: vol,
+      acheteur,
+      type_circuit: document.getElementById('retCircuit').value,
+      prix_hl: prix,
+      montant_total: montant,
+      reference: document.getElementById('retRef').value.trim() || null,
+      notes: document.getElementById('retNotes').value.trim() || null,
+      cepage: cuve.cepage,
+      millesime: cuve.millesime,
+      degre: cuve.degre,
+      appellation: cuve.appellation,
+    }).select().single();
+    if (e1) throw e1;
+
+    // 2. Mettre à jour le contenu de la cuve
+    const newContenu = Math.max(0, (cuve.contenu_actuel_hl || 0) - vol);
+    const newStatut = newContenu === 0 ? 'vide' : 'en_cours';
+    const { error: e2 } = await sb.from('cuves').update({ contenu_actuel_hl: newContenu, statut: newStatut }).eq('id', cuveId);
+    if (e2) throw e2;
+
+    cuve.contenu_actuel_hl = newContenu;
+    cuve.statut = newStatut;
+    MOUVEMENTS.unshift(mvt);
+    syncOK(); renderCave(); renderMouvements('all');
+    toast(`✅ Retiraison enregistrée — Cuve ${cuve.nom} : ${newContenu} hL restants`);
+    closeM(null, 'mRetiraison');
+    resetRetiraisonForm();
+  } catch(e) { syncErr(); toast('❌ Erreur : ' + e.message); }
+}
+
+function resetRetiraisonForm() {
+  ['retDate','retVolume','retPrix','retAcheteur','retRef','retNotes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('retCuve').value = '';
+  const info = document.getElementById('retCuveInfo'); if (info) info.style.display = 'none';
+  const al = document.getElementById('retAlert'); if (al) al.style.display = 'none';
+  document.getElementById('retDate').value = new Date().toISOString().split('T')[0];
+}
+
+// ── RELOGEMENT ─────────────────────────────
+function updateRelSourceInfo() {
+  const id = document.getElementById('relSource').value;
+  const c = CUVES.find(x => x.id === id);
+  const el = document.getElementById('relSourceInfo');
+  if (!el) return;
+  if (c) {
+    el.style.display = 'block';
+    el.innerHTML = `🚪 <b>Départ :</b> ${c.nom} · ${c.contenu_actuel_hl || 0} hL disponibles${c.cepage ? ' · ' + c.cepage : ''}${c.millesime ? ' ' + c.millesime : ''}`;
+  } else { el.style.display = 'none'; }
+}
+
+function updateRelDestInfo() {
+  const id = document.getElementById('relDest').value;
+  const c = CUVES.find(x => x.id === id);
+  const el = document.getElementById('relDestInfo');
+  if (!el) return;
+  if (c) {
+    const dispo = (c.capacite_hl || 0) - (c.contenu_actuel_hl || 0);
+    el.style.display = 'block';
+    el.innerHTML = `🏠 <b>Arrivée :</b> ${c.nom} · Disponible : <b>${dispo.toFixed(1)} hL</b> (${c.contenu_actuel_hl || 0} / ${c.capacite_hl || '?'} hL)`;
+  } else { el.style.display = 'none'; }
+}
+
+function checkRelVolume() {
+  const srcId = document.getElementById('relSource').value;
+  const dstId = document.getElementById('relDest').value;
+  const vol = parseFloat(document.getElementById('relVolume').value) || 0;
+  const src = CUVES.find(c => c.id === srcId);
+  const dst = CUVES.find(c => c.id === dstId);
+  const al = document.getElementById('relAlert');
+  if (!al) return;
+  const errs = [];
+  if (src && vol > (src.contenu_actuel_hl || 0)) errs.push(`Volume > contenu source (${src.contenu_actuel_hl} hL)`);
+  if (dst && vol > ((dst.capacite_hl || 0) - (dst.contenu_actuel_hl || 0))) errs.push(`Volume > place disponible dans la cuve destination (${((dst.capacite_hl||0)-(dst.contenu_actuel_hl||0)).toFixed(1)} hL)`);
+  if (srcId && dstId && srcId === dstId) errs.push('Source et destination identiques');
+  if (errs.length) { al.style.display = 'flex'; document.getElementById('relAlertTxt').innerHTML = errs.join('<br>'); }
+  else { al.style.display = 'none'; }
+}
+
+async function saveRelogement() {
+  const srcId = document.getElementById('relSource').value;
+  const dstId = document.getElementById('relDest').value;
+  const vol = parseFloat(document.getElementById('relVolume').value);
+  const date = document.getElementById('relDate').value;
+  if (!srcId || !dstId || !vol || !date) { toast('⚠️ Cuves, volume et date obligatoires'); return; }
+  if (srcId === dstId) { toast('⚠️ Source et destination identiques'); return; }
+  const src = CUVES.find(c => c.id === srcId);
+  const dst = CUVES.find(c => c.id === dstId);
+  if (!src || !dst) { toast('⚠️ Cuve introuvable'); return; }
+  if (vol > (src.contenu_actuel_hl || 0)) { toast(`⚠️ Volume trop élevé — max ${src.contenu_actuel_hl} hL dans ${src.nom}`); return; }
+  const dispo = (dst.capacite_hl || 0) - (dst.contenu_actuel_hl || 0);
+  if (vol > dispo) { toast(`⚠️ Capacité insuffisante — ${dispo.toFixed(1)} hL disponibles dans ${dst.nom}`); return; }
+
+  syncSaving();
+  try {
+    const { data: mvt, error: e1 } = await sb.from('mouvements_cave').insert({
+      domaine_id: DOM_ID,
+      type_mouvement: 'relogement',
+      date_mouvement: date,
+      cuve_source_id: srcId,
+      cuve_source_nom: src.nom,
+      cuve_dest_id: dstId,
+      cuve_dest_nom: dst.nom,
+      volume_hl: vol,
+      motif: document.getElementById('relMotif').value,
+      notes: document.getElementById('relNotes').value.trim() || null,
+      cepage: src.cepage,
+      millesime: src.millesime,
+      degre: src.degre,
+      appellation: src.appellation,
+    }).select().single();
+    if (e1) throw e1;
+
+    const newSrc = Math.max(0, (src.contenu_actuel_hl || 0) - vol);
+    const newDst = (dst.contenu_actuel_hl || 0) + vol;
+    await sb.from('cuves').update({ contenu_actuel_hl: newSrc, statut: newSrc === 0 ? 'vide' : 'en_cours' }).eq('id', srcId);
+    await sb.from('cuves').update({ contenu_actuel_hl: newDst, statut: 'en_cours' }).eq('id', dstId);
+    src.contenu_actuel_hl = newSrc; src.statut = newSrc === 0 ? 'vide' : 'en_cours';
+    dst.contenu_actuel_hl = newDst; dst.statut = 'en_cours';
+    MOUVEMENTS.unshift(mvt);
+    syncOK(); renderCave(); renderMouvements('all');
+    toast(`✅ Relogement : ${vol} hL de ${src.nom} → ${dst.nom}`);
+    closeM(null, 'mRelogement');
+    resetRelogementForm();
+  } catch(e) { syncErr(); toast('❌ Erreur : ' + e.message); }
+}
+
+function resetRelogementForm() {
+  ['relDate','relVolume','relNotes'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('relSource').value = '';
+  document.getElementById('relDest').value = '';
+  ['relSourceInfo','relDestInfo'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+  document.getElementById('relAlert').style.display = 'none';
+  document.getElementById('relDate').value = new Date().toISOString().split('T')[0];
+}
+
+// ── RENDER CAVE ────────────────────────────
+function renderCave() {
+  // Stats
+  const nbCuves = CUVES.length;
+  const totalCap = CUVES.reduce((s,c) => s+(c.capacite_hl||0), 0);
+  const totalCont = CUVES.reduce((s,c) => s+(c.contenu_actuel_hl||0), 0);
+  const taux = totalCap > 0 ? Math.round(totalCont/totalCap*100) : 0;
+  document.getElementById('cvNbCuves').textContent = nbCuves || '—';
+  document.getElementById('cvTotalCap').textContent = totalCap ? totalCap + ' hL' : '— hL';
+  document.getElementById('cvTotalCont').textContent = totalCont ? totalCont.toFixed(1) + ' hL' : '— hL';
+  document.getElementById('cvTauxRemplissage').textContent = totalCap ? taux + '%' : '—%';
+
+  // Liste cuves
+  const cl = document.getElementById('cVL');
+  if (!CUVES.length) {
+    cl.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune cuve<br><span style="font-size:11px">Cliquez sur "+ Ajouter cuve" pour commencer</span></div>';
+  } else {
+    cl.innerHTML = CUVES.map(c => {
+      const pct = c.capacite_hl ? Math.min(100, (c.contenu_actuel_hl||0)/c.capacite_hl*100) : 0;
+      const col = pct >= 80 ? 'var(--raisin)' : pct >= 40 ? 'var(--bleu)' : pct > 0 ? 'var(--or)' : 'var(--gris2)';
+      const ic = CAVE_TYPE_ICONS[c.type_cuve] || '🍷';
+      const label = CAVE_TYPE_LABELS[c.type_cuve] || c.type_cuve;
+      return `<div style="background:var(--gris3);border-radius:14px;padding:14px;margin-bottom:10px;position:relative">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px;flex:1">
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:var(--sh)">${ic}</div>
+            <div>
+              <div style="font-weight:700;font-size:15px;color:var(--terre)">${c.nom}</div>
+              <div style="font-size:11px;color:var(--gris);margin-top:2px">${label}${c.appellation ? ' · ' + c.appellation : ''}${c.cepage ? ' · ' + c.cepage : ''}${c.millesime ? ' ' + c.millesime : ''}${c.degre ? ' · ' + c.degre + '°' : ''}</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:${col};line-height:1">${(c.contenu_actuel_hl||0).toFixed(1)}</div>
+            <div style="font-size:11px;color:var(--gris)">/ ${c.capacite_hl || '?'} hL</div>
+          </div>
+        </div>
+        <!-- Barre de remplissage -->
+        <div style="height:8px;background:var(--gris2);border-radius:4px;margin:10px 0 6px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${col};border-radius:4px;transition:width 1s ease"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:11px;color:${col};font-weight:700">${pct.toFixed(0)}% plein${c.cuvee_nom ? ' · ' + c.cuvee_nom : ''}</div>
+          <div style="display:flex;gap:6px">
+            <button onclick="showMvtCuve('${c.id}')" style="background:var(--card);border:1px solid var(--gris2);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;color:var(--gris)">📋 Historique</button>
+            <button onclick="editCuve('${c.id}')" style="background:var(--card);border:1px solid var(--gris2);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;color:var(--gris)">✏️</button>
+            <button onclick="deleteCuve('${c.id}','${c.nom.replace(/'/g,'')}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:4px;color:var(--gris)">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Ventes
+  const vl = document.getElementById('vL');
+  if (!VENTES.length) {
+    vl.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune vente</div>';
+  } else {
+    const ca = VENTES.reduce((s,v)=>s+(v.montant_total||0),0);
+    vl.innerHTML = `<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--raisin);margin-bottom:10px">${ca.toLocaleString('fr-FR')} €</div>
+    ${VENTES.slice(0,5).map(v=>`<div class="nr"><div><div style="font-weight:600;font-size:14px">${v.acheteur||'—'}</div><div style="font-size:12px;color:var(--gris)">${v.cuvee_nom||'—'} · ${v.type_circuit||'—'}</div></div><div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--raisin);font-weight:600">${v.prix_litre||'—'} €/L</div><div style="font-size:11px;color:var(--gris)">${v.volume_litres||0} L · ${(v.montant_total||0).toLocaleString('fr-FR')} €</div></div></div>`).join('')}`;
+  }
+
+  renderMouvements('all');
+}
+
+function renderMouvements(filter) {
+  const list = document.getElementById('mvtList');
+  // Sync boutons filtre
+  ['mvfAll','mvfRet','mvfRel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = 'btn btghost btsm';
+  });
+  const activeBtn = { all: 'mvfAll', retiraison: 'mvfRet', relogement: 'mvfRel' }[filter];
+  if (activeBtn) { const el = document.getElementById(activeBtn); if(el) el.className = 'btn btgold btsm'; }
+
+  const items = filter === 'all' ? MOUVEMENTS : MOUVEMENTS.filter(m => m.type_mouvement === filter);
+  if (!items.length) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun mouvement enregistré</div>';
+    return;
+  }
+  list.innerHTML = items.slice(0, 20).map(m => {
+    const isRet = m.type_mouvement === 'retiraison';
+    const ic = isRet ? '🚚' : '🔄';
+    const col = isRet ? 'var(--rouge)' : 'var(--bleu)';
+    const bgCol = isRet ? '#fde8e6' : '#d4e8f4';
+    const titre = isRet
+      ? `Retiraison — ${m.acheteur || '—'}`
+      : `Relogement — ${m.cuve_source_nom || '—'} → ${m.cuve_dest_nom || '—'}`;
+    const sous = isRet
+      ? `${m.date_mouvement} · ${m.cuve_source_nom || '—'} · ${m.type_circuit || '—'}${m.prix_hl ? ' · ' + m.prix_hl + ' €/hL' : ''}`
+      : `${m.date_mouvement} · ${m.motif || '—'}`;
+    const infoProd = [m.cepage, m.millesime ? m.millesime + '' : null, m.degre ? m.degre + '°' : null, m.appellation].filter(Boolean).join(' · ');
+    return `<div class="li" style="align-items:flex-start">
+      <div class="lic" style="background:${bgCol}">${ic}</div>
+      <div class="lib">
+        <div class="lit" style="color:${col}">${titre}</div>
+        <div class="lim">${sous}</div>
+        ${infoProd ? `<div style="font-size:11px;color:var(--gris);margin-top:2px">${infoProd}</div>` : ''}
+        ${m.notes ? `<div style="font-size:11px;color:var(--gris);font-style:italic;margin-top:2px">${m.notes}</div>` : ''}
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:${col}">${m.volume_hl} hL</div>
+        ${m.montant_total ? `<div style="font-size:11px;color:var(--gris)">${m.montant_total.toLocaleString('fr-FR')} €</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterMvt(filter, btn) {
+  renderMouvements(filter);
+}
+
+function showMvtCuve(cuveId) {
+  const cuve = CUVES.find(c => c.id === cuveId);
+  if (!cuve) return;
+  const mvts = MOUVEMENTS.filter(m => m.cuve_source_id === cuveId || m.cuve_dest_id === cuveId);
+  const ic = CAVE_TYPE_ICONS[cuve.type_cuve] || '🍷';
+  document.getElementById('mPDT').textContent = `${ic} ${cuve.nom} — Historique`;
+  document.getElementById('mPDC').innerHTML = `
+    <div style="background:linear-gradient(135deg,var(--raisin),#3a0a20);border-radius:12px;padding:14px;color:#fff;text-align:center;margin-bottom:14px">
+      <div style="font-size:11px;opacity:.6;text-transform:uppercase;margin-bottom:4px">${CAVE_TYPE_LABELS[cuve.type_cuve]||''} · ${cuve.appellation||''}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;line-height:1">${(cuve.contenu_actuel_hl||0).toFixed(1)} hL</div>
+      <div style="font-size:13px;opacity:.7">/ ${cuve.capacite_hl||'?'} hL${cuve.cepage ? ' · ' + cuve.cepage : ''}${cuve.millesime ? ' ' + cuve.millesime : ''}${cuve.degre ? ' · ' + cuve.degre + '°' : ''}</div>
+    </div>
+    ${!mvts.length
+      ? '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun mouvement enregistré pour cette cuve</div>'
+      : mvts.map(m => {
+          const isRet = m.type_mouvement === 'retiraison';
+          const isArrivee = m.cuve_dest_id === cuveId && !isRet;
+          const ic2 = isRet ? '🚚' : (isArrivee ? '📥' : '📤');
+          const col = isRet ? 'var(--rouge)' : (isArrivee ? 'var(--vert2)' : 'var(--bleu)');
+          const bg = isRet ? '#fde8e6' : (isArrivee ? '#d4edda' : '#d4e8f4');
+          const titre = isRet
+            ? `Retiraison → ${m.acheteur||'—'}`
+            : (isArrivee ? `Relogement reçu de ${m.cuve_source_nom||'—'}` : `Relogement vers ${m.cuve_dest_nom||'—'}`);
+          return `<div class="li"><div class="lic" style="background:${bg}">${ic2}</div>
+            <div class="lib"><div class="lit">${titre}</div>
+            <div class="lim">${m.date_mouvement}${m.motif ? ' · ' + m.motif : ''}</div></div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:${col}">${m.volume_hl} hL</div></div>`;
+        }).join('')
+    }`;
+  showM('mPD');
+}
+
+// Remplir les selects de cuves dans les modals
+function fillCuveSelects() {
+  ['retCuve','relSource','relDest'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const label = id === 'retCuve' ? '— Choisir une cuve —'
+      : id === 'relSource' ? '— Cuve de départ —'
+      : '— Cuve d\'arrivée —';
+    sel.innerHTML = `<option value="">${label}</option>`;
+    CUVES.forEach(c => {
+      const ic = CAVE_TYPE_ICONS[c.type_cuve] || '🍷';
+      const info = c.contenu_actuel_hl != null ? ` (${c.contenu_actuel_hl}/${c.capacite_hl||'?'} hL)` : '';
+      sel.innerHTML += `<option value="${c.id}">${ic} ${c.nom}${info}${c.cepage ? ' · ' + c.cepage : ''}${c.millesime ? ' ' + c.millesime : ''}</option>`;
+    });
+  });
 }
 
 // ══════════════════════════════════════════
