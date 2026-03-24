@@ -363,7 +363,6 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <button class="sb-tab" onclick="go('sScan',this)" id="sb-sScan"><span class="sb-tab-icon">📷</span>Scan IA</button>
     <button class="sb-tab" onclick="go('sStock',this)" id="sb-sStock"><span class="sb-tab-icon">🧪</span>Stock</button>
     <button class="sb-tab" onclick="go('sCarto',this)" id="sb-sCarto"><span class="sb-tab-icon">🗺️</span>Parcelles</button>
-    <button class="sb-tab" onclick="" id="sb-sParc" style="display:none"><span class="sb-tab-icon">📋</span><span id="sb-sParc-nom">Fiche parcelle</span></button>
     <button class="sb-tab" onclick="go('sMeteo',this)" id="sb-sMeteo"><span class="sb-tab-icon">🌤️</span>Météo</button>
     <button class="sb-tab" onclick="go('sRegistre',this)" id="sb-sRegistre"><span class="sb-tab-icon">📋</span>Registre</button>
     <button class="sb-tab" onclick="go('sCave',this)" id="sb-sCave"><span class="sb-tab-icon">🍷</span>Cave</button>
@@ -613,102 +612,14 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <div id="cL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter manuellement</button></div></div>
   <button class="btn btp" onclick="showM('mAP')" style="margin-top:4px">+ Ajouter une parcelle manuellement</button>
 </section>
-<!-- FICHE PARCELLE -->
-<section id="sParc" class="sec">
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-    <button class="btn btghost btsm" onclick="go('sCarto',document.getElementById('sb-sCarto'))">← Retour</button>
-    <div class="stitle" id="sParcTitle" style="margin-bottom:0">Fiche parcelle</div>
-  </div>
-
-  <!-- EN-TÊTE IFT -->
-  <div id="sParcIFT" style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);border-radius:18px;padding:18px;color:#fff;margin-bottom:14px;box-shadow:0 6px 24px rgba(28,61,28,.35)">
-    <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px">IFT cumulé campagne en cours</div>
-    <div style="display:flex;align-items:flex-end;justify-content:space-between">
-      <div>
-        <div id="sParcIFTVal" style="font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:700;line-height:1">—</div>
-        <div id="sParcIFTSub" style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">sur 4,0 référence HVE</div>
-      </div>
-      <div style="text-align:right">
-        <div id="sParcBadge" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(255,255,255,.15)">—</div>
-        <button class="btn btgold btsm" style="margin-top:10px" onclick="saisirTraitementParc()">+ Traitement</button>
-      </div>
-    </div>
-    <div style="height:8px;background:rgba(255,255,255,.15);border-radius:4px;margin-top:12px;overflow:hidden">
-      <div id="sParcIFTBar" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#4a8a42,#6db865);transition:width 1.2s ease;width:0%"></div>
-    </div>
-  </div>
-
-  <!-- INFOS PARCELLE -->
-  <div class="card" id="sParcInfos">
-    <div class="ch"><span class="ct">📍 Informations parcelle</span>
-      <div style="display:flex;gap:6px">
-        <button class="btn btghost btsm" onclick="showM('mSousParc')">✂️ Sous-parcelle</button>
-      </div>
-    </div>
-    <div id="sParcInfosContent"></div>
-  </div>
-
-  <!-- TRAITEMENTS -->
-  <div class="card">
-    <div class="ch">
-      <span class="ct">🌿 Traitements</span>
-      <button class="btn btgold btsm" onclick="saisirTraitementParc()">+ Nouveau</button>
-    </div>
-    <div id="sParcTraits"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement sur cette parcelle</div></div>
-  </div>
-
-  <!-- OBSERVATIONS -->
-  <div class="card">
-    <div class="ch">
-      <span class="ct">👁️ Observations</span>
-      <button class="btn btghost btsm" onclick="showM('mAddObs')">+ Ajouter</button>
-    </div>
-    <div id="sParcObs"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune observation</div></div>
-  </div>
-
-  <button class="btn btghost" style="width:100%;margin-top:4px" onclick="go('sCarto',document.getElementById('sb-sCarto'))">← Retour aux parcelles</button>
-</section>
 <!-- MÉTÉO -->
 <section id="sMeteo" class="sec">
-  <div class="stitle">Météo & risques phyto</div>
-  <div class="ssub" id="mS">Puisserguier · Hérault · Données Open-Meteo</div>
-
-  <!-- ALERTES RISQUES -->
-  <div id="mAlertes"></div>
-
-  <!-- PRÉVISION 7 JOURS -->
-  <div class="card">
-    <div class="ch"><span class="ct">Prévision 7 jours</span><button class="btn btghost btsm" onclick="loadMeteo()">🔄</button></div>
-    <div class="ms" id="mSt">
-      <div style="font-size:13px;color:var(--gris);padding:16px;text-align:center">Chargement…</div>
-    </div>
-  </div>
-
-  <!-- DÉTAIL AUJOURD'HUI -->
-  <div class="card" id="mDetailCard" style="display:none">
-    <div class="ch"><span class="ct" id="mDetailTitre">Aujourd'hui</span></div>
-    <div id="mDetail"></div>
-  </div>
-
-  <!-- MODÈLE RISQUE MILDIOU -->
-  <div class="card">
-    <div class="ch"><span class="ct">🍄 Modèle risque mildiou</span><span class="badge bb">EPI simplifié</span></div>
-    <div id="mMildiou" style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Chargement…</div>
-  </div>
-
-  <!-- MODÈLE RISQUE OÏDIUM -->
-  <div class="card">
-    <div class="ch"><span class="ct">⚪ Modèle risque oïdium</span></div>
-    <div id="mOidium" style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Chargement…</div>
-  </div>
-
-  <!-- CRÉNEAUX TRAITEMENT -->
-  <div class="card">
-    <div class="ch"><span class="ct">🕐 Créneaux traitement</span><span class="badge bb">Restriction horaire</span></div>
-    <div id="mCreneaux">
-      <div class="li"><div class="lic" style="background:#d4edda">✅</div><div class="lib"><div class="lit">Matin 6h–11h</div><div class="lim">Privilégier les traitements tôt le matin</div></div><span class="badge bg">Idéal</span></div>
-      <div class="li"><div class="lic" style="background:#fde8c8">⚠️</div><div class="lib"><div class="lit">Après-midi par forte chaleur</div><div class="lim">Risque évaporation et dérive</div></div><span class="badge bo">Déconseillé</span></div>
-    </div>
+  <div class="stitle">Météo & risques phyto</div><div class="ssub" id="mS">Localisation automatique</div>
+  <div class="al alo"><span class="al-i">🍄</span><div><b>Risque mildiou — surveiller</b>Conditions à risque selon modèle EPI.</div></div>
+  <div class="card"><div class="ch"><span class="ct">Prévision 7 jours</span></div><div class="ms" id="mSt"><div class="md today"><div class="mdl">Auj.</div><div class="mdi">⛅</div><div class="mdt">—°C</div><div class="mdp">—mm</div></div></div></div>
+  <div class="card"><div class="ch"><span class="ct">Créneaux traitement</span><span class="badge bb">Restriction horaire</span></div>
+    <div class="li"><div class="lic" style="background:#d4edda">✅</div><div class="lib"><div class="lit">Matin 6h–11h</div><div class="lim">Privilégier les traitements tôt le matin</div></div><span class="badge bg">Idéal</span></div>
+    <div class="li"><div class="lic" style="background:#fde8c8">⚠️</div><div class="lib"><div class="lit">Après-midi par forte chaleur</div><div class="lim">Risque évaporation et dérive</div></div><span class="badge bo">Déconseillé</span></div>
   </div>
 </section>
 <!-- REGISTRE -->
@@ -1200,22 +1111,6 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   </div>
 </div>
 
-<div class="ov" id="mSousParc" onclick="closeM(event,'mSousParc')">
-  <div class="mo2" onclick="event.stopPropagation()">
-    <div class="mh"></div><div class="mt">✂️ Ajouter une sous-parcelle</div>
-    <div class="al alb" style="margin-bottom:14px"><span class="al-i">ℹ️</span><div>La sous-parcelle héritera des coordonnées GPS de l'îlot parent. Elle apparaîtra comme une parcelle indépendante dans votre registre.</div></div>
-    <div class="fg"><label>Code *</label><input type="text" id="spCode" placeholder="Ex : I11P1S2"></div>
-    <div class="fg"><label>Cépage *</label><input type="text" id="spCepage" placeholder="Ex : Pinot Noir N"></div>
-    <div class="row2">
-      <div class="fg"><label>Surface (ha)</label><div class="ig"><input type="number" id="spSurface" step="0.01" placeholder="0.50"><span class="isuf">ha</span></div></div>
-      <div class="fg"><label>Couleur</label><select id="spCouleur"><option>Noir</option><option>Blanc</option><option>Rosé</option></select></div>
-    </div>
-    <div class="fg"><label>AOC / Produit</label><input type="text" id="spAOC" placeholder="Pays d'Oc, AOP…"></div>
-    <button class="btn btp" onclick="saveSousParcelle()">💾 Créer la sous-parcelle</button>
-    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mSousParc')">Annuler</button>
-  </div>
-</div>
-
 <div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/fflate@0.8.2/umd/index.js"></script>
@@ -1473,13 +1368,11 @@ function go(id, btn) {
     sDash:'🏠 Accueil', sTrait:'🌿 Traitement', sIFT:'📊 IFT',
     sScan:'📷 Scan IA', sStock:'🧪 Stock phytosanitaire',
     sCarto:'🗺️ Parcelles', sMeteo:'🌤️ Météo', sRegistre:'📋 Registre',
-    sCave:'🍷 Cave & Négoce', sHVE:'🏅 HVE / AB', sConseil:'💡 Conseils associations', sPerso:'⚙️ Personnaliser',
-    sParc:'📋 Fiche parcelle'
+    sCave:'🍷 Cave & Négoce', sHVE:'🏅 HVE / AB', sConseil:'💡 Conseils associations', sPerso:'⚙️ Personnaliser'
   };
   const tbEl = document.getElementById('tbTitle');
   if (tbEl) tbEl.textContent = titles[id] || '';
   if (id === 'sCarto') initMap();
-  if (id === 'sMeteo') loadMeteo();
   if (id === 'sIFT') renderIFT();
   if (id === 'sHVE') calcHVE();
   if (id === 'sCave') renderCave();
@@ -1574,10 +1467,7 @@ function renderIFT() {
     return`<div class="pc ${pst}" onclick="showPD('${p.code}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
         <div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:1px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${nb} traitement(s)</div></div>
-        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1;color:${col}">${v.toFixed(1).replace('.',',')} <span style="font-size:13px;color:var(--gris);font-weight:400">/ ${ref}</span></div>
-          <button class="btn btgold btsm" onclick="event.stopPropagation();traiterParc('${p.code}')">🌿 Traiter</button>
-        </div>
+        <div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1;color:${col}">${v.toFixed(1).replace('.',',')} <span style="font-size:13px;color:var(--gris);font-weight:400">/ ${ref}</span></div></div>
       </div>
       <div class="pb"><div class="pbf" style="width:${pct}%;background:${col}"></div><div class="pbr" style="left:${(4/4.8*100).toFixed(0)}%"></div></div>
       <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10.5px">
@@ -1593,417 +1483,29 @@ function renderIFT() {
 }
 
 function showPD(code) {
-  const p = PARCS.find(x => x.code === code); if (!p) return;
-  const v = iftP(code), col = iftCol(iftSt(v));
-  const ts = TRAITS.filter(t => t.parcelle_code === code).sort((a,b) => b.date_application.localeCompare(a.date_application));
-
-  // Mettre à jour la sidebar
-  const sbParc = document.getElementById('sb-sParc');
-  if (sbParc) { sbParc.style.display = 'flex'; }
-  const sbParcNom = document.getElementById('sb-sParc-nom');
-  if (sbParcNom) sbParcNom.textContent = p.nom;
-
-  // Titre
-  document.getElementById('sParcTitle').textContent = `${p.code} · ${p.nom}`;
-
-  // IFT
-  const pct = Math.min(100, v / 4.8 * 100);
-  document.getElementById('sParcIFTVal').textContent = v.toFixed(2).replace('.', ',');
-  document.getElementById('sParcIFTVal').style.color = col;
-  document.getElementById('sParcIFTSub').textContent = `sur 4,0 référence · ${(v/4*100).toFixed(0)}% utilisé`;
-  const badge = document.getElementById('sParcBadge');
-  badge.textContent = iftSt(v) === 'ok' ? '✓ Conforme HVE' : iftSt(v) === 'warn' ? '⚠️ Proche limite' : '🚨 Dépassé';
-  badge.style.background = col;
-  setTimeout(() => { document.getElementById('sParcIFTBar').style.width = pct + '%'; document.getElementById('sParcIFTBar').style.background = `linear-gradient(90deg,${col},${col}88)`; }, 100);
-
-  // Infos
-  document.getElementById('sParcInfosContent').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-      <div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Surface</div><div style="font-weight:700;font-size:16px">${p.surface_ha || '—'} ha</div></div>
-      <div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Cépage</div><div style="font-weight:700;font-size:16px">${p.cepage || '—'}</div></div>
-      <div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Commune</div><div style="font-weight:600">${p.commune || '—'}</div></div>
-      <div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Couleur</div><div style="font-weight:600">${p.couleur || '—'}</div></div>
-      ${p.produit_aoc ? `<div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">AOC / Produit</div><div style="font-weight:600">${p.produit_aoc}</div></div>` : ''}
-      ${p.ref_cadastrale ? `<div><div style="font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Cadastre</div><div style="font-weight:600;font-size:12px">${p.ref_cadastrale}</div></div>` : ''}
-    </div>`;
-
-  // Traitements
-  const traitsEl = document.getElementById('sParcTraits');
-  traitsEl.innerHTML = ts.length ? ts.map(t => `
-    <div class="li">
-      <div class="lic" style="background:#fde8c8">🌿</div>
-      <div class="lib">
-        <div class="lit">${t.produit_nom || '—'}</div>
-        <div class="lim">${t.date_application} · ${t.dose_appliquee || '—'} ${t.dose_unite || 'kg/ha'} · BBCH ${t.bbch || '—'}</div>
-        <div style="font-size:11px;color:var(--gris);margin-top:2px">${t.dose_appliquee} ÷ ${t.dose_reference} = <b style="color:var(--vigne)">IFT ${(t.ift||0).toFixed(2)}</b></div>
-      </div>
-      <button onclick="delTrait('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gris);padding:4px;flex-shrink:0">🗑️</button>
-    </div>`).join('') : '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement sur cette parcelle</div>';
-
-  // Charger observations depuis Supabase
-  chargerObsParc(p.id || null, p.code);
-
-  // Stocker le code courant pour le bouton "+ Traitement"
-  window.CURRENT_PARC_CODE = code;
-
-  // Naviguer
-  go('sParc', null);
-  // Sync topbar title
-  const tbEl = document.getElementById('tbTitle');
-  if (tbEl) tbEl.textContent = `📋 ${p.nom}`;
+  const p=PARCS.find(x=>x.code===code);if(!p)return;
+  const v=iftP(code),col=iftCol(iftSt(v));
+  const ts=TRAITS.filter(t=>t.parcelle_code===code).sort((a,b)=>b.date_application.localeCompare(a.date_application));
+  document.getElementById('mPDT').textContent=`${p.code} · ${p.nom}`;
+  document.getElementById('mPDC').innerHTML=`
+    <div style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);border-radius:12px;padding:14px;color:#fff;text-align:center;margin-bottom:14px">
+      <div style="font-size:11px;opacity:.6;text-transform:uppercase;margin-bottom:4px">IFT cumulé campagne ${AN}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;color:${col};line-height:1">${v.toFixed(2).replace('.',',')}</div>
+      <div style="font-size:13px;opacity:.7">sur 4,0 référence · ${(v/4*100).toFixed(0)}%</div>
+    </div>
+    <div style="background:var(--gris3);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px">
+      <div><b>Cépage :</b> ${p.cepage||'—'} · <b>Surface :</b> ${p.surface_ha||'—'} ha</div>
+      <div style="margin-top:3px"><b>Commune :</b> ${p.commune||'—'}</div>
+      ${p.ref_cadastrale?`<div style="margin-top:3px"><b>Réf. cadastrale :</b> ${p.ref_cadastrale}</div>`:''}
+    </div>
+    ${ts.length?ts.map(t=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${t.produit_nom||'—'}</div><div class="lim">${t.date_application} · ${t.dose_appliquee||'—'} ${t.dose_unite||'kg/ha'} · BBCH ${t.bbch||'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">${t.dose_appliquee} ÷ ${t.dose_reference} = <b style="color:var(--vigne)">IFT ${(t.ift||0).toFixed(2)}</b></div></div><button onclick="delTrait('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gris);padding:4px">🗑️</button></div>`).join(''):'<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement sur cette parcelle</div>'}`;
+  showM('mPD');
 }
 
 async function delTrait(id) {
   if(!confirm('Supprimer ce traitement ?')) return;
   const {error}=await sb.from('traitements').delete().eq('id',id);
-  if(!error){TRAITS=TRAITS.filter(t=>t.id!==id);renderDash();renderIFT();renderRegistre();toast('🗑️ Supprimé · IFT recalculé');
-  // Rafraîchir la fiche si on est dessus
-  if (window.CURRENT_PARC_CODE) showPD(window.CURRENT_PARC_CODE);
-  else closeM(null,'mPD');}
-}
-
-async function chargerObsParc(parcId, parcCode) {
-  const obsEl = document.getElementById('sParcObs');
-  obsEl.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Chargement…</div>';
-  try {
-    let query = sb.from('observations').select('*').eq('domaine_id', DOM_ID).order('date_observation', {ascending:false}).limit(10);
-    if (parcId) query = query.eq('parcelle_id', parcId);
-    const {data} = await query;
-    if (!data?.length) { obsEl.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune observation</div>'; return; }
-    const gravCol = g => g==='Élevé'?'var(--rouge)':g==='Moyen'?'var(--orange)':'var(--vert)';
-    obsEl.innerHTML = data.map(o => `
-      <div class="li">
-        <div class="lic" style="background:#fde8f0">👁️</div>
-        <div class="lib">
-          <div class="lit">${o.type_obs || '—'}</div>
-          <div class="lim">${o.date_observation} · Gravité : ${o.gravite || '—'}</div>
-          ${o.description ? `<div style="font-size:12px;color:var(--terre);margin-top:3px">${o.description.substring(0,80)}${o.description.length>80?'…':''}</div>` : ''}
-          ${o.traitement_recommande ? `<div style="font-size:11px;color:var(--gris);margin-top:2px">💊 ${o.traitement_recommande}</div>` : ''}
-        </div>
-        <span class="badge" style="background:${gravCol(o.gravite)};color:#fff;flex-shrink:0">${o.gravite||'—'}</span>
-      </div>`).join('');
-  } catch(e) { obsEl.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Erreur chargement</div>'; }
-}
-
-function saisirTraitementParc() {
-  go('sTrait', document.getElementById('sb-sTrait'));
-  if (window.CURRENT_PARC_CODE) {
-    setTimeout(() => {
-      const sel = document.getElementById('tPa');
-      if (sel) { sel.value = window.CURRENT_PARC_CODE; uTP(); }
-    }, 100);
-  }
-}
-
-function saisirTraitementDepuisListe(code) {
-  window.CURRENT_PARC_CODE = code;
-  go('sTrait', document.getElementById('sb-sTrait'));
-  setTimeout(() => {
-    const sel = document.getElementById('tPa');
-    if (sel) { sel.value = code; uTP(); }
-    toast(`🌿 Parcelle ${code} pré-sélectionnée`);
-  }, 100);
-}
-
-// ══════════════════════════════════════════
-//  MÉTÉO — Open-Meteo API (gratuit, sans clé)
-//  Coordonnées : Puisserguier 43.3667°N, 3.0500°E
-// ══════════════════════════════════════════
-const METEO_LAT = 43.3667, METEO_LON = 3.0500;
-let meteoData = null;
-
-async function loadMeteo() {
-  const mSt = document.getElementById('mSt');
-  const mAlertes = document.getElementById('mAlertes');
-  const mMildiou = document.getElementById('mMildiou');
-  const mOidium = document.getElementById('mOidium');
-  mSt.innerHTML = '<div style="font-size:13px;color:var(--gris);padding:16px;text-align:center">⏳ Chargement météo…</div>';
-
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${METEO_LAT}&longitude=${METEO_LON}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,weathercode&hourly=temperature_2m,relativehumidity_2m,precipitation,windspeed_10m&timezone=Europe%2FParis&forecast_days=7`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('API indisponible');
-    meteoData = await res.json();
-    renderMeteo(meteoData);
-  } catch(e) {
-    mSt.innerHTML = `<div class="al alo"><span class="al-i">⚠️</span><div><b>Météo indisponible</b><br>${e.message}</div></div>`;
-    mMildiou.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Données météo nécessaires</div>';
-    mOidium.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:12px">Données météo nécessaires</div>';
-  }
-}
-
-function wmoToEmoji(code) {
-  if (code === 0) return '☀️';
-  if (code <= 2) return '🌤️';
-  if (code <= 3) return '☁️';
-  if (code <= 49) return '🌫️';
-  if (code <= 59) return '🌦️';
-  if (code <= 69) return '🌧️';
-  if (code <= 79) return '🌨️';
-  if (code <= 84) return '🌧️';
-  if (code <= 99) return '⛈️';
-  return '🌥️';
-}
-
-function wmoToLabel(code) {
-  if (code === 0) return 'Soleil';
-  if (code <= 2) return 'Peu nuageux';
-  if (code <= 3) return 'Nuageux';
-  if (code <= 49) return 'Brouillard';
-  if (code <= 59) return 'Bruine';
-  if (code <= 69) return 'Pluie';
-  if (code <= 79) return 'Neige';
-  if (code <= 84) return 'Averses';
-  if (code <= 99) return 'Orage';
-  return 'Variable';
-}
-
-function renderMeteo(d) {
-  const daily = d.daily;
-  const hourly = d.hourly;
-  const today = new Date();
-  const jours = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-
-  // Prévision 7 jours
-  const mSt = document.getElementById('mSt');
-  mSt.innerHTML = daily.time.map((dateStr, i) => {
-    const date = new Date(dateStr);
-    const isToday = i === 0;
-    const label = isToday ? 'Auj.' : jours[date.getDay()];
-    const tmax = Math.round(daily.temperature_2m_max[i]);
-    const tmin = Math.round(daily.temperature_2m_min[i]);
-    const pluie = daily.precipitation_sum[i] || 0;
-    const code = daily.weathercode[i] || 0;
-    return `<div class="md ${isToday?'today':''}" onclick="showMeteoDetail(${i})" style="cursor:pointer">
-      <div class="mdl">${label}</div>
-      <div class="mdi">${wmoToEmoji(code)}</div>
-      <div class="mdt">${tmax}°<span style="color:var(--gris);font-size:10px">/${tmin}°</span></div>
-      <div class="mdp">${pluie > 0 ? pluie.toFixed(1)+'mm' : '—'}</div>
-    </div>`;
-  }).join('');
-
-  // Modèle mildiou — règle des 3×10 simplifiée
-  // Risque si : T > 10°C ET humidité > 85% ET pluie cumulée > 10mm sur 3 jours
-  renderModeleMildiou(daily, hourly);
-  renderModeleOidium(daily, hourly);
-  renderAlertes(daily, hourly);
-  renderCreneaux(hourly);
-
-  // Afficher détail du jour
-  showMeteoDetail(0);
-}
-
-function renderModeleMildiou(daily, hourly) {
-  const el = document.getElementById('mMildiou');
-  const risques = [];
-
-  for (let i = 0; i < daily.time.length; i++) {
-    const tmax = daily.temperature_2m_max[i] || 0;
-    const tmin = daily.temperature_2m_min[i] || 0;
-    const tmoy = (tmax + tmin) / 2;
-    const pluie = daily.precipitation_sum[i] || 0;
-    // Humidité horaire moyenne du jour
-    const hStart = i * 24, hEnd = hStart + 24;
-    const humSlice = hourly.relativehumidity_2m.slice(hStart, hEnd).filter(h => h != null);
-    const humMoy = humSlice.length ? humSlice.reduce((a,b)=>a+b,0)/humSlice.length : 0;
-
-    const condTemp = tmoy > 10 && tmoy < 30;
-    const condHum = humMoy > 85;
-    const condPluie = pluie > 5;
-
-    const score = (condTemp ? 1 : 0) + (condHum ? 1 : 0) + (condPluie ? 1 : 0);
-    const date = new Date(daily.time[i]);
-    const label = i === 0 ? "Aujourd'hui" : ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][date.getDay()];
-    risques.push({ label, score, tmoy: tmoy.toFixed(1), humMoy: humMoy.toFixed(0), pluie: pluie.toFixed(1), condTemp, condHum, condPluie });
-  }
-
-  const maxScore = Math.max(...risques.map(r=>r.score));
-  const alertColor = maxScore >= 3 ? 'var(--rouge)' : maxScore >= 2 ? 'var(--orange)' : 'var(--vert)';
-  const alertLabel = maxScore >= 3 ? '🚨 Risque élevé' : maxScore >= 2 ? '⚠️ Risque modéré' : '✅ Risque faible';
-
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px;background:var(--gris3);border-radius:10px;border-left:4px solid ${alertColor}">
-      <div style="font-size:24px">${maxScore >= 3 ? '🍄' : maxScore >= 2 ? '⚠️' : '✅'}</div>
-      <div><div style="font-weight:700;font-size:14px;color:${alertColor}">${alertLabel}</div>
-      <div style="font-size:11px;color:var(--gris);margin-top:2px">Règle : T>10°C + humidité>85% + pluie>5mm</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
-      ${risques.map(r => {
-        const col = r.score >= 3 ? '#fde8e6' : r.score >= 2 ? '#fde8c8' : '#d4edda';
-        const tc = r.score >= 3 ? 'var(--rouge)' : r.score >= 2 ? 'var(--orange)' : 'var(--vert)';
-        return `<div style="background:${col};border-radius:8px;padding:6px 4px;text-align:center">
-          <div style="font-size:9px;font-weight:700;color:var(--gris)">${r.label}</div>
-          <div style="font-size:18px;margin:3px 0">${r.score >= 3 ? '🍄' : r.score >= 2 ? '⚠️' : '✅'}</div>
-          <div style="font-size:9px;color:${tc};font-weight:700">${r.score}/3</div>
-        </div>`;
-      }).join('')}
-    </div>
-    <div style="font-size:11px;color:var(--gris);margin-top:10px;line-height:1.5">
-      💡 <b>Période à risque :</b> Surveiller 10–15 jours après contamination primaire (oeufs en sol). Traitement préventif recommandé avant pluie si T>10°C.
-    </div>`;
-}
-
-function renderModeleOidium(daily, hourly) {
-  const el = document.getElementById('mOidium');
-  const risques = [];
-
-  for (let i = 0; i < daily.time.length; i++) {
-    const tmax = daily.temperature_2m_max[i] || 0;
-    const tmin = daily.temperature_2m_min[i] || 0;
-    const tmoy = (tmax + tmin) / 2;
-    const pluie = daily.precipitation_sum[i] || 0;
-    const hStart = i * 24, hEnd = hStart + 24;
-    const humSlice = hourly.relativehumidity_2m.slice(hStart, hEnd).filter(h=>h!=null);
-    const humMoy = humSlice.length ? humSlice.reduce((a,b)=>a+b,0)/humSlice.length : 0;
-
-    // Oïdium : T entre 20 et 35°C, humidité < 80% (sec), pas de pluie forte
-    const condTemp = tmoy >= 18 && tmoy <= 35;
-    const condSec = humMoy < 80 && pluie < 10;
-    const condChaud = tmax >= 25;
-
-    const score = (condTemp ? 1 : 0) + (condSec ? 1 : 0) + (condChaud ? 1 : 0);
-    const date = new Date(daily.time[i]);
-    const label = i === 0 ? "Auj." : ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][date.getDay()];
-    risques.push({ label, score, tmoy: tmoy.toFixed(1) });
-  }
-
-  const maxScore = Math.max(...risques.map(r=>r.score));
-  const alertColor = maxScore >= 3 ? 'var(--rouge)' : maxScore >= 2 ? 'var(--orange)' : 'var(--vert)';
-  const alertLabel = maxScore >= 3 ? '🚨 Risque élevé' : maxScore >= 2 ? '⚠️ Risque modéré' : '✅ Risque faible';
-
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px;background:var(--gris3);border-radius:10px;border-left:4px solid ${alertColor}">
-      <div style="font-size:24px">⚪</div>
-      <div><div style="font-weight:700;font-size:14px;color:${alertColor}">${alertLabel}</div>
-      <div style="font-size:11px;color:var(--gris);margin-top:2px">Conditions : T 18–35°C + temps sec + chaleur</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
-      ${risques.map(r => {
-        const col = r.score >= 3 ? '#fde8e6' : r.score >= 2 ? '#fde8c8' : '#d4edda';
-        const tc = r.score >= 3 ? 'var(--rouge)' : r.score >= 2 ? 'var(--orange)' : 'var(--vert)';
-        return `<div style="background:${col};border-radius:8px;padding:6px 4px;text-align:center">
-          <div style="font-size:9px;font-weight:700;color:var(--gris)">${r.label}</div>
-          <div style="font-size:18px;margin:3px 0">${r.score >= 3 ? '⚪🔴' : r.score >= 2 ? '⚠️' : '✅'}</div>
-          <div style="font-size:9px;color:${tc};font-weight:700">${r.score}/3</div>
-        </div>`;
-      }).join('')}
-    </div>
-    <div style="font-size:11px;color:var(--gris);margin-top:10px;line-height:1.5">
-      💡 <b>Oïdium :</b> Temps chaud et sec favorise le développement. Soufre mouillable recommandé en préventif dès BBCH 53. Intervenir avant 35°C.
-    </div>`;
-}
-
-function renderAlertes(daily, hourly) {
-  const el = document.getElementById('mAlertes');
-  const alertes = [];
-
-  // Vent fort
-  const maxVent = Math.max(...daily.windspeed_10m_max.filter(v=>v!=null));
-  if (maxVent > 40) alertes.push({type:'alr', icon:'💨', titre:`Vent fort — ${maxVent.toFixed(0)} km/h`, msg:'Traitement déconseillé — risque de dérive'});
-
-  // Canicule
-  const maxT = Math.max(...daily.temperature_2m_max.filter(t=>t!=null));
-  if (maxT > 35) alertes.push({type:'alr', icon:'🌡️', titre:`Canicule — ${maxT.toFixed(0)}°C`, msg:'Soufre interdit — risque de phytotoxicité'});
-
-  // Pluie à venir
-  const pluieDemain = daily.precipitation_sum[1] || 0;
-  if (pluieDemain > 15) alertes.push({type:'alo', icon:'🌧️', titre:`Pluie demain — ${pluieDemain.toFixed(0)}mm`, msg:'Adapter la date de traitement — risque lessivage'});
-
-  // Gel
-  const minT = Math.min(...daily.temperature_2m_min.filter(t=>t!=null));
-  if (minT < 2) alertes.push({type:'alb', icon:'❄️', titre:`Gel possible — ${minT.toFixed(0)}°C`, msg:'Surveiller les bourgeons en période de débourrement'});
-
-  el.innerHTML = alertes.map(a => `
-    <div class="al ${a.type}"><span class="al-i">${a.icon}</span><div><b>${a.titre}</b><br>${a.msg}</div></div>
-  `).join('') || '';
-}
-
-function renderCreneaux(hourly) {
-  const el = document.getElementById('mCreneaux');
-  // Prendre les heures du jour 0 (aujourd'hui)
-  const now = new Date().getHours();
-  const vent6h = hourly.windspeed_10m[6] || 0;
-  const vent10h = hourly.windspeed_10m[10] || 0;
-  const vent14h = hourly.windspeed_10m[14] || 0;
-  const t6h = hourly.temperature_2m[6] || 0;
-  const t14h = hourly.temperature_2m[14] || 0;
-  const hum6h = hourly.relativehumidity_2m[6] || 0;
-
-  const matin_ok = vent6h < 20 && t6h < 32;
-  const apresmidi_ok = vent14h < 20 && t14h < 35;
-
-  el.innerHTML = `
-    <div class="li">
-      <div class="lic" style="background:${matin_ok?'#d4edda':'#fde8e6'}">${matin_ok?'✅':'❌'}</div>
-      <div class="lib">
-        <div class="lit">Matin 6h–11h</div>
-        <div class="lim">Vent ${vent6h.toFixed(0)} km/h · Temp ${t6h.toFixed(0)}°C · Humidité ${hum6h.toFixed(0)}%</div>
-      </div>
-      <span class="badge ${matin_ok?'bg':'br'}">${matin_ok?'Idéal':'Déconseillé'}</span>
-    </div>
-    <div class="li">
-      <div class="lic" style="background:${apresmidi_ok?'#fde8c8':'#fde8e6'}">${apresmidi_ok?'⚠️':'❌'}</div>
-      <div class="lib">
-        <div class="lit">Après-midi 13h–18h</div>
-        <div class="lim">Vent ${vent14h.toFixed(0)} km/h · Temp ${t14h.toFixed(0)}°C</div>
-      </div>
-      <span class="badge ${apresmidi_ok?'bo':'br'}">${apresmidi_ok?'Possible':'Déconseillé'}</span>
-    </div>`;
-}
-
-function showMeteoDetail(dayIndex) {
-  if (!meteoData) return;
-  const daily = meteoData.daily;
-  const hourly = meteoData.hourly;
-  const date = new Date(daily.time[dayIndex]);
-  const jours = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-  const label = dayIndex === 0 ? "Aujourd'hui" : jours[date.getDay()];
-
-  const card = document.getElementById('mDetailCard');
-  const titre = document.getElementById('mDetailTitre');
-  const detail = document.getElementById('mDetail');
-  card.style.display = 'block';
-  titre.textContent = `${label} — ${wmoToLabel(daily.weathercode[dayIndex])}`;
-
-  const hStart = dayIndex * 24;
-  const heuresKey = [6, 9, 12, 15, 18, 21];
-  const hoursHtml = heuresKey.map(h => {
-    const idx = hStart + h;
-    const t = hourly.temperature_2m[idx] != null ? hourly.temperature_2m[idx].toFixed(0) : '—';
-    const hum = hourly.relativehumidity_2m[idx] != null ? hourly.relativehumidity_2m[idx].toFixed(0) : '—';
-    const pluie = hourly.precipitation[idx] != null ? hourly.precipitation[idx].toFixed(1) : '0';
-    const vent = hourly.windspeed_10m[idx] != null ? hourly.windspeed_10m[idx].toFixed(0) : '—';
-    return `<div style="text-align:center;background:var(--gris3);border-radius:8px;padding:8px 4px">
-      <div style="font-size:10px;font-weight:700;color:var(--gris)">${h}h</div>
-      <div style="font-size:15px;font-weight:700;margin:3px 0">${t}°</div>
-      <div style="font-size:10px;color:var(--bleu)">💧${hum}%</div>
-      <div style="font-size:10px;color:${parseFloat(pluie)>0?'var(--bleu)':'var(--gris)'}">${parseFloat(pluie)>0?pluie+'mm':'—'}</div>
-      <div style="font-size:10px;color:var(--gris)">💨${vent}</div>
-    </div>`;
-  }).join('');
-
-  detail.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;font-size:13px">
-      <div style="background:var(--gris3);border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:10px;color:var(--gris);text-transform:uppercase;font-weight:700">Max / Min</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700">${Math.round(daily.temperature_2m_max[dayIndex])}° / ${Math.round(daily.temperature_2m_min[dayIndex])}°</div>
-      </div>
-      <div style="background:var(--gris3);border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:10px;color:var(--gris);text-transform:uppercase;font-weight:700">Pluie / Vent max</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700">${(daily.precipitation_sum[dayIndex]||0).toFixed(1)}mm · ${Math.round(daily.windspeed_10m_max[dayIndex]||0)}km/h</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px">${hoursHtml}</div>`;
-}
-
-function traiterParc(code) {
-  window.CURRENT_PARC_CODE = code;
-  go('sTrait', document.getElementById('sb-sTrait'));
-  setTimeout(() => {
-    const sel = document.getElementById('tPa');
-    if (sel) { sel.value = code; uTP(); }
-    toast(`🌿 Parcelle ${code} pré-sélectionnée`);
-  }, 100);
+  if(!error){TRAITS=TRAITS.filter(t=>t.id!==id);renderDash();renderIFT();renderRegistre();toast('🗑️ Supprimé · IFT recalculé');closeM(null,'mPD');}
 }
 // ══════════════════════════════════════════
 //  TRAITEMENT
@@ -2345,20 +1847,12 @@ function initMap(){
   }
   // Dessiner les parcelles
   PARCS.forEach(p=>{
-    // Supabase jsonb peut retourner string ou array — normaliser
-    let coords = p.coords;
-    if (typeof coords === 'string') { try { coords = JSON.parse(coords); } catch(e) { coords = []; } }
-    if (!Array.isArray(coords) || coords.length < 3) return;
-    // Vérifier que les coords sont des [lat, lon] valides
-    const validCoords = coords.filter(c => Array.isArray(c) && c.length >= 2 && !isNaN(c[0]) && !isNaN(c[1]));
-    if (validCoords.length < 3) return;
-    const poly=L.polygon(validCoords,{color:'#1a1410',weight:2,fillColor:p.color||'#4a8a42',fillOpacity:.55}).addTo(mL);
-    poly.on('click', () => showPD(p.code));
-    const c=poly.getBounds().getCenter();
-    const iftVal = iftP(p.code);
-    const iftColor = iftVal > 4 ? '#c0392b' : iftVal > 3.2 ? '#d4751a' : '#2d5a27';
-    L.marker(c,{icon:L.divIcon({className:'',html:`<div style="background:rgba(255,255,255,.95);border-radius:6px;padding:3px 8px;font-family:Outfit,sans-serif;font-size:11px;font-weight:700;color:#1a1410;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2);border-left:3px solid ${iftColor};cursor:pointer">${p.code} · IFT ${iftVal.toFixed(1)}</div>`,iconAnchor:[30,10]})}).addTo(mL).on('click', () => showPD(p.code));
-    poly.bindPopup(`<b>${p.nom}</b><br>${p.surface_ha||'—'} ha · ${p.cepage||'—'}<br>IFT : <b style="color:${iftColor}">${iftP(p.code).toFixed(2)}</b><br><button onclick="showPD('${p.code}')" style="margin-top:6px;background:var(--vigne,#1c3d1c);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">📋 Voir la fiche</button>`);
+    if(p.coords&&p.coords.length>=3){
+      const poly=L.polygon(p.coords,{color:'#1a1410',weight:2,fillColor:p.color||'#4a8a42',fillOpacity:.55}).addTo(mL);
+      const c=poly.getBounds().getCenter();
+      L.marker(c,{icon:L.divIcon({className:'',html:`<div style="background:rgba(255,255,255,.92);border-radius:6px;padding:3px 7px;font-family:Outfit,sans-serif;font-size:11px;font-weight:700;color:#1a1410;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2)">${p.code} · IFT ${iftP(p.code).toFixed(1)}</div>`,iconAnchor:[30,10]})}).addTo(mL);
+      poly.bindPopup(`<b>${p.nom}</b><br>${p.surface_ha} ha · ${p.cepage||'—'}<br>IFT : <b>${iftP(p.code).toFixed(2)}</b>`);
+    }
   });
   const cl=document.getElementById('cL');
   if(!PARCS.length){
@@ -2369,27 +1863,26 @@ function initMap(){
   document.getElementById('cS').textContent=`${PARCS.length} parcelle(s) · ${PARCS.reduce((s,p)=>s+(p.surface_ha||0),0).toFixed(2)} ha`;
   cl.innerHTML=PARCS.map(p=>{
     const v=iftP(p.code),st=iftSt(v),col=iftCol(st);
-    const nb=TRAITS.filter(t=>t.parcelle_code===p.code).length;
-    return`<div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer" onclick="showPD('${p.code}')">
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:15px">${p.nom}</div>
-          <div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div>
-          <div style="font-size:11px;color:var(--gris);margin-top:2px">${nb} traitement(s)</div>
-        </div>
-        <span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span>
-      </div>
-      <div style="display:flex;gap:7px;margin-top:10px;padding-top:10px;border-top:1px solid var(--gris2)">
-        <button class="btn btghost btsm" style="flex:1" onclick="showPD('${p.code}')">📋 Fiche</button>
-        <button class="btn btgold btsm" style="flex:1" onclick="saisirTraitementDepuisListe('${p.code}')">🌿 Traitement</button>
-        <button class="btn btsm" style="flex:1;background:#e8f4fd;color:var(--bleu)" onclick="showM('mAddObs');setTimeout(()=>{const s=document.getElementById('obParc');if(s)s.value='${p.code}'},100)">👁️ Obs.</button>
-      </div>
-    </div>`;
+    return`<div class="card" style="position:relative"><div style="display:flex;align-items:center;justify-content:space-between;padding-right:32px" onclick="showPD('${p.code}')"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div><button onclick="event.stopPropagation();supprimerParcelle('${p.id}','${p.nom.replace(/'/g,'')}')" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--gris)" title="Supprimer">🗑️</button></div>`;
   }).join('');
 }
 function mSat(){if(!mL)return;try{mL.removeLayer(tOSM);}catch(e){}tSAT.addTo(mL);toast('🛰️ Vue satellite');}
 function mOSM(){if(!mL)return;try{mL.removeLayer(tSAT);}catch(e){}tOSM.addTo(mL);toast('🗺️ Vue plan');}
 function mCenter(){if(!mL||!PARCS.length)return;mL.setView([43.37,3.05],12);}
+async function supprimerParcelle(id, nom) {
+  if (!confirm(`Supprimer la parcelle "${nom}" ?`)) return;
+  syncSaving();
+  try {
+    const {error} = await sb.from('parcelles').delete().eq('id', id);
+    if (error) throw error;
+    PARCS = PARCS.filter(p => p.id !== id);
+    syncOK();
+    toast(`🗑️ Parcelle "${nom}" supprimée`);
+    renderCarto(); renderDash(); renderIFT();
+    mI = false; initMap();
+  } catch(e) { syncErr(); toast('❌ ' + e.message); }
+}
+
 async function reloadMap(){
   toast('🔄 Rechargement des parcelles…');
   const {data}=await sb.from('parcelles').select('*').eq('domaine_id',DOM_ID).order('code');
@@ -3237,7 +2730,6 @@ async function saveRendement() {
     ['rdEstim','rdReel','rdDate','rdDest'].forEach(id=>{sv(id,'');});
   } catch(e) { syncErr(); toast('❌ Erreur : '+e.message); }
 }
-
 function showM(id){document.getElementById(id).classList.add('op');}
 function closeM(e,id){if(!e||e.target.classList.contains('ov'))document.getElementById(id).classList.remove('op');}
 function g(id){return(document.getElementById(id)?.value||'').trim();}
@@ -3625,110 +3117,27 @@ function setShpLoading(txt) {
   document.getElementById('shpLoadingTxt').textContent = txt;
 }
 
-function renderShpParcList() {
-  let totalImport = 0;
-  shpParcelles.forEach(p => {
-    totalImport += (p.subdivisions && p.subdivisions.length > 0) ? p.subdivisions.length : 1;
-  });
-  const totalHa = shpParcelles.reduce((s,p) => s+(p.surface_ha||0), 0);
-  document.getElementById('shpResultTxt').innerHTML = `<b>${totalImport} parcelle(s) à importer — ${totalHa.toFixed(2)} ha total</b> Subdivisez les îlots si besoin.`;
-  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p,i) => {
-    const hasSubs = p.subdivisions && p.subdivisions.length > 0;
-    const subsHtml = hasSubs ? p.subdivisions.map((s,j) => `
-      <div style="display:flex;align-items:center;gap:6px;margin-top:7px;padding:8px 10px;background:var(--blanc);border-radius:8px;border-left:3px solid var(--or);flex-wrap:wrap">
-        <input type="text" value="${s.code}" placeholder="Code" style="width:65px;padding:4px 6px;font-size:12px" onchange="shpParcelles[${i}].subdivisions[${j}].code=this.value">
-        <input type="text" value="${s.cepage}" placeholder="Cépage" style="width:110px;padding:4px 6px;font-size:12px" onchange="shpParcelles[${i}].subdivisions[${j}].cepage=this.value">
-        <input type="number" value="${s.surface_ha}" placeholder="ha" step="0.01" style="width:65px;padding:4px 6px;font-size:12px" onchange="shpParcelles[${i}].subdivisions[${j}].surface_ha=parseFloat(this.value)||0">
-        <span style="font-size:10px;color:var(--gris)">ha</span>
-        <select style="padding:4px 6px;font-size:11px" onchange="shpParcelles[${i}].subdivisions[${j}].couleur=this.value">
-          <option ${s.couleur==='Noir'?'selected':''}>Noir</option>
-          <option ${s.couleur==='Blanc'?'selected':''}>Blanc</option>
-          <option ${s.couleur==='Rosé'?'selected':''}>Rosé</option>
-        </select>
-        <button onclick="supprimerSub(${i},${j})" style="background:none;border:none;cursor:pointer;color:var(--rouge);font-size:14px;padding:2px;margin-left:auto">🗑️</button>
-      </div>`).join('') : '';
-    return `
-    <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:9px">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
-        <div style="flex:1;min-width:120px">
-          <div style="font-weight:700;font-size:13px">${p.nom}</div>
-          <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune} · ${p.coords.length} pts GPS</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          ${!hasSubs ? `
-            <input type="text" value="${p.code}" placeholder="Code" style="width:65px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].code=this.value">
-            <input type="text" value="${p.cepage||''}" placeholder="Cépage" style="width:100px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].cepage=this.value">
-          ` : `<span style="font-size:11px;color:var(--vigne);font-weight:700">✂️ ${p.subdivisions.length} sous-parcelles</span>`}
-          <button onclick="ajouterSub(${i})" style="background:var(--or);border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;color:var(--noir);white-space:nowrap">✂️ Subdiviser</button>
-        </div>
-      </div>
-      ${subsHtml}
-      ${hasSubs ? `<button onclick="ajouterSub(${i})" style="background:none;border:1px dashed var(--gris2);border-radius:7px;padding:4px 10px;font-size:11px;color:var(--gris);cursor:pointer;margin-top:7px;width:100%">+ Ajouter une sous-parcelle</button>` : ''}
-    </div>`;
-  }).join('');
-}
-
 function afficherShpResult() {
   document.getElementById('shpLoadingContent').style.display = 'none';
   document.getElementById('shpDropContent').style.display = 'block';
   document.getElementById('shpResult').style.display = 'block';
   document.getElementById('shpResultMsg').className = 'al alg';
-  shpParcelles.forEach(p => { if (!p.subdivisions) p.subdivisions = []; });
-  renderShpParcList();
-  toast(`✅ ${shpParcelles.length} îlot(s) extraits — subdivisez si besoin`);
-}
-
-function ajouterSub(i) {
-  const p = shpParcelles[i];
-  if (!p.subdivisions) p.subdivisions = [];
-  const j = p.subdivisions.length + 1;
-  const surfRestante = Math.max(0, Math.round(((p.surface_ha||0) - p.subdivisions.reduce((s,x)=>s+(x.surface_ha||0),0)) * 100) / 100);
-  p.subdivisions.push({
-    code: `${p.code}S${j}`,
-    cepage: '',
-    surface_ha: surfRestante,
-    couleur: 'Noir',
-    coords: p.coords,
-    color: ['#c8a84c','#4a8a42','#7a3060','#1a5a8a','#d4751a'][j % 5]
-  });
-  renderShpParcList();
-}
-
-function supprimerSub(i, j) {
-  shpParcelles[i].subdivisions.splice(j, 1);
-  renderShpParcList();
-}
-
-async function saveSousParcelle() {
-  const code = g('spCode'), cepage = g('spCepage');
-  if (!code || !cepage) { toast('⚠️ Code et cépage obligatoires'); return; }
-  const parcParent = PARCS.find(p => p.code === window.CURRENT_PARC_CODE);
-  if (!parcParent) { toast('⚠️ Parcelle parent introuvable'); return; }
-  syncSaving();
-  try {
-    const {data, error} = await sb.from('parcelles').insert({
-      domaine_id: DOM_ID,
-      code, 
-      nom: `${parcParent.nom.split('·')[0].trim()} · ${cepage}`,
-      commune: parcParent.commune,
-      surface_ha: parseFloat(g('spSurface')) || null,
-      cepage,
-      couleur: document.getElementById('spCouleur')?.value || 'Noir',
-      produit_aoc: g('spAOC') || parcParent.produit_aoc,
-      ref_cadastrale: `${parcParent.ref_cadastrale||''}-sub`,
-      coords: parcParent.coords,
-      color: '#7a3060',
-    }).select().single();
-    if (error) throw error;
-    PARCS.push(data);
-    syncOK();
-    fillSelects(); renderDash(); renderIFT();
-    toast(`✅ Sous-parcelle ${code} · ${cepage} créée`);
-    closeM(null,'mSousParc');
-    ['spCode','spCepage','spSurface','spAOC'].forEach(id => sv(id,''));
-    // Rafraîchir la fiche
-    showPD(window.CURRENT_PARC_CODE);
-  } catch(e) { syncErr(); toast('❌ Erreur : ' + e.message); }
+  const totalHa = shpParcelles.reduce((s,p) => s+(p.surface_ha||0), 0);
+  document.getElementById('shpResultTxt').innerHTML = `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b> Vérifiez avant d’importer.`;
+  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p,i) => `
+    <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:7px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px">
+          <div style="font-weight:700;font-size:13px">${p.nom}</div>
+          <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune} · ${p.coords.length} pts GPS</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" value="${p.code}" placeholder="Code" style="width:70px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].code=this.value">
+          <input type="text" value="${p.nom}" placeholder="Nom" style="width:140px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].nom=this.value">
+        </div>
+      </div>
+    </div>`).join('');
+  toast(`✅ ${shpParcelles.length} parcelles extraites`);
 }
 
 async function confirmShpImport() {
@@ -3736,43 +3145,20 @@ async function confirmShpImport() {
   syncSaving();
   let ok=0, err=0;
   const COLORS=['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040','#4a6aaa','#aa4a4a','#6aaa4a','#aa8a4a','#4aaa8a','#8a4aaa'];
-
   for (let i=0; i<shpParcelles.length; i++) {
     const p = shpParcelles[i];
-    const hasSubs = p.subdivisions && p.subdivisions.length > 0;
-
-    if (hasSubs) {
-      // Importer chaque sous-parcelle avec les coords de l'îlot parent
-      for (let j=0; j<p.subdivisions.length; j++) {
-        const s = p.subdivisions[j];
-        try {
-          const {data,error} = await sb.from('parcelles').insert({
-            domaine_id: DOM_ID, code: s.code, nom: `${p.nom.split('·')[0].trim()} · ${s.cepage||'Sous-parcelle '+(j+1)}`,
-            commune: p.commune, surface_ha: s.surface_ha || null,
-            cepage: s.cepage, couleur: s.couleur, produit_aoc: 'PAC 2025',
-            ref_cadastrale: `PAC2025-${p.code}`,
-            coords: p.coords, color: s.color || COLORS[(i+j)%COLORS.length]
-          }).select().single();
-          if (error) throw error;
-          PARCS.push(data); ok++;
-        } catch(e) { err++; console.error(e); }
-      }
-    } else {
-      // Importer l'îlot tel quel
-      try {
-        const {data,error} = await sb.from('parcelles').insert({
-          domaine_id: DOM_ID, code: p.code, nom: p.nom,
-          commune: p.commune, surface_ha: p.surface_ha || null,
-          cepage: p.cepage || p.culture, produit_aoc: 'PAC 2025',
-          ref_cadastrale: `PAC2025-${p.code}`,
-          coords: p.coords, color: p.color || COLORS[i%COLORS.length]
-        }).select().single();
-        if (error) throw error;
-        PARCS.push(data); ok++;
-      } catch(e) { err++; console.error(e); }
-    }
+    try {
+      const {data,error} = await sb.from('parcelles').insert({
+        domaine_id: DOM_ID, code: p.code, nom: p.nom,
+        commune: p.commune, surface_ha: p.surface_ha || null,
+        cepage: p.culture, produit_aoc: 'PAC 2025',
+        ref_cadastrale: `PAC2025-${p.code}`,
+        coords: p.coords, color: p.color || COLORS[i%COLORS.length]
+      }).select().single();
+      if (error) throw error;
+      PARCS.push(data); ok++;
+    } catch(e) { err++; console.error(e); }
   }
-
   const totalHa = PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
   await sb.from('domaines').update({surface_ha:Math.round(totalHa*100)/100}).eq('id',DOM_ID);
   DOM.surface_ha = Math.round(totalHa*100)/100;
@@ -3783,6 +3169,7 @@ async function confirmShpImport() {
   resetShpImport();
   document.getElementById('shpImportCard').style.display = 'none';
 }
+
 function resetShpImport() {
   shpParcelles = [];
   document.getElementById('shpDropContent').style.display = 'block';
