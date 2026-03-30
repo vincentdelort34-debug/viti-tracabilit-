@@ -149,7 +149,7 @@ const AN = new Date().getFullYear().toString();
 // ══════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', async () => {
+(async () => {
   try { await initSupabase(); } catch(e) { hide('ls'); show('auth'); return; }
   document.getElementById('tD').value = new Date().toISOString().split('T')[0];
   document.getElementById('rRe').value = new Date().toISOString().split('T')[0];
