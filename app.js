@@ -182,7 +182,7 @@ const AN = new Date().getFullYear().toString();
     console.error('Init error:', e);
     hide('ls'); show('auth');
   }
-});
+})();
 
 async function loadAll() {
   syncSaving();
