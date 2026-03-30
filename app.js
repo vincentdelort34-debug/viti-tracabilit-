@@ -3119,4 +3119,3 @@ function updatePhytoAlert(ma, prodNom) {
   const contentEl = document.getElementById('mpPhytoAlertContent');
   if (contentEl) contentEl.innerHTML = warnings.map(w => `<div style="margin-bottom:4px;font-size:12px">${w}</div>`).join('');
 }
-</script>
