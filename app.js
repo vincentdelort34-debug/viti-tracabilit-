@@ -150,37 +150,55 @@ const AN = new Date().getFullYear().toString();
 //  INIT
 // ══════════════════════════════════════════
 (async () => {
-  try { await initSupabase(); } catch(e) { hide('ls'); show('auth'); return; }
-  document.getElementById('tD').value = new Date().toISOString().split('T')[0];
-  document.getElementById('rRe').value = new Date().toISOString().split('T')[0];
-  document.getElementById('retDate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('relDate').value = new Date().toISOString().split('T')[0];
+  // Helpers directs pour éviter tout problème de hoisting
+  const showEl = (id, flex) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = flex ? 'flex' : 'block';
+  };
+  const hideLS = () => {
+    const el = document.getElementById('ls');
+    if (el) { el.style.display = 'none'; el.classList.add('off'); }
+  };
+  const goAuth = () => { hideLS(); showEl('auth'); };
+  const goOb   = () => { hideLS(); showEl('ob', true); };
 
-  // Timeout de sécurité — si rien en 8s, afficher auth
-  const timeout = setTimeout(() => {
-    hide('ls'); show('auth');
-    toast('⚠️ Connexion lente — vérifiez votre réseau');
-  }, 8000);
+  // Timeout de sécurité — AVANT tout, 10s max
+  const timeout = setTimeout(goAuth, 10000);
+
+  try {
+    await initSupabase();
+  } catch(e) {
+    clearTimeout(timeout);
+    console.error('initSupabase error:', e);
+    goAuth(); return;
+  }
+
+  // Pré-remplir les dates
+  const today = new Date().toISOString().split('T')[0];
+  ['tD','rRe','retDate','relDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = today;
+  });
 
   try {
     const { data: { session } } = await sb.auth.getSession();
     clearTimeout(timeout);
-    if (!session) {
-      hide('ls'); show('auth');
-      return;
-    }
-    const {data, error} = await sb.from('domaines').select('*').eq('user_id', session.user.id).limit(1).single();
+    if (!session) { goAuth(); return; }
+
+    const { data, error } = await sb.from('domaines')
+      .select('*').eq('user_id', session.user.id).limit(1).single();
+
     if (data && !error) {
-      DOM=data; DOM_ID=data.id;
+      DOM = data; DOM_ID = data.id;
       await loadAll();
       showApp();
     } else {
-      hide('ls'); show('ob');
+      goOb();
     }
   } catch(e) {
     clearTimeout(timeout);
     console.error('Init error:', e);
-    hide('ls'); show('auth');
+    goAuth();
   }
 })();
 
