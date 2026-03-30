@@ -329,6 +329,20 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <a class="ob-skip" onclick="saveOnboarding()">Passer et configurer plus tard →</a>
   </div>
 </div>
+<!-- AUTH -->
+<div id="auth" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:997;overflow-y:auto">
+  <div class="ob-top"><div class="ob-logo">🍇</div><div class="ob-title">VitiTrace</div><div class="ob-sub">Connectez-vous pour accéder à votre domaine</div></div>
+  <div class="ob-body">
+    <div class="ob-card">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--vigne);margin-bottom:14px">Connexion</div>
+      <div id="authMsg" style="display:none;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;line-height:1.4"></div>
+      <div class="fg"><label>Email</label><input type="email" id="authEmail" placeholder="votre@email.com" autocomplete="email"></div>
+      <div class="fg"><label>Mot de passe</label><input type="password" id="authPwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doSignIn()"></div>
+      <button class="btn btp" id="btnSignIn" style="margin-bottom:10px" onclick="doSignIn()">🔑 Se connecter</button>
+      <button class="btn btghost" id="btnSignUp" style="width:100%" onclick="doSignUp()">✉️ Créer un compte</button>
+    </div>
+  </div>
+</div>
 <!-- APP HEADER (mobile only) -->
 <header id="ah" style="display:none">
   <div class="lh"><div class="lmark">🍇</div><div><div class="ltxt">VitiTrace</div><div class="lsub" id="aN">Mon domaine</div></div></div>
@@ -1274,6 +1288,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <div class="sro"><span style="font-size:14px;font-weight:500">🍄 Alertes météo risque</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
     <button class="btn btp" onclick="saveProfil()" style="margin-top:8px">💾 Sauvegarder dans Supabase</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mProfil')">Fermer</button>
+    <button class="btn" style="width:100%;margin-top:6px;background:#fde8e6;color:var(--rouge)" onclick="doSignOut()">🚪 Se déconnecter</button>
   </div>
 </div>
 
@@ -1428,15 +1443,20 @@ window.addEventListener('load', async () => {
   document.getElementById('retDate').value = new Date().toISOString().split('T')[0];
   document.getElementById('relDate').value = new Date().toISOString().split('T')[0];
 
-  // Timeout de sécurité — si rien en 8s, afficher onboarding
+  // Timeout de sécurité — si rien en 8s, afficher auth
   const timeout = setTimeout(() => {
-    hide('ls'); show('ob');
-    toast('⚠️ Connexion lente — mode hors-ligne activé');
+    hide('ls'); show('auth');
+    toast('⚠️ Connexion lente — vérifiez votre réseau');
   }, 8000);
 
   try {
-    const {data, error} = await sb.from('domaines').select('*').limit(1).single();
+    const { data: { session } } = await sb.auth.getSession();
     clearTimeout(timeout);
+    if (!session) {
+      hide('ls'); show('auth');
+      return;
+    }
+    const {data, error} = await sb.from('domaines').select('*').eq('user_id', session.user.id).limit(1).single();
     if (data && !error) {
       DOM=data; DOM_ID=data.id;
       await loadAll();
@@ -1447,7 +1467,7 @@ window.addEventListener('load', async () => {
   } catch(e) {
     clearTimeout(timeout);
     console.error('Init error:', e);
-    hide('ls'); show('ob');
+    hide('ls'); show('auth');
   }
 });
 
@@ -1503,13 +1523,77 @@ function showApp() {
 // ══════════════════════════════════════════
 //  ONBOARDING
 // ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════
+async function doSignIn() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pwd = document.getElementById('authPwd').value;
+  if (!email || !pwd) { showAuthMsg('Veuillez remplir tous les champs', 'error'); return; }
+  const btn = document.getElementById('btnSignIn');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
+  if (error) {
+    showAuthMsg('Erreur : ' + (error.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect' : error.message), 'error');
+    btn.disabled = false; btn.innerHTML = '🔑 Se connecter';
+    return;
+  }
+  hide('auth'); show('ls');
+  const {data: dom, error: domErr} = await sb.from('domaines').select('*').eq('user_id', data.user.id).limit(1).single();
+  if (dom && !domErr) {
+    DOM=dom; DOM_ID=dom.id;
+    await loadAll(); showApp();
+  } else {
+    hide('ls'); show('ob');
+  }
+}
+
+async function doSignUp() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pwd = document.getElementById('authPwd').value;
+  if (!email || !pwd) { showAuthMsg('Veuillez remplir tous les champs', 'error'); return; }
+  if (pwd.length < 6) { showAuthMsg('Mot de passe : 6 caractères minimum', 'error'); return; }
+  const btn = document.getElementById('btnSignUp');
+  btn.disabled = true; btn.textContent = 'Création…';
+  const { error } = await sb.auth.signUp({ email, password: pwd });
+  if (error) {
+    showAuthMsg('Erreur : ' + error.message, 'error');
+  } else {
+    showAuthMsg('✅ Compte créé ! Vérifiez votre email pour confirmer, puis connectez-vous.', 'success');
+  }
+  btn.disabled = false; btn.innerHTML = '✉️ Créer un compte';
+}
+
+function showAuthMsg(msg, type) {
+  const el = document.getElementById('authMsg');
+  el.style.display = 'block';
+  el.style.background = type === 'error' ? '#fde8e6' : '#d4edda';
+  el.style.color = type === 'error' ? 'var(--rouge)' : 'var(--vert)';
+  el.textContent = msg;
+}
+
+async function doSignOut() {
+  await sb.auth.signOut();
+  DOM = null; DOM_ID = null; PARCS=[]; TRAITS=[]; STOCK=[]; CUVES=[]; VENTES=[]; MOUVEMENTS=[];
+  const ah = document.getElementById('ah'); if(ah) ah.style.display='none';
+  const an = document.getElementById('an'); if(an) an.style.display='none';
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  const sbEl = document.getElementById('sb'); if(sbEl) sbEl.style.display='none';
+  closeM(null,'mProfil');
+  show('auth');
+}
+
 async function saveOnboarding() {
   const nom = g('obNom').trim()||'Mon domaine';
   try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) { toast('⚠️ Vous devez être connecté pour créer un domaine'); show('auth'); return; }
     const {data,error} = await sb.from('domaines').insert({
       nom, raison_sociale:g('obRaison'), commune:g('obCommune'),
       siret:g('obSiret'), certiphyto:g('obCertif'),
-      surface_ha:parseFloat(g('obHa'))||null, campagne_en_cours:AN
+      surface_ha:parseFloat(g('obHa'))||null, campagne_en_cours:AN,
+      user_id: user.id
     }).select().single();
     if(error) throw error;
     DOM=data; DOM_ID=data.id;
