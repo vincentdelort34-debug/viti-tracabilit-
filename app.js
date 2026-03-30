@@ -124,11 +124,21 @@ async function readZipEntries(arrayBuf) {
   });
 }
 // ══════════════════════════════════════════
-//  SUPABASE
+//  SUPABASE (config chargée depuis /api/config)
 // ══════════════════════════════════════════
-const SB_URL = 'https://tndrqmyiwthkphzlviny.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuZHJxbXlpd3Roa3Boemx2aW55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NDExNjcsImV4cCI6MjA4OTIxNzE2N30.YRiLB0tvR9RUZ237p71lTn0VNYjSiK77FKw1F72eUz4';
-const sb = supabase.createClient(SB_URL, SB_KEY);
+let sb = null;
+
+async function initSupabase() {
+  try {
+    const res = await fetch('/api/config');
+    if (!res.ok) throw new Error('Config unavailable');
+    const { url, key } = await res.json();
+    sb = supabase.createClient(url, key);
+  } catch(e) {
+    console.error('Supabase init failed:', e);
+    throw e;
+  }
+}
 
 // ══════════════════════════════════════════
 //  STATE
@@ -140,6 +150,7 @@ const AN = new Date().getFullYear().toString();
 //  INIT
 // ══════════════════════════════════════════
 window.addEventListener('load', async () => {
+  try { await initSupabase(); } catch(e) { hide('ls'); show('auth'); return; }
   document.getElementById('tD').value = new Date().toISOString().split('T')[0];
   document.getElementById('rRe').value = new Date().toISOString().split('T')[0];
   document.getElementById('retDate').value = new Date().toISOString().split('T')[0];
