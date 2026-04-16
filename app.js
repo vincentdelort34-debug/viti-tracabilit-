@@ -369,16 +369,20 @@ function go(id, btn) {
 // ══════════════════════════════════════════
 const iFT=(d,r)=>(!d||!r)?0:Math.round(d/r*100)/100;
 const iftP=code=>TRAITS.filter(t=>t.parcelle_code===code).reduce((s,t)=>s+(t.ift||0),0);
+// Parcelles actives (non archivées) — utilisé pour stats, IFT, dropdowns
+const activeParcs=()=>PARCS.filter(p=>!p.archived_at);
 function iftDom() {
-  if(!PARCS.length||!TRAITS.length) return 0;
+  const PA=activeParcs();
+  if(!PA.length||!TRAITS.length) return 0;
   let ha=0,ix=0;
-  PARCS.forEach(p=>{ha+=p.surface_ha||0; ix+=iftP(p.code)*(p.surface_ha||0);});
+  PA.forEach(p=>{ha+=p.surface_ha||0; ix+=iftP(p.code)*(p.surface_ha||0);});
   return ha?Math.round(ix/ha*100)/100:0;
 }
 function iftCat(cat) {
-  if(!PARCS.length) return 0;
+  const PA=activeParcs();
+  if(!PA.length) return 0;
   let ha=0,ix=0;
-  PARCS.forEach(p=>{
+  PA.forEach(p=>{
     const v=TRAITS.filter(t=>t.parcelle_code===p.code&&t.produit_categorie===cat).reduce((s,t)=>s+(t.ift||0),0);
     ha+=p.surface_ha||0; ix+=v*(p.surface_ha||0);
   });
@@ -398,22 +402,23 @@ function renderDash() {
   const dI=document.getElementById('dI');
   dI.textContent=TRAITS.length?ift.toFixed(1).replace('.',','):'—';
   dI.className='sv '+(ift>4?'d':ift>3.2?'w':'');
-  document.getElementById('dP').textContent=PARCS.length||'—';
+  const _PA=activeParcs();
+  document.getElementById('dP').textContent=_PA.length||'—';
   document.getElementById('dH').textContent=(DOM?.surface_ha?DOM.surface_ha+' ha':'— ha');
   document.getElementById('dT').textContent=TRAITS.length;
   document.getElementById('rC').textContent=TRAITS.length;
   // Bars
   const ib=document.getElementById('dIB');
-  if(!PARCS.length) { ib.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Ajoutez des parcelles pour voir l’IFT</div>'; }
+  if(!_PA.length) { ib.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Ajoutez des parcelles pour voir l’IFT</div>'; }
   else {
-    ib.innerHTML=PARCS.map(p=>{
+    ib.innerHTML=_PA.map(p=>{
       const v=iftP(p.code),col=iftCol(iftSt(v)),pct=Math.min(100,v/4.8*100);
       return`<div class="ib"><div class="ibh"><span class="ibn">${p.code} · ${p.nom}</span><span class="ibv" style="color:${col}">${v.toFixed(1).replace('.',',')}</span></div><div class="ibar"><div class="if" style="width:${pct}%;background:${col}"></div><div class="ibar-ref" style="left:${(4/4.8*100).toFixed(0)}%"></div></div></div>`;
     }).join('');
   }
-  // Alertes
+  // Alertes (parcelles actives uniquement)
   let al='';
-  PARCS.forEach(p=>{ const v=iftP(p.code); if(v>4) al+=`<div class="al alr"><span class="al-i">🚨</span><div><b>IFT dépassé — ${p.nom}</b>IFT ${v.toFixed(1)} > 4,0 référence HVE.</div></div>`; });
+  _PA.forEach(p=>{ const v=iftP(p.code); if(v>4) al+=`<div class="al alr"><span class="al-i">🚨</span><div><b>IFT dépassé — ${p.nom}</b>IFT ${v.toFixed(1)} > 4,0 référence HVE.</div></div>`; });
   STOCK.filter(s=>s.etat==='low'||s.etat==='zero').forEach(s=>{ al+=`<div class="al alo"><span class="al-i">🧪</span><div><b>Stock critique — ${s.nom}</b>Reste ${s.qte_stock} ${s.unite_stock}.</div></div>`; });
   document.getElementById('dAl').innerHTML=al;
   // Derniers traits
@@ -443,12 +448,13 @@ function renderIFT() {
   });
   // Alertes
   let al='';
-  PARCS.forEach(p=>{const v=iftP(p.code);if(v>ref)al+=`<div class="al alr"><span class="al-i">🚨</span><div><b>${p.nom} — IFT ${v.toFixed(1)} · Référence dépassée</b></div></div>`;else if(v>ref*.85)al+=`<div class="al alo"><span class="al-i">⚠️</span><div><b>${p.nom} — IFT ${v.toFixed(1)} (${(v/ref*100).toFixed(0)}%)</b></div></div>`;});
+  const _PA=activeParcs();
+  _PA.forEach(p=>{const v=iftP(p.code);if(v>ref)al+=`<div class="al alr"><span class="al-i">🚨</span><div><b>${p.nom} — IFT ${v.toFixed(1)} · Référence dépassée</b></div></div>`;else if(v>ref*.85)al+=`<div class="al alo"><span class="al-i">⚠️</span><div><b>${p.nom} — IFT ${v.toFixed(1)} (${(v/ref*100).toFixed(0)}%)</b></div></div>`;});
   document.getElementById('iAl').innerHTML=al;
-  // Par parcelle
+  // Par parcelle (actives uniquement)
   const pl=document.getElementById('iPL');
-  if(!PARCS.length){pl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Ajoutez des parcelles dans l’onglet Parcelles</div>';return;}
-  pl.innerHTML=PARCS.map(p=>{
+  if(!_PA.length){pl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Ajoutez des parcelles dans l’onglet Parcelles</div>';return;}
+  pl.innerHTML=_PA.map(p=>{
     const v=iftP(p.code),pst=iftSt(v),col=iftCol(pst),pct=Math.min(100,v/4.8*100),nb=TRAITS.filter(t=>t.parcelle_code===p.code).length;
     return`<div class="pc ${pst}" onclick="showPD('${p.code}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
@@ -499,7 +505,7 @@ async function delTrait(id) {
 function fillSelects() {
   const sp=document.getElementById('tPa');
   sp.innerHTML='<option value="">— Choisir —</option>';
-  PARCS.forEach(p=>sp.innerHTML+=`<option value="${p.code}">${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)</option>`);
+  activeParcs().forEach(p=>sp.innerHTML+=`<option value="${p.code}">${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)</option>`);
   const pr=document.getElementById('tPr');
   pr.innerHTML='<option value="">— Choisir —</option>';
   STOCK.forEach(s=>{
@@ -799,7 +805,8 @@ async function saveParc(){
     }).select().single();
     if(error)throw error;
     PARCS.push(data);syncOK();fillSelects();renderDash();renderIFT();
-    const th=PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
+    // Surface domaine = somme des parcelles actives uniquement
+    const th=activeParcs().reduce((s,p)=>s+(p.surface_ha||0),0);
     await sb.from('domaines').update({surface_ha:th}).eq('id',DOM_ID);
     DOM.surface_ha=th;document.getElementById('dH').textContent=th.toFixed(2)+' ha';
     toast('✅ Parcelle enregistrée dans Supabase');closeM(null,'mAP');
@@ -814,7 +821,7 @@ let mI=false,mL=null,tOSM,tSAT;
 function initMap(){
   let center=[43.37,3.05],zoom=12;
   if(PARCS.length){
-    const wp=PARCS.filter(p=>p.coords&&p.coords.length);
+    const wp=PARCS.filter(p=>p.coords&&p.coords.length&&!p.archived_at);
     if(wp.length){
       const la=wp.flatMap(p=>p.coords.map(c=>c[0])),lo=wp.flatMap(p=>p.coords.map(c=>c[1]));
       center=[(Math.min(...la)+Math.max(...la))/2,(Math.min(...lo)+Math.max(...lo))/2];
@@ -831,8 +838,8 @@ function initMap(){
     // Supprimer tous les polygones et markers existants
     mL.eachLayer(l=>{if(l instanceof L.Polygon||l instanceof L.Marker)mL.removeLayer(l);});
   }
-  // Dessiner les parcelles
-  PARCS.forEach(p=>{
+  // Dessiner les parcelles (actives uniquement ; les archivées sont masquées de la carte)
+  PARCS.filter(p=>!p.archived_at).forEach(p=>{
     if(p.coords&&p.coords.length>=3){
       const poly=L.polygon(p.coords,{color:'#1a1410',weight:2,fillColor:p.color||'#4a8a42',fillOpacity:.55}).addTo(mL);
       const c=poly.getBounds().getCenter();
@@ -840,30 +847,86 @@ function initMap(){
       poly.bindPopup(`<b>${p.nom}</b><br>${p.surface_ha} ha · ${p.cepage||'—'}<br>IFT : <b>${iftP(p.code).toFixed(2)}</b>`);
     }
   });
-  const cl=document.getElementById('cL');
-  if(!PARCS.length){
-    cl.innerHTML=`<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucune parcelle<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM('mAP')">+ Ajouter manuellement</button></div>`;
-    document.getElementById('cS').textContent='Aucune parcelle configurée';
+  renderCarto();
+}
+
+// Liste des parcelles : actives par défaut, bascule vers archivées via toggle
+let showArchivedParcelles = false;
+function renderCarto(){
+  const cl=document.getElementById('cL'); if(!cl) return;
+  const active=PARCS.filter(p=>!p.archived_at);
+  const archived=PARCS.filter(p=>p.archived_at);
+  const displayed=showArchivedParcelles?archived:active;
+  const cs=document.getElementById('cS');
+  if(cs){
+    const totalHa=active.reduce((s,p)=>s+(p.surface_ha||0),0);
+    cs.textContent=`${active.length} parcelle(s) active(s) · ${totalHa.toFixed(2)} ha${archived.length?' · '+archived.length+' archivée(s)':''}`;
+  }
+  const toggle=archived.length?`<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn btghost btsm" onclick="toggleArchivedParcelles()" style="font-size:12px">${showArchivedParcelles?'👁️ Voir actives':'📦 Voir archivées ('+archived.length+')'}</button></div>`:'';
+  if(!displayed.length){
+    cl.innerHTML=toggle+`<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">${showArchivedParcelles?'Aucune parcelle archivée':'Aucune parcelle'}${showArchivedParcelles?'':'<br><button class="btn btghost btsm" style="margin-top:10px" onclick="showM(\'mAP\')">+ Ajouter manuellement</button>'}</div>`;
     return;
   }
-  document.getElementById('cS').textContent=`${PARCS.length} parcelle(s) · ${PARCS.reduce((s,p)=>s+(p.surface_ha||0),0).toFixed(2)} ha`;
-  cl.innerHTML=PARCS.map(p=>{
+  cl.innerHTML=toggle+displayed.map(p=>{
     const v=iftP(p.code),st=iftSt(v),col=iftCol(st);
-    return`<div class="card" style="position:relative"><div style="display:flex;align-items:center;justify-content:space-between;padding-right:32px" onclick="showPD('${p.code}')"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div><button onclick="event.stopPropagation();supprimerParcelle('${p.id}','${p.nom.replace(/'/g,'')}')" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--gris)" title="Supprimer">🗑️</button></div>`;
+    const nomEsc=(p.nom||'').replace(/'/g,"\\'");
+    const btns=showArchivedParcelles
+      ?`<div style="position:absolute;top:10px;right:10px;display:flex;gap:4px">
+          <button onclick="event.stopPropagation();desarchiverParcelle('${p.id}','${nomEsc}')" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--vert2)" title="Restaurer (désarchiver)">↩️</button>
+          <button onclick="event.stopPropagation();supprimerParcelle('${p.id}','${nomEsc}')" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--rouge)" title="Supprimer définitivement">🗑️</button>
+        </div>`
+      :`<button onclick="event.stopPropagation();archiverParcelle('${p.id}','${nomEsc}')" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--gris)" title="Archiver (garde l'historique)">📦</button>`;
+    const opacity=showArchivedParcelles?';opacity:0.75':'';
+    const archivedBadge=showArchivedParcelles?' <span style="font-size:10px;color:var(--gris);font-weight:normal;background:var(--gris3);padding:1px 6px;border-radius:8px;margin-left:4px">archivée</span>':'';
+    const rightPad=showArchivedParcelles?54:32;
+    return`<div class="card" style="position:relative${opacity}"><div style="display:flex;align-items:center;justify-content:space-between;padding-right:${rightPad}px" onclick="showPD('${p.code}')"><div><div style="font-weight:700;font-size:15px">${p.nom}${archivedBadge}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div>${btns}</div>`;
   }).join('');
 }
+function toggleArchivedParcelles(){ showArchivedParcelles=!showArchivedParcelles; renderCarto(); mI=false; initMap(); }
 function mSat(){if(!mL)return;try{mL.removeLayer(tOSM);}catch(e){}tSAT.addTo(mL);toast('🛰️ Vue satellite');}
 function mOSM(){if(!mL)return;try{mL.removeLayer(tSAT);}catch(e){}tOSM.addTo(mL);toast('🗺️ Vue plan');}
 function mCenter(){if(!mL||!PARCS.length)return;mL.setView([43.37,3.05],12);}
+// Archiver : soft delete qui conserve l'historique (conforme HVE/AB — 5-10 ans)
+async function archiverParcelle(id, nom) {
+  if (!confirm(`Archiver la parcelle "${nom}" ?\n\nElle sera masquée des vues courantes mais son historique de traitements sera conservé (obligatoire pour le registre phyto).\n\nTu pourras la restaurer à tout moment depuis "📦 Voir archivées".`)) return;
+  syncSaving();
+  try {
+    const when = new Date().toISOString();
+    const {error} = await sb.from('parcelles').update({archived_at: when}).eq('id', id);
+    if (error) throw error;
+    const p = PARCS.find(x => x.id === id); if (p) p.archived_at = when;
+    syncOK();
+    toast(`📦 Parcelle "${nom}" archivée`);
+    renderCarto(); renderDash(); renderIFT();
+    mI = false; initMap();
+  } catch(e) { syncErr(); toast('❌ ' + e.message); }
+}
+
+// Désarchiver : réintègre une parcelle dans les vues courantes
+async function desarchiverParcelle(id, nom) {
+  syncSaving();
+  try {
+    const {error} = await sb.from('parcelles').update({archived_at: null}).eq('id', id);
+    if (error) throw error;
+    const p = PARCS.find(x => x.id === id); if (p) p.archived_at = null;
+    syncOK();
+    toast(`↩️ Parcelle "${nom}" restaurée`);
+    renderCarto(); renderDash(); renderIFT();
+    mI = false; initMap();
+  } catch(e) { syncErr(); toast('❌ ' + e.message); }
+}
+
+// Suppression DÉFINITIVE (hard delete) — uniquement depuis la vue archivées avec double confirmation
 async function supprimerParcelle(id, nom) {
-  if (!confirm(`Supprimer la parcelle "${nom}" ?`)) return;
+  if (!confirm(`⚠️ SUPPRESSION DÉFINITIVE\n\nSupprimer "${nom}" pour toujours ?\nL'historique associé sera perdu irrémédiablement.\n\nPréfère "Archiver" si tu veux garder la traçabilité HVE/AB.`)) return;
+  if (!confirm(`Dernière confirmation : supprimer "${nom}" définitivement ?`)) return;
   syncSaving();
   try {
     const {error} = await sb.from('parcelles').delete().eq('id', id);
     if (error) throw error;
     PARCS = PARCS.filter(p => p.id !== id);
     syncOK();
-    toast(`🗑️ Parcelle "${nom}" supprimée`);
+    toast(`🗑️ Parcelle "${nom}" supprimée définitivement`);
     renderCarto(); renderDash(); renderIFT();
     mI = false; initMap();
   } catch(e) { syncErr(); toast('❌ ' + e.message); }
@@ -2043,7 +2106,7 @@ function fillObsSelects() {
     const sel = document.getElementById(id);
     if (!sel) return;
     const first = id==='obParc' ? '<option value="">— Toutes —</option>' : '<option value="">— Choisir —</option>';
-    sel.innerHTML = first + PARCS.map(p=>`<option value="${p.code}">${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)</option>`).join('');
+    sel.innerHTML = first + activeParcs().map(p=>`<option value="${p.code}">${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)</option>`).join('');
   });
   const obDate = document.getElementById('obDate');
   if (obDate && !obDate.value) obDate.value = new Date().toISOString().split('T')[0];
@@ -2537,31 +2600,110 @@ function afficherShpResult() {
   document.getElementById('shpDropContent').style.display = 'block';
   document.getElementById('shpResult').style.display = 'block';
   document.getElementById('shpResultMsg').className = 'al alg';
-  const totalHa = shpParcelles.reduce((s,p) => s+(p.surface_ha||0), 0);
-  document.getElementById('shpResultTxt').innerHTML = `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHa.toFixed(2)} ha total</b> Vérifiez avant d’importer.`;
-  document.getElementById('shpParcList').innerHTML = shpParcelles.map((p,i) => `
-    <div style="background:var(--gris3);border-radius:10px;padding:11px 13px;margin-bottom:7px">
+
+  // Détection des doublons : on compare le code à ceux des parcelles existantes (actives ET archivées)
+  const existingByCode = {};
+  PARCS.forEach(p => { if (p.code) existingByCode[p.code] = p; });
+
+  // Par défaut : doublons exclus, nouvelles importées
+  shpParcelles.forEach(p => {
+    const existing = existingByCode[p.code];
+    p._isDuplicate = !!existing;
+    p._duplicateOf = existing ? (existing.archived_at ? 'archivée' : 'active') : null;
+    if (p._include === undefined) p._include = !p._isDuplicate;
+  });
+
+  const nbDup = shpParcelles.filter(p => p._isDuplicate).length;
+  const nbNew = shpParcelles.length - nbDup;
+  const totalHaAll = shpParcelles.reduce((s,p) => s+(p.surface_ha||0), 0);
+
+  const dupWarning = nbDup
+    ? `<div style="background:#fff3cd;border-left:3px solid #e0a020;padding:8px 12px;border-radius:6px;margin-top:6px;font-size:12px;color:#7a5510"><b>⚠️ ${nbDup} doublon(s) détecté(s)</b> — décochés par défaut. Coche pour réimporter (écrase pas, crée une erreur).</div>`
+    : '';
+
+  document.getElementById('shpResultTxt').innerHTML =
+    `<b>${shpParcelles.length} parcelle(s) extraites — ${totalHaAll.toFixed(2)} ha total</b> · ${nbNew} nouvelle(s)${nbDup?', '+nbDup+' déjà présente(s)':''}. Vérifiez et décochez celles à exclure.${dupWarning}`;
+
+  // Boutons tout cocher/décocher
+  const bulkBtns = `<div style="display:flex;gap:6px;margin-bottom:8px;font-size:11px">
+    <button class="btn btghost btsm" onclick="shpToggleAll(true)" style="font-size:11px;padding:4px 10px">☑ Tout cocher</button>
+    <button class="btn btghost btsm" onclick="shpToggleAll(false)" style="font-size:11px;padding:4px 10px">☐ Tout décocher</button>
+    ${nbNew?`<button class="btn btghost btsm" onclick="shpToggleNewOnly()" style="font-size:11px;padding:4px 10px">🆕 Nouvelles uniquement</button>`:''}
+    <span id="shpSelCount" style="margin-left:auto;font-size:12px;color:var(--gris);align-self:center"></span>
+  </div>`;
+
+  document.getElementById('shpParcList').innerHTML = bulkBtns + shpParcelles.map((p,i) => {
+    const dupBadge = p._isDuplicate
+      ? `<span style="font-size:10px;background:#fde8c8;color:#7a5510;padding:2px 7px;border-radius:10px;margin-left:6px;font-weight:600">déjà présent · ${p._duplicateOf}</span>`
+      : `<span style="font-size:10px;background:#d4edda;color:var(--vert);padding:2px 7px;border-radius:10px;margin-left:6px;font-weight:600">nouveau</span>`;
+    const bgColor = p._isDuplicate ? '#faf1e0' : 'var(--gris3)';
+    return `
+    <div id="shpRow${i}" style="background:${bgColor};border-radius:10px;padding:11px 13px;margin-bottom:7px;transition:opacity 0.2s">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
-        <div style="flex:1;min-width:120px">
-          <div style="font-weight:700;font-size:13px">${p.nom}</div>
-          <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune} · ${p.coords.length} pts GPS</div>
-        </div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;min-width:120px">
+          <input type="checkbox" ${p._include?'checked':''} onchange="shpToggleRow(${i}, this.checked)" style="width:18px;height:18px;cursor:pointer;accent-color:var(--vert)">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:13px">${p.nom}${dupBadge}</div>
+            <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune} · ${p.coords.length} pts GPS</div>
+          </div>
+        </label>
         <div style="display:flex;gap:6px;align-items:center">
           <input type="text" value="${p.code}" placeholder="Code" style="width:70px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].code=this.value">
           <input type="text" value="${p.nom}" placeholder="Nom" style="width:140px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].nom=this.value">
         </div>
       </div>
-    </div>`).join('');
-  toast(`✅ ${shpParcelles.length} parcelles extraites`);
+    </div>`;
+  }).join('');
+
+  shpUpdateSelCount();
+  toast(`✅ ${shpParcelles.length} parcelles extraites${nbDup?' ('+nbDup+' doublons)':''}`);
+}
+
+function shpToggleRow(i, checked) {
+  if (!shpParcelles[i]) return;
+  shpParcelles[i]._include = checked;
+  const row = document.getElementById('shpRow'+i);
+  if (row) row.style.opacity = checked ? '1' : '0.45';
+  shpUpdateSelCount();
+}
+
+function shpToggleAll(checked) {
+  shpParcelles.forEach((p,i) => { p._include = checked; });
+  afficherShpResult();
+}
+
+function shpToggleNewOnly() {
+  shpParcelles.forEach(p => { p._include = !p._isDuplicate; });
+  afficherShpResult();
+}
+
+function shpUpdateSelCount() {
+  const el = document.getElementById('shpSelCount'); if (!el) return;
+  const sel = shpParcelles.filter(p => p._include);
+  const ha = sel.reduce((s,p) => s+(p.surface_ha||0), 0);
+  el.textContent = `${sel.length}/${shpParcelles.length} sélectionnées · ${ha.toFixed(2)} ha`;
 }
 
 async function confirmShpImport() {
   if (!shpParcelles.length) return;
+
+  const toImport = shpParcelles.filter(p => p._include !== false);
+  if (!toImport.length) {
+    toast('❌ Aucune parcelle sélectionnée');
+    return;
+  }
+
+  const nbDup = toImport.filter(p => p._isDuplicate).length;
+  if (nbDup) {
+    if (!confirm(`⚠️ ${nbDup} parcelle(s) sélectionnée(s) sont déjà présentes dans ton domaine (même code).\n\nEn continuant, ces parcelles échoueront à l'insertion (doublon Supabase) mais les nouvelles passeront.\n\nContinuer quand même ?`)) return;
+  }
+
   syncSaving();
-  let ok=0, err=0;
+  let ok=0, err=0, dup=0;
   const COLORS=['#c8a84c','#d4a840','#e0b840','#4a8a42','#7a3060','#a08030','#b09030','#80a030','#602040','#4a6aaa','#aa4a4a','#6aaa4a','#aa8a4a','#4aaa8a','#8a4aaa'];
-  for (let i=0; i<shpParcelles.length; i++) {
-    const p = shpParcelles[i];
+
+  for (let i=0; i<toImport.length; i++) {
+    const p = toImport[i];
     try {
       const {data,error} = await sb.from('parcelles').insert({
         domaine_id: DOM_ID, code: p.code, nom: p.nom,
@@ -2570,17 +2712,29 @@ async function confirmShpImport() {
         ref_cadastrale: `PAC2025-${p.code}`,
         coords: p.coords, color: p.color || COLORS[i%COLORS.length]
       }).select().single();
-      if (error) throw error;
-      PARCS.push(data); ok++;
-    } catch(e) { err++; console.error(e); }
+      if (error) {
+        // Doublon SQL (unique constraint) => counted as dup, pas comme erreur
+        if (/duplicate|unique/i.test(error.message||'')) { dup++; }
+        else { throw error; }
+      } else {
+        PARCS.push(data); ok++;
+      }
+    } catch(e) { err++; console.error('Import parcelle', p.code, e); }
   }
-  const totalHa = PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
+
+  // Surface domaine = somme des parcelles actives uniquement
+  const totalHa = activeParcs().reduce((s,p)=>s+(p.surface_ha||0),0);
   await sb.from('domaines').update({surface_ha:Math.round(totalHa*100)/100}).eq('id',DOM_ID);
   DOM.surface_ha = Math.round(totalHa*100)/100;
   syncOK();
   fillSelects(); renderDash(); renderIFT();
   mI=false; initMap();
-  toast(`✅ ${ok} parcelle(s) importées${err?` · ${err} erreur(s)`:''}· Carte mise à jour`);
+
+  const parts = [`✅ ${ok} parcelle(s) importée(s)`];
+  if (dup) parts.push(`${dup} doublon(s) ignoré(s)`);
+  if (err) parts.push(`${err} erreur(s)`);
+  toast(parts.join(' · ') + ' · Carte mise à jour');
+
   resetShpImport();
   document.getElementById('shpImportCard').style.display = 'none';
 }
