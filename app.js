@@ -536,74 +536,260 @@ function selP() {
   uTP();
 }
 
+// ─── MÉLANGE / TANK-MIX ───
+let MIX_COUNTER = 0; // compteur d'IDs uniques pour les rows dynamiques
+
+function addMixRow() {
+  MIX_COUNTER++;
+  const i = MIX_COUNTER;
+  const container = document.getElementById('mixRows');
+  const wrap = document.createElement('div');
+  wrap.className = 'mix-row';
+  wrap.dataset.row = i;
+  wrap.style.cssText = 'border:2px solid var(--gris2);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--blanc)';
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--or);text-transform:uppercase;letter-spacing:.07em">🧪 Produit ${i+1}</div>
+      <button type="button" onclick="removeMixRow(${i})" style="background:none;border:none;color:var(--rouge);font-size:18px;cursor:pointer;padding:0 8px" title="Retirer ce produit">✕</button>
+    </div>
+    <div class="fg"><select id="tPr_${i}" onchange="selPRow(${i})"><option value="">— Choisir —</option></select>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <button type="button" class="btn btghost btsm" onclick="showM('mAddProd')">✏️ Saisie manuelle</button>
+        <button type="button" class="btn btghost btsm" onclick="go('sScan',document.querySelectorAll('.tab')[3])">📷 Scanner étiquette</button>
+      </div>
+    </div>
+    <div class="al alb" id="sAl_${i}" style="display:none;margin:8px 0"><span class="al-i">ℹ️</span><div id="sAlT_${i}"></div></div>
+    <div class="row2">
+      <div class="fg"><label>💊 Dose appliquée</label><div class="ig"><input type="number" id="tDo_${i}" step="0.01" oninput="uTPRow(${i})"><span class="isuf" id="tDU_${i}">kg/ha</span></div></div>
+      <div class="fg"><label>📐 Dose référence ANSES</label><div class="ig"><input type="number" id="tDR_${i}" step="0.01" oninput="uTPRow(${i})"><span class="isuf">kg/ha</span></div></div>
+    </div>
+    <div class="al alb" id="iF_${i}" style="display:none;margin:8px 0"><span class="al-i">🧮</span><div id="iFT_${i}"></div></div>
+    <div class="row2"><div class="fg"><label>🔢 N° AMM</label><input type="text" id="tA_${i}" placeholder="FR-XXXX-XXXX"></div><div class="fg"></div></div>
+    <div class="al alg" id="dD_${i}" style="display:none"><span class="al-i">✅</span><div id="dDT_${i}"></div></div>
+  `;
+  container.appendChild(wrap);
+  // Remplir la liste des produits
+  const sel = document.getElementById('tPr_' + i);
+  STOCK.forEach(s => {
+    const e = s.etat === 'zero' ? '🚫' : s.etat === 'low' ? '⚠️' : '✓';
+    sel.innerHTML += `<option value="${s.id}" data-ref="${s.dose_reference || 1}" data-unit="${s.dose_unite || 'kg/ha'}" data-dar="${s.dar || 0}" data-cat="${s.categorie || ''}" data-amm="${s.amm || ''}">${e} ${s.nom} (${s.qte_stock} ${s.unite_stock})</option>`;
+  });
+  if (!STOCK.length) sel.innerHTML += '<option disabled>— Scanner une étiquette pour ajouter un produit —</option>';
+  uTP();
+}
+
+function removeMixRow(i) {
+  const el = document.querySelector(`#mixRows .mix-row[data-row="${i}"]`);
+  if (el) el.remove();
+  uTP();
+}
+
+function selPRow(i) {
+  const sel = document.getElementById('tPr_' + i);
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt.value) return;
+  document.getElementById('tDR_' + i).value = opt.dataset.ref || 1;
+  document.getElementById('tDU_' + i).textContent = opt.dataset.unit || 'kg/ha';
+  document.getElementById('tA_' + i).value = opt.dataset.amm || '';
+  const s = STOCK.find(x => x.id === opt.value);
+  if (s) {
+    const al = document.getElementById('sAl_' + i);
+    al.style.display = 'flex';
+    al.className = 'al ' + (s.etat === 'zero' ? 'alr' : s.etat === 'low' ? 'alo' : 'alb');
+    document.getElementById('sAlT_' + i).innerHTML = `Stock : <b>${s.qte_stock} ${s.unite_stock}</b>${s.etat === 'zero' ? ' — <b>ÉPUISÉ</b>' : s.etat === 'low' ? ' — <b>Sous le seuil</b>' : ''}`;
+  }
+  const dar = parseInt(opt.dataset.dar) || 0;
+  if (dar > 0) {
+    const d = new Date(); d.setDate(d.getDate() + dar);
+    document.getElementById('dD_' + i).style.display = 'flex';
+    document.getElementById('dDT_' + i).innerHTML = `<b>DAR ${dar} jours</b> · Récolte possible à partir du ${d.toLocaleDateString('fr-FR')}`;
+  }
+  uTPRow(i);
+}
+
+function uTPRow(i) {
+  const prod = document.getElementById('tPr_' + i)?.value;
+  const dose = parseFloat(document.getElementById('tDo_' + i)?.value);
+  const dRef = parseFloat(document.getElementById('tDR_' + i)?.value);
+  const iFEl = document.getElementById('iF_' + i);
+  const iFTEl = document.getElementById('iFT_' + i);
+  if (prod && dose && dRef) {
+    const ift = iFT(dose, dRef);
+    iFEl.style.display = 'flex';
+    iFTEl.innerHTML = `<b>IFT = ${dose} ÷ ${dRef} = ${ift.toFixed(2)}</b> (${(dose / dRef * 100).toFixed(0)}% de la dose référence ANSES)`;
+  } else if (iFEl) {
+    iFEl.style.display = 'none';
+  }
+  uTP();
+}
+
+// Collecte toutes les lignes produits du mélange (principal + supplémentaires)
+function collectMixRows() {
+  const rows = [];
+  // Ligne principale (IDs statiques)
+  const mainProd = document.getElementById('tPr').value;
+  const mainDose = parseFloat(document.getElementById('tDo').value);
+  const mainDRef = parseFloat(document.getElementById('tDR').value);
+  if (mainProd && mainDose && mainDRef) {
+    const sel = document.getElementById('tPr');
+    const opt = sel.options[sel.selectedIndex];
+    rows.push({
+      idx: 0,
+      prodId: mainProd,
+      dose: mainDose,
+      dRef: mainDRef,
+      amm: document.getElementById('tA').value,
+      unit: opt?.dataset.unit || 'kg/ha',
+      cat: opt?.dataset.cat || '',
+      dar: parseInt(opt?.dataset.dar) || 0,
+      nom: (opt?.text || '').replace(/^[✓⚠️🚫]\s/, '').split(' (')[0],
+    });
+  }
+  // Lignes supplémentaires (IDs dynamiques)
+  document.querySelectorAll('#mixRows .mix-row').forEach(row => {
+    const i = row.dataset.row;
+    const p = document.getElementById('tPr_' + i)?.value;
+    const d = parseFloat(document.getElementById('tDo_' + i)?.value);
+    const r = parseFloat(document.getElementById('tDR_' + i)?.value);
+    if (p && d && r) {
+      const sel = document.getElementById('tPr_' + i);
+      const opt = sel.options[sel.selectedIndex];
+      rows.push({
+        idx: i,
+        prodId: p,
+        dose: d,
+        dRef: r,
+        amm: document.getElementById('tA_' + i).value,
+        unit: opt?.dataset.unit || 'kg/ha',
+        cat: opt?.dataset.cat || '',
+        dar: parseInt(opt?.dataset.dar) || 0,
+        nom: (opt?.text || '').replace(/^[✓⚠️🚫]\s/, '').split(' (')[0],
+      });
+    }
+  });
+  return rows;
+}
+
 function uTP() {
-  const parc=document.getElementById('tPa').value,prod=document.getElementById('tPr').value;
-  const dose=parseFloat(document.getElementById('tDo').value),dRef=parseFloat(document.getElementById('tDR').value);
-  const btn=document.getElementById('bST');
-  if(!prod||!dose||!dRef){
-    document.getElementById('ipv').textContent='—';document.getElementById('ipv').classList.remove('has');
-    document.getElementById('ipp').classList.remove('has');document.getElementById('iF').style.display='none';
-    document.getElementById('impB').style.display='none';btn.disabled=true;return;
+  const parc = document.getElementById('tPa').value;
+  const btn = document.getElementById('bST');
+  const rows = collectMixRows();
+
+  // Affichage IFT par produit (ligne principale)
+  const mainProd = document.getElementById('tPr').value;
+  const mainDose = parseFloat(document.getElementById('tDo').value);
+  const mainDRef = parseFloat(document.getElementById('tDR').value);
+  if (mainProd && mainDose && mainDRef) {
+    const ift = iFT(mainDose, mainDRef);
+    document.getElementById('ipv').textContent = ift.toFixed(2).replace('.', ',');
+    document.getElementById('ipv').classList.add('has');
+    document.getElementById('ipp').classList.add('has');
+    document.getElementById('ipd').textContent = `${mainDose} ÷ ${mainDRef} = IFT ${ift.toFixed(2)}`;
+    document.getElementById('iF').style.display = 'flex';
+    document.getElementById('iFT').innerHTML = `<b>IFT = ${mainDose} ÷ ${mainDRef} = ${ift.toFixed(2)}</b> (${(mainDose / mainDRef * 100).toFixed(0)}% de la dose référence ANSES)`;
+  } else {
+    document.getElementById('ipv').textContent = '—';
+    document.getElementById('ipv').classList.remove('has');
+    document.getElementById('ipp').classList.remove('has');
+    document.getElementById('iF').style.display = 'none';
   }
-  const ift=iFT(dose,dRef);
-  document.getElementById('ipv').textContent=ift.toFixed(2).replace('.',',');
-  document.getElementById('ipv').classList.add('has');document.getElementById('ipp').classList.add('has');
-  document.getElementById('ipd').textContent=`${dose} ÷ ${dRef} = IFT ${ift.toFixed(2)}`;
-  document.getElementById('iF').style.display='flex';
-  document.getElementById('iFT').innerHTML=`<b>IFT = ${dose} ÷ ${dRef} = ${ift.toFixed(2)}</b> (${(dose/dRef*100).toFixed(0)}% de la dose référence ANSES)`;
-  if(parc){
-    const before=iftP(parc),after=before+ift;
-    document.getElementById('impB').style.display='block';
-    const be=document.getElementById('iBf'),ae=document.getElementById('iBa');
-    be.textContent=before.toFixed(1).replace('.',',');be.style.color=iftCol(iftSt(before));
-    ae.textContent=after.toFixed(1).replace('.',',');ae.style.color=iftCol(iftSt(after));
+
+  // IFT total du passage (somme)
+  const totIFT = rows.reduce((s, r) => s + iFT(r.dose, r.dRef), 0);
+  const totEl = document.getElementById('iFTot');
+  const totVEl = document.getElementById('iFTotV');
+  const totDEl = document.getElementById('iFTotD');
+  if (rows.length >= 2) {
+    totEl.style.display = 'block';
+    totVEl.textContent = totIFT.toFixed(2).replace('.', ',');
+    totDEl.textContent = `= ${rows.map(r => (r.dose / r.dRef).toFixed(2)).join(' + ')} (${rows.length} produits)`;
+  } else {
+    totEl.style.display = 'none';
   }
-  btn.disabled=!(parc&&prod&&dose);
+
+  // Impact parcelle
+  if (parc && rows.length) {
+    const before = iftP(parc), after = before + totIFT;
+    document.getElementById('impB').style.display = 'block';
+    const be = document.getElementById('iBf'), ae = document.getElementById('iBa');
+    be.textContent = before.toFixed(1).replace('.', ',');
+    be.style.color = iftCol(iftSt(before));
+    ae.textContent = after.toFixed(1).replace('.', ',');
+    ae.style.color = iftCol(iftSt(after));
+  } else {
+    document.getElementById('impB').style.display = 'none';
+  }
+
+  btn.disabled = !(parc && rows.length);
 }
 
 async function saveTrait() {
-  const pCode=document.getElementById('tPa').value,pId=document.getElementById('tPr').value;
-  const dose=parseFloat(document.getElementById('tDo').value),dRef=parseFloat(document.getElementById('tDR').value);
-  if(!pCode||!pId||!dose){toast('⚠️ Parcelle et produit obligatoires');return;}
-  const ift=iFT(dose,dRef);
-  const sel=document.getElementById('tPr'),opt=sel.options[sel.selectedIndex];
-  const pNom=opt?opt.text.replace(/^[✓⚠️🚫]\s/,'').split(' (')[0]:'';
-  const parc=PARCS.find(p=>p.code===pCode);
+  const pCode = document.getElementById('tPa').value;
+  if (!pCode) { toast('⚠️ Parcelle obligatoire'); return; }
+  const rows = collectMixRows();
+  if (!rows.length) { toast('⚠️ Au moins un produit (avec dose) est obligatoire'); return; }
+  const parc = PARCS.find(p => p.code === pCode);
+  const dateApp = document.getElementById('tD').value;
+  const heureApp = document.getElementById('tH').value;
+  const bbch = document.getElementById('tB').value;
+  const adjuvants = document.getElementById('tAd').value;
   syncSaving();
   try {
-    const {data,error}=await sb.from('traitements').insert({
-      domaine_id:DOM_ID,parcelle_id:parc?.id,produit_id:pId,
-      date_application:document.getElementById('tD').value,
-      heure_application:document.getElementById('tH').value,
-      campagne:AN,parcelle_code:pCode,produit_nom:pNom,
-      produit_categorie:opt?.dataset.cat||'',
-      amm:document.getElementById('tA').value,
-      dose_appliquee:dose,dose_reference:dRef,
-      dose_unite:opt?.dataset.unit||'kg/ha',ift,
-      bbch:document.getElementById('tB').value,
-      adjuvants:document.getElementById('tAd').value,
-      dar:parseInt(opt?.dataset.dar)||0,
-    }).select().single();
-    if(error) throw error;
-    TRAITS.unshift(data);
-    // Déduire stock
-    const s=STOCK.find(x=>x.id===pId);
-    if(s&&parc){
-      const nq=Math.max(0,Math.round((s.qte_stock-dose*(parc.surface_ha||1))*100)/100);
-      const ne=nq<=0?'zero':nq<=s.seuil_alerte?'low':'ok';
-      await sb.from('produits_phyto').update({qte_stock:nq,etat:ne}).eq('id',pId);
-      s.qte_stock=nq;s.etat=ne;
+    // Insertion en batch — une ligne par produit, toutes partagent même date+heure+parcelle
+    const payload = rows.map(r => ({
+      domaine_id: DOM_ID,
+      parcelle_id: parc?.id,
+      produit_id: r.prodId,
+      date_application: dateApp,
+      heure_application: heureApp,
+      campagne: AN,
+      parcelle_code: pCode,
+      produit_nom: r.nom,
+      produit_categorie: r.cat,
+      amm: r.amm,
+      dose_appliquee: r.dose,
+      dose_reference: r.dRef,
+      dose_unite: r.unit,
+      ift: iFT(r.dose, r.dRef),
+      bbch,
+      adjuvants,
+      dar: r.dar,
+    }));
+    const { data, error } = await sb.from('traitements').insert(payload).select();
+    if (error) throw error;
+    data.forEach(d => TRAITS.unshift(d));
+
+    // Déduire stock pour chaque produit du mélange
+    for (const r of rows) {
+      const s = STOCK.find(x => x.id === r.prodId);
+      if (s && parc) {
+        const nq = Math.max(0, Math.round((s.qte_stock - r.dose * (parc.surface_ha || 1)) * 100) / 100);
+        const ne = nq <= 0 ? 'zero' : nq <= s.seuil_alerte ? 'low' : 'ok';
+        await sb.from('produits_phyto').update({ qte_stock: nq, etat: ne }).eq('id', r.prodId);
+        s.qte_stock = nq; s.etat = ne;
+      }
     }
+
     syncOK();
-    renderDash();renderIFT();renderRegistre();renderStock('all');fillSelects();
-    toast(`✅ Traitement sauvegardé · IFT +${ift.toFixed(2)} · Stock déduit`);
-    ['tDo','tDR','tA','tAd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    document.getElementById('tPr').value='';
-    document.getElementById('ipv').textContent='—';document.getElementById('ipv').classList.remove('has');
-    document.getElementById('ipp').classList.remove('has');document.getElementById('iF').style.display='none';
-    document.getElementById('impB').style.display='none';document.getElementById('sAl').style.display='none';
-    document.getElementById('dD').style.display='none';document.getElementById('bST').disabled=true;
-  } catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+    renderDash(); renderIFT(); renderRegistre(); renderStock('all'); fillSelects();
+    const totIFT = rows.reduce((s, r) => s + iFT(r.dose, r.dRef), 0);
+    toast(`✅ Passage enregistré · ${rows.length} produit${rows.length > 1 ? 's' : ''} · IFT +${totIFT.toFixed(2)}`);
+
+    // Reset form — ligne principale
+    ['tDo', 'tDR', 'tA', 'tAd'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('tPr').value = '';
+    document.getElementById('ipv').textContent = '—';
+    document.getElementById('ipv').classList.remove('has');
+    document.getElementById('ipp').classList.remove('has');
+    document.getElementById('iF').style.display = 'none';
+    document.getElementById('impB').style.display = 'none';
+    document.getElementById('sAl').style.display = 'none';
+    document.getElementById('dD').style.display = 'none';
+    document.getElementById('iFTot').style.display = 'none';
+    // Reset rows supplémentaires : on les supprime toutes
+    document.getElementById('mixRows').innerHTML = '';
+    document.getElementById('bST').disabled = true;
+  } catch (e) { syncErr(); toast('❌ Erreur : ' + e.message); }
 }
 
 // ══════════════════════════════════════════
@@ -3107,11 +3293,14 @@ function searchPhyto(query) {
     })
     .slice(0, 15);
   if (!matches.length) {
+    // Auto-remplit le champ « Nom commercial » avec ce que l'utilisateur a tapé
+    // pour qu'il puisse simplement cliquer « Enregistrer » sans avoir à retaper.
+    sv('mpNom', query);
     res.style.display = 'block';
     res.innerHTML = `<div style="padding:12px;font-size:13px;color:var(--gris);text-align:center">
       Aucun produit local pour "<b>${query}</b>"<br>
-      <button class="btn btgold btsm" style="margin-top:8px" onclick="rechercherEphy('${query.replace(/'/g,"'")}')">🔍 Chercher sur E-phy ANSES</button>
-      <div style="font-size:11px;margin-top:6px;color:var(--gris)">ou saisir manuellement ci-dessous</div>
+      <div style="font-size:12px;margin-top:8px;color:var(--terre);font-weight:600">✅ « ${query} » a été pré-rempli ci-dessous — complète les infos puis clique 💾 Enregistrer</div>
+      <button class="btn btgold btsm" style="margin-top:8px" onclick="rechercherEphy('${query.replace(/'/g,"&#39;")}')">🔍 Chercher sur E-phy ANSES</button>
     </div>`;
     return;
   }
