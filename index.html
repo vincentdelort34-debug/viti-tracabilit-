@@ -149,15 +149,45 @@
   <div class="card">
     <div class="row2"><div class="fg"><label>📅 Date</label><input type="date" id="tD"></div><div class="fg"><label>🕐 Heure</label><input type="time" id="tH" value="08:00"></div></div>
     <div class="fg"><label>📍 Parcelle</label><select id="tPa" onchange="uTP()"><option value="">— Choisir —</option></select></div>
-    <div class="fg"><label>🧪 Produit</label><select id="tPr" onchange="selP()"><option value="">— Choisir —</option></select></div>
-    <div class="al alb" id="sAl" style="display:none;margin-bottom:12px"><span class="al-i">ℹ️</span><div id="sAlT"></div></div>
-    <div class="row2">
-      <div class="fg"><label>💊 Dose appliquée</label><div class="ig"><input type="number" id="tDo" step="0.01" oninput="uTP()"><span class="isuf" id="tDU">kg/ha</span></div></div>
-      <div class="fg"><label>📐 Dose référence ANSES</label><div class="ig"><input type="number" id="tDR" step="0.01" oninput="uTP()"><span class="isuf">kg/ha</span></div></div>
+
+    <!-- MÉLANGE DE BOUILLIE — PRODUIT 1 (principal) -->
+    <div class="mix-row" data-row="0" style="border:2px solid var(--gris2);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--blanc)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--or);text-transform:uppercase;letter-spacing:.07em">🧪 Produit 1</div>
+      </div>
+      <div class="fg"><select id="tPr" onchange="selP()"><option value="">— Choisir —</option></select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <button type="button" class="btn btghost btsm" onclick="showM('mAddProd')">✏️ Saisie manuelle</button>
+          <button type="button" class="btn btghost btsm" onclick="go('sScan',document.querySelectorAll('.tab')[3])">📷 Scanner étiquette</button>
+        </div>
+      </div>
+      <div class="al alb" id="sAl" style="display:none;margin:8px 0"><span class="al-i">ℹ️</span><div id="sAlT"></div></div>
+      <div class="row2">
+        <div class="fg"><label>💊 Dose appliquée</label><div class="ig"><input type="number" id="tDo" step="0.01" oninput="uTP()"><span class="isuf" id="tDU">kg/ha</span></div></div>
+        <div class="fg"><label>📐 Dose référence ANSES</label><div class="ig"><input type="number" id="tDR" step="0.01" oninput="uTP()"><span class="isuf">kg/ha</span></div></div>
+      </div>
+      <div class="al alb" id="iF" style="display:none;margin:8px 0"><span class="al-i">🧮</span><div id="iFT"></div></div>
+      <div class="row2"><div class="fg"><label>🔢 N° AMM</label><input type="text" id="tA" placeholder="FR-XXXX-XXXX"></div><div class="fg"></div></div>
+      <div class="al alg" id="dD" style="display:none"><span class="al-i">✅</span><div id="dDT"></div></div>
     </div>
-    <div class="al alb" id="iF" style="display:none;margin-bottom:12px"><span class="al-i">🧮</span><div id="iFT"></div></div>
+
+    <!-- Container pour les produits supplémentaires du mélange -->
+    <div id="mixRows"></div>
+
+    <!-- Bouton ajouter produit au mélange -->
+    <button type="button" class="btn btghost btsm" onclick="addMixRow()" style="width:100%;margin-bottom:10px;border:2px dashed var(--or2);color:var(--or);font-weight:700">➕ Ajouter un produit au mélange (tank-mix)</button>
+
+    <!-- IFT total -->
+    <div id="iFTot" style="display:none;background:linear-gradient(135deg,var(--or2),var(--or));color:var(--noir);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-weight:700">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;opacity:.7">IFT total du passage (mélange)</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-top:2px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px" id="iFTotV">—</div>
+        <div style="font-size:11px;opacity:.7" id="iFTotD"></div>
+      </div>
+    </div>
+
     <div id="impB" style="display:none;background:var(--gris3);border-radius:10px;padding:12px;margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;margin-bottom:8px">Impact parcelle</div>
+      <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;margin-bottom:8px">Impact parcelle (après mélange)</div>
       <div style="display:flex;gap:10px;align-items:center">
         <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Avant</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700" id="iBf">—</div></div>
         <div style="font-size:16px;color:var(--gris)">→</div>
@@ -165,10 +195,9 @@
         <div style="text-align:center;flex:1"><div style="font-size:11px;color:var(--gris)">Réf. HVE</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--or)">4,0</div></div>
       </div>
     </div>
-    <div class="row2"><div class="fg"><label>🔢 N° AMM</label><input type="text" id="tA" placeholder="FR-XXXX-XXXX"></div><div class="fg"><label>🌱 Stade BBCH</label><select id="tB"><option>BBCH 09</option><option>BBCH 53</option><option>BBCH 65</option><option>BBCH 71</option><option>BBCH 79</option><option>BBCH 81</option></select></div></div>
-    <div class="fg"><label>🧫 Adjuvants</label><input type="text" id="tAd" placeholder="Facultatif"></div>
-    <div class="al alg" id="dD" style="display:none"><span class="al-i">✅</span><div id="dDT"></div></div>
-    <button class="btn btp" id="bST" onclick="saveTrait()" disabled>💾 Enregistrer dans le cloud</button>
+
+    <div class="row2"><div class="fg"><label>🌱 Stade BBCH</label><select id="tB"><option>BBCH 09</option><option>BBCH 53</option><option>BBCH 65</option><option>BBCH 71</option><option>BBCH 79</option><option>BBCH 81</option></select></div><div class="fg"><label>🧫 Adjuvants</label><input type="text" id="tAd" placeholder="Facultatif"></div></div>
+    <button class="btn btp" id="bST" onclick="saveTrait()" disabled>💾 Enregistrer le passage</button>
   </div>
   <div class="card" style="background:linear-gradient(135deg,var(--vigne),#0f2a0f);color:#fff;border:none">
     <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:var(--or2);margin-bottom:6px">Formule IFT</div>
