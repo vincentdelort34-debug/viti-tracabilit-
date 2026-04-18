@@ -388,7 +388,9 @@ function go(id, btn) {
 // ══════════════════════════════════════════
 //  IFT MOTEUR
 // ══════════════════════════════════════════
-const iFT=(d,r)=>(!d||!r)?0:Math.round(d/r*100)/100;
+// IFT : normalise g→kg et mL→L avant division (ref ANSES toujours en kg ou L /ha)
+const normD=(v,u)=>(u==='g/ha'||u==='mL/ha')?v/1000:v;
+const iFT=(d,r,unit)=>(!d||!r)?0:Math.round(normD(d,unit)/r*100)/100;
 const iftP=code=>TRAITS.filter(t=>t.parcelle_code===code).reduce((s,t)=>s+(t.ift||0),0);
 // Parcelles actives (non archivées) — utilisé pour stats, IFT, dropdowns
 const activeParcs=()=>PARCS.filter(p=>!p.archived_at);
@@ -523,10 +525,19 @@ async function delTrait(id) {
 // ══════════════════════════════════════════
 //  TRAITEMENT
 // ══════════════════════════════════════════
+function getSelectedParcs() {
+  return Array.from(document.querySelectorAll('#tPaWrap input[type=checkbox]:checked')).map(cb => cb.value);
+}
+
 function fillSelects() {
-  const sp=document.getElementById('tPa');
-  sp.innerHTML='<option value="">— Choisir —</option>';
-  activeParcs().forEach(p=>sp.innerHTML+=`<option value="${p.code}">${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)</option>`);
+  const wrap=document.getElementById('tPaWrap');
+  wrap.innerHTML='';
+  activeParcs().forEach(p=>{
+    const lbl=document.createElement('label');
+    lbl.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 4px;cursor:pointer;font-size:14px';
+    lbl.innerHTML=`<input type="checkbox" value="${p.code}" onchange="uTP()" style="width:18px;height:18px;accent-color:var(--vigne)"> ${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)`;
+    wrap.appendChild(lbl);
+  });
   const pr=document.getElementById('tPr');
   pr.innerHTML='<option value="">— Choisir —</option>';
   STOCK.forEach(s=>{
@@ -632,12 +643,14 @@ function uTPRow(i) {
   const prod = document.getElementById('tPr_' + i)?.value;
   const dose = parseFloat(document.getElementById('tDo_' + i)?.value);
   const dRef = parseFloat(document.getElementById('tDR_' + i)?.value);
+  const unit = document.getElementById('tDU_' + i)?.textContent || 'kg/ha';
   const iFEl = document.getElementById('iF_' + i);
   const iFTEl = document.getElementById('iFT_' + i);
   if (prod && dose && dRef) {
-    const ift = iFT(dose, dRef);
+    const dN = normD(dose, unit);
+    const ift = iFT(dose, dRef, unit);
     iFEl.style.display = 'flex';
-    iFTEl.innerHTML = `<b>IFT = ${dose} ÷ ${dRef} = ${ift.toFixed(2)}</b> (${(dose / dRef * 100).toFixed(0)}% de la dose référence ANSES)`;
+    iFTEl.innerHTML = `<b>IFT = ${dN} ÷ ${dRef} = ${ift.toFixed(2)}</b> (${(dN / dRef * 100).toFixed(0)}% de la dose référence ANSES)`;
   } else if (iFEl) {
     iFEl.style.display = 'none';
   }
@@ -692,7 +705,7 @@ function collectMixRows() {
 }
 
 function uTP() {
-  const parc = document.getElementById('tPa').value;
+  const selParcs = getSelectedParcs();
   const btn = document.getElementById('bST');
   const rows = collectMixRows();
 
@@ -700,14 +713,16 @@ function uTP() {
   const mainProd = document.getElementById('tPr').value;
   const mainDose = parseFloat(document.getElementById('tDo').value);
   const mainDRef = parseFloat(document.getElementById('tDR').value);
+  const mainUnit = document.getElementById('tDU').textContent || 'kg/ha';
   if (mainProd && mainDose && mainDRef) {
-    const ift = iFT(mainDose, mainDRef);
+    const dNorm = normD(mainDose, mainUnit);
+    const ift = iFT(mainDose, mainDRef, mainUnit);
     document.getElementById('ipv').textContent = ift.toFixed(2).replace('.', ',');
     document.getElementById('ipv').classList.add('has');
     document.getElementById('ipp').classList.add('has');
-    document.getElementById('ipd').textContent = `${mainDose} ÷ ${mainDRef} = IFT ${ift.toFixed(2)}`;
+    document.getElementById('ipd').textContent = `${dNorm} ÷ ${mainDRef} = IFT ${ift.toFixed(2)}`;
     document.getElementById('iF').style.display = 'flex';
-    document.getElementById('iFT').innerHTML = `<b>IFT = ${mainDose} ÷ ${mainDRef} = ${ift.toFixed(2)}</b> (${(mainDose / mainDRef * 100).toFixed(0)}% de la dose référence ANSES)`;
+    document.getElementById('iFT').innerHTML = `<b>IFT = ${dNorm} ÷ ${mainDRef} = ${ift.toFixed(2)}</b> (${(dNorm / mainDRef * 100).toFixed(0)}% de la dose référence ANSES)`;
   } else {
     document.getElementById('ipv').textContent = '—';
     document.getElementById('ipv').classList.remove('has');
@@ -716,7 +731,7 @@ function uTP() {
   }
 
   // IFT total du passage (somme)
-  const totIFT = rows.reduce((s, r) => s + iFT(r.dose, r.dRef), 0);
+  const totIFT = rows.reduce((s, r) => s + iFT(r.dose, r.dRef, r.unit), 0);
   const totEl = document.getElementById('iFTot');
   const totVEl = document.getElementById('iFTotV');
   const totDEl = document.getElementById('iFTotD');
@@ -728,73 +743,84 @@ function uTP() {
     totEl.style.display = 'none';
   }
 
-  // Impact parcelle
-  if (parc && rows.length) {
-    const before = iftP(parc), after = before + totIFT;
+  // Impact parcelle (affiche pour la 1ère parcelle sélectionnée)
+  if (selParcs.length && rows.length) {
+    const before = iftP(selParcs[0]), after = before + totIFT;
     document.getElementById('impB').style.display = 'block';
     const be = document.getElementById('iBf'), ae = document.getElementById('iBa');
     be.textContent = before.toFixed(1).replace('.', ',');
     be.style.color = iftCol(iftSt(before));
     ae.textContent = after.toFixed(1).replace('.', ',');
     ae.style.color = iftCol(iftSt(after));
+    if (selParcs.length > 1) {
+      document.getElementById('ipd').textContent += ` · ${selParcs.length} parcelles`;
+    }
   } else {
     document.getElementById('impB').style.display = 'none';
   }
 
-  btn.disabled = !(parc && rows.length);
+  btn.disabled = !(selParcs.length && rows.length);
 }
 
 async function saveTrait() {
-  const pCode = document.getElementById('tPa').value;
-  if (!pCode) { toast('⚠️ Parcelle obligatoire'); return; }
+  const selParcs = getSelectedParcs();
+  if (!selParcs.length) { toast('⚠️ Parcelle obligatoire'); return; }
   const rows = collectMixRows();
   if (!rows.length) { toast('⚠️ Au moins un produit (avec dose) est obligatoire'); return; }
-  const parc = PARCS.find(p => p.code === pCode);
   const dateApp = document.getElementById('tD').value;
   const heureApp = document.getElementById('tH').value;
   const bbch = document.getElementById('tB').value;
   const adjuvants = document.getElementById('tAd').value;
   syncSaving();
   try {
-    // Insertion en batch — une ligne par produit, toutes partagent même date+heure+parcelle
-    const payload = rows.map(r => ({
-      domaine_id: DOM_ID,
-      parcelle_id: parc?.id,
-      produit_id: r.prodId,
-      date_application: dateApp,
-      heure_application: heureApp,
-      campagne: AN,
-      parcelle_code: pCode,
-      produit_nom: r.nom,
-      produit_categorie: r.cat,
-      amm: r.amm,
-      dose_appliquee: r.dose,
-      dose_reference: r.dRef,
-      dose_unite: r.unit,
-      ift: iFT(r.dose, r.dRef),
-      bbch,
-      adjuvants,
-      dar: r.dar,
-    }));
+    // Insertion en batch — une ligne par produit × par parcelle sélectionnée
+    const payload = [];
+    for (const pCode of selParcs) {
+      const parc = PARCS.find(p => p.code === pCode);
+      for (const r of rows) {
+        payload.push({
+          domaine_id: DOM_ID,
+          parcelle_id: parc?.id,
+          produit_id: r.prodId,
+          date_application: dateApp,
+          heure_application: heureApp,
+          campagne: AN,
+          parcelle_code: pCode,
+          produit_nom: r.nom,
+          produit_categorie: r.cat,
+          amm: r.amm,
+          dose_appliquee: r.dose,
+          dose_reference: r.dRef,
+          dose_unite: r.unit,
+          ift: iFT(r.dose, r.dRef, r.unit),
+          bbch,
+          adjuvants,
+          dar: r.dar,
+        });
+      }
+    }
     const { data, error } = await sb.from('traitements').insert(payload).select();
     if (error) throw error;
     data.forEach(d => TRAITS.unshift(d));
 
-    // Déduire stock pour chaque produit du mélange
-    for (const r of rows) {
-      const s = STOCK.find(x => x.id === r.prodId);
-      if (s && parc) {
-        const nq = Math.max(0, Math.round((s.qte_stock - r.dose * (parc.surface_ha || 1)) * 100) / 100);
-        const ne = nq <= 0 ? 'zero' : nq <= s.seuil_alerte ? 'low' : 'ok';
-        await sb.from('produits_phyto').update({ qte_stock: nq, etat: ne }).eq('id', r.prodId);
-        s.qte_stock = nq; s.etat = ne;
+    // Déduire stock pour chaque produit × chaque parcelle sélectionnée
+    for (const pCode of selParcs) {
+      const parc = PARCS.find(p => p.code === pCode);
+      for (const r of rows) {
+        const s = STOCK.find(x => x.id === r.prodId);
+        if (s && parc) {
+          const nq = Math.max(0, Math.round((s.qte_stock - r.dose * (parc.surface_ha || 1)) * 100) / 100);
+          const ne = nq <= 0 ? 'zero' : nq <= s.seuil_alerte ? 'low' : 'ok';
+          await sb.from('produits_phyto').update({ qte_stock: nq, etat: ne }).eq('id', r.prodId);
+          s.qte_stock = nq; s.etat = ne;
+        }
       }
     }
 
     syncOK();
     renderDash(); renderIFT(); renderRegistre(); renderStock('all'); fillSelects();
-    const totIFT = rows.reduce((s, r) => s + iFT(r.dose, r.dRef), 0);
-    toast(`✅ Passage enregistré · ${rows.length} produit${rows.length > 1 ? 's' : ''} · IFT +${totIFT.toFixed(2)}`);
+    const totIFT = rows.reduce((s, r) => s + iFT(r.dose, r.dRef, r.unit), 0);
+    toast(`✅ Passage enregistré · ${selParcs.length} parcelle${selParcs.length > 1 ? 's' : ''} · ${rows.length} produit${rows.length > 1 ? 's' : ''} · IFT +${totIFT.toFixed(2)}`);
 
     // Reset form — ligne principale
     ['tDo', 'tDR', 'tA', 'tAd'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -807,6 +833,8 @@ async function saveTrait() {
     document.getElementById('sAl').style.display = 'none';
     document.getElementById('dD').style.display = 'none';
     document.getElementById('iFTot').style.display = 'none';
+    // Reset parcelles checkboxes
+    document.querySelectorAll('#tPaWrap input[type=checkbox]').forEach(cb => cb.checked = false);
     // Reset rows supplémentaires : on les supprime toutes
     document.getElementById('mixRows').innerHTML = '';
     document.getElementById('bST').disabled = true;
