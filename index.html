@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>VitiTrace</title>
+<title>VitiPilot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -12,10 +12,10 @@
 </head>
 <body>
 <!-- LOADING -->
-<div id="ls"><div class="ico">🍇</div><div class="ttl">VitiTrace</div><div class="sub">Connexion à votre domaine…</div><div class="spin-lg"></div></div>
+<div id="ls"><div class="ico">🍇</div><div class="ttl">VitiPilot</div><div class="sub">Connexion à votre domaine…</div><div class="spin-lg"></div></div>
 <!-- ONBOARDING -->
 <div id="ob">
-  <div class="ob-top"><div class="ob-logo">🍇</div><div class="ob-title">VitiTrace</div><div class="ob-sub">Suivi vigne · IFT · Cave · Négoce<br>Données sauvegardées dans le cloud Supabase</div></div>
+  <div class="ob-top"><div class="ob-logo">🍇</div><div class="ob-title">VitiPilot</div><div class="ob-sub">Suivi vigne · IFT · Cave · Négoce<br>Données sauvegardées dans le cloud Supabase</div></div>
   <div class="ob-body">
     <div class="ob-card">
       <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--vigne);margin-bottom:4px">Bienvenue !</div>
@@ -30,13 +30,13 @@
       <div class="fg"><label>Surface totale (ha)</label><div class="ig"><input type="number" id="obHa" placeholder="7.5" step="0.01"><span class="isuf">ha</span></div></div>
     </div>
     <div class="al alb"><span class="al-i">💾</span><div><b>Cloud Supabase activé</b>Traitements, IFT, stock, cave — tout est sauvegardé en temps réel. Accessible depuis n’importe quel appareil.</div></div>
-    <button class="btn btp" style="font-size:16px;padding:16px;margin-bottom:10px" onclick="saveOnboarding()">🚀 Créer mon domaine VitiTrace</button>
+    <button class="btn btp" style="font-size:16px;padding:16px;margin-bottom:10px" onclick="saveOnboarding()">🚀 Créer mon domaine VitiPilot</button>
     <a class="ob-skip" onclick="saveOnboarding()">Passer et configurer plus tard →</a>
   </div>
 </div>
 <!-- AUTH -->
 <div id="auth" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:997;overflow-y:auto">
-  <div class="ob-top"><div class="ob-logo">🍇</div><div class="ob-title">VitiTrace</div><div class="ob-sub">Connectez-vous pour accéder à votre domaine</div></div>
+  <div class="ob-top"><div class="ob-logo">🍇</div><div class="ob-title">VitiPilot</div><div class="ob-sub">Connectez-vous pour accéder à votre domaine</div></div>
   <div class="ob-body">
     <div class="ob-card">
       <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--vigne);margin-bottom:14px">Connexion</div>
@@ -50,7 +50,7 @@
 </div>
 <!-- APP HEADER (mobile only) -->
 <header id="ah" style="display:none">
-  <div class="lh"><div class="lmark">🍇</div><div><div class="ltxt">VitiTrace</div><div class="lsub" id="aN">Mon domaine</div></div></div>
+  <div class="lh"><div class="lmark">🍇</div><div><div class="ltxt">VitiPilot</div><div class="lsub" id="aN">Mon domaine</div></div></div>
   <div class="hr"><div class="sp sp-ok" id="sp"><span>●</span><span id="st">Cloud</span></div><div class="av" id="avi" onclick="showM('mProfil')">?</div></div>
 </header>
 <nav class="tabs" id="an" style="display:none">
@@ -73,7 +73,7 @@
 <div id="appSidebar" style="display:none">
   <div class="sb-logo">
     <div class="sb-lmark">🍇</div>
-    <div class="sb-ltxt">VitiTrace</div>
+    <div class="sb-ltxt">VitiPilot</div>
     <div class="sb-lsub" id="sbNom">Mon domaine</div>
   </div>
   <div class="sb-nav">
@@ -114,7 +114,7 @@
 <section id="sDash" class="sec on">
   <!-- En-tête impression -->
   <div class="print-header">
-    <h1 id="phTitle">VitiTrace — Tableau de bord</h1>
+    <h1 id="phTitle">VitiPilot — Tableau de bord</h1>
     <p id="phSub">Domaine · Campagne 2025 · Imprimé le <span id="phDate"></span></p>
   </div>
   <!-- Barre actions mobile -->
@@ -615,7 +615,7 @@
   <div id="persoPreview" style="background:var(--noir);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh2)">
     <div id="pvLogo" style="width:40px;height:40px;border-radius:10px;background:var(--or);display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .3s">🍇</div>
     <div>
-      <div id="pvNom" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--creme);line-height:1;transition:all .3s">VitiTrace</div>
+      <div id="pvNom" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--creme);line-height:1;transition:all .3s">VitiPilot</div>
       <div id="pvSub" style="font-size:10px;color:var(--or);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;transition:all .3s">Mon domaine</div>
     </div>
     <div style="margin-left:auto;font-size:11px;color:rgba(255,255,255,.4)">Aperçu en direct</div>
@@ -626,7 +626,7 @@
     <div class="ch"><span class="ct">🏷️ Identité de l’app</span></div>
     <div class="fg">
       <label>Nom affiché dans l’app</label>
-      <input type="text" id="pNomApp" placeholder="Ex : VitiTrace · Domaine Dupont" oninput="persoPreview()">
+      <input type="text" id="pNomApp" placeholder="Ex : VitiPilot · Domaine Dupont" oninput="persoPreview()">
     </div>
     <div class="fg">
       <label>Sous-titre (commune, appellation…)</label>
