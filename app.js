@@ -355,7 +355,7 @@ async function saveOnboarding() {
     if(error) throw error;
     DOM=data; DOM_ID=data.id;
     await loadAll(); showApp();
-    toast('✅ Domaine créé · Bienvenue dans VitiTrace !');
+    toast('✅ Domaine créé · Bienvenue dans VitiPilot !');
   } catch(e) { toast('⚠️ Erreur — vérifier la connexion : '+e.message); }
 }
 
@@ -1781,12 +1781,12 @@ let currentSection = 'sDash';
 function printSection() {
   // Mettre à jour l’en-tête d’impression
   const nom = DOM?.nom || DOM?.raison_sociale || 'Domaine';
-  const titre = SECTION_TITLES[currentSection] || 'VitiTrace';
+  const titre = SECTION_TITLES[currentSection] || 'VitiPilot';
   const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
   const phTitle = document.getElementById('phTitle');
   const phSub = document.getElementById('phSub');
   const phDate = document.getElementById('phDate');
-  if (phTitle) phTitle.textContent = `VitiTrace — ${titre}`;
+  if (phTitle) phTitle.textContent = `VitiPilot — ${titre}`;
   if (phSub) phSub.textContent = `${nom} · Campagne ${new Date().getFullYear()} · Imprimé le ${date}`;
   if (phDate) phDate.textContent = date;
   window.print();
@@ -2524,7 +2524,7 @@ function setEmoji(e) {
 }
 
 function persoPreview() {
-  const nom = document.getElementById('pNomApp')?.value || 'VitiTrace';
+  const nom = document.getElementById('pNomApp')?.value || 'VitiPilot';
   const sub = document.getElementById('pSousNom')?.value || 'Mon domaine';
   document.getElementById('pvLogo').textContent = currentEmoji;
   document.getElementById('pvNom').textContent = nom;
@@ -2626,7 +2626,7 @@ function resetPerso() {
   currentEmoji = '🍇';
   ['pNomApp','pSousNom','ptDash','ptBienvenue','ptCampagne','ptStock'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('pvLogo').textContent = '🍇';
-  document.getElementById('pvNom').textContent = 'VitiTrace';
+  document.getElementById('pvNom').textContent = 'VitiPilot';
   document.getElementById('pvSub').textContent = 'Mon domaine';
   document.getElementById('aN').textContent = DOM?.commune || 'Mon domaine';
   document.querySelectorAll('.emoji-opt').forEach(el => el.classList.remove('sel'));
