@@ -185,8 +185,21 @@ const AN = new Date().getFullYear().toString();
     clearTimeout(timeout);
     if (!session) { goAuth(); return; }
 
-    const { data, error } = await sb.from('domaines')
+    let { data, error } = await sb.from('domaines')
       .select('*').eq('user_id', session.user.id).limit(1).single();
+
+    // Fallback : chercher par email si pas de domaine pour ce user_id (login multi-navigateur)
+    if (!data || error) {
+      const email = session.user.email;
+      if (email) {
+        const res = await sb.from('domaines').select('*').eq('email', email).limit(1).single();
+        if (res.data && !res.error) {
+          // Rattacher le domaine au nouvel user_id
+          await sb.from('domaines').update({ user_id: session.user.id }).eq('id', res.data.id);
+          data = res.data; data.user_id = session.user.id; error = null;
+        }
+      }
+    }
 
     if (data && !error) {
       DOM = data; DOM_ID = data.id;
@@ -271,7 +284,15 @@ async function doSignIn() {
     return;
   }
   hide('auth'); show('ls');
-  const {data: dom, error: domErr} = await sb.from('domaines').select('*').eq('user_id', data.user.id).limit(1).single();
+  let {data: dom, error: domErr} = await sb.from('domaines').select('*').eq('user_id', data.user.id).limit(1).single();
+  // Fallback : chercher par email (login multi-navigateur / nouveau user_id)
+  if (!dom || domErr) {
+    const res = await sb.from('domaines').select('*').eq('email', email).limit(1).single();
+    if (res.data && !res.error) {
+      await sb.from('domaines').update({ user_id: data.user.id }).eq('id', res.data.id);
+      dom = res.data; domErr = null;
+    }
+  }
   if (dom && !domErr) {
     DOM=dom; DOM_ID=dom.id;
     await loadAll(); showApp();
@@ -324,7 +345,7 @@ async function saveOnboarding() {
       nom, raison_sociale:g('obRaison'), commune:g('obCommune'),
       siret:g('obSiret'), certiphyto:g('obCertif'),
       surface_ha:parseFloat(g('obHa'))||null, campagne_en_cours:AN,
-      user_id: user.id
+      user_id: user.id, email: user.email
     }).select().single();
     if(error) throw error;
     DOM=data; DOM_ID=data.id;
