@@ -535,7 +535,7 @@ function fillSelects() {
   activeParcs().forEach(p=>{
     const lbl=document.createElement('label');
     lbl.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 4px;cursor:pointer;font-size:14px';
-    lbl.innerHTML=`<input type="checkbox" value="${p.code}" onchange="uTP()" style="width:18px;height:18px;accent-color:var(--vigne)"> ${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)`;
+    lbl.innerHTML=`<input type="checkbox" value="${p.code}" onchange="uTP()" style="width:20px;height:20px;accent-color:#2d5a1e;cursor:pointer;-webkit-appearance:checkbox;appearance:checkbox"> ${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)`;
     wrap.appendChild(lbl);
   });
   const pr=document.getElementById('tPr');
