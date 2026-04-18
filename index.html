@@ -59,6 +59,7 @@
   <button class="tab" onclick="go('sIFT',this)">📊 IFT</button>
   <button class="tab" onclick="go('sScan',this)">📷 Scan IA</button>
   <button class="tab" onclick="go('sStock',this)">🧪 Stock</button>
+  <button class="tab" onclick="go('sFerti',this)">🌱 Fertilisation</button>
   <button class="tab" onclick="go('sCarto',this)">🗺️ Parcelles</button>
   <button class="tab" onclick="go('sMeteo',this)">🌤️ Météo</button>
   <button class="tab" onclick="go('sRegistre',this)">📋 Registre</button>
@@ -81,6 +82,7 @@
     <button class="sb-tab" onclick="go('sIFT',this)" id="sb-sIFT"><span class="sb-tab-icon">📊</span>IFT</button>
     <button class="sb-tab" onclick="go('sScan',this)" id="sb-sScan"><span class="sb-tab-icon">📷</span>Scan IA</button>
     <button class="sb-tab" onclick="go('sStock',this)" id="sb-sStock"><span class="sb-tab-icon">🧪</span>Stock</button>
+    <button class="sb-tab" onclick="go('sFerti',this)" id="sb-sFerti"><span class="sb-tab-icon">🌱</span>Fertilisation</button>
     <button class="sb-tab" onclick="go('sCarto',this)" id="sb-sCarto"><span class="sb-tab-icon">🗺️</span>Parcelles</button>
     <button class="sb-tab" onclick="go('sMeteo',this)" id="sb-sMeteo"><span class="sb-tab-icon">🌤️</span>Météo</button>
     <button class="sb-tab" onclick="go('sRegistre',this)" id="sb-sRegistre"><span class="sb-tab-icon">📋</span>Registre</button>
@@ -313,6 +315,36 @@
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
     <button class="btn btghost" onclick="showM('mAddProd')">✏️ Saisie manuelle</button>
     <button class="btn btp" onclick="go('sScan',document.querySelectorAll('.tab')[3])">📷 Scanner</button>
+  </div>
+</section>
+<!-- FERTILISATION -->
+<section id="sFerti" class="sec">
+  <div class="stitle">Fertilisation</div><div class="ssub">Apports · Stock engrais · Traçabilité</div>
+  <div class="card">
+    <div class="ch"><span class="ct">Nouvelle application d'engrais</span></div>
+    <div class="row2"><div class="fg"><label>📅 Date</label><input type="date" id="fD"></div><div class="fg"><label>🕐 Heure</label><input type="time" id="fH" value="08:00"></div></div>
+    <div class="fg"><label>📍 Parcelle(s)</label><div id="fPaWrap" style="border:1px solid var(--gris2);border-radius:10px;padding:8px;max-height:160px;overflow-y:auto;background:var(--blanc)"></div></div>
+    <div class="fg"><label>🌱 Engrais</label><select id="fEn" onchange="selEngrais()"><option value="">— Choisir —</option></select>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <button type="button" class="btn btghost btsm" onclick="showM('mAddEngrais')">✏️ Saisie manuelle</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>💊 Dose appliquée</label><div class="ig"><input type="number" id="fDose" step="0.01"><span class="isuf" id="fDoseU">kg/ha</span></div></div>
+      <div class="fg"><label>📐 Unité</label><select id="fDoseUn" onchange="document.getElementById('fDoseU').textContent=this.value"><option value="kg/ha">kg/ha</option><option value="L/ha">L/ha</option><option value="g/ha">g/ha</option><option value="L">L</option><option value="kg">kg</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>🔢 N (g/L ou %)</label><input type="number" id="fN" step="0.1"></div>
+      <div class="fg"><label>🔢 P (g/L ou %)</label><input type="number" id="fP" step="0.1"></div>
+      <div class="fg"><label>🔢 K (g/L ou %)</label><input type="number" id="fK" step="0.1"></div>
+    </div>
+    <div class="fg"><label>Modèle d'apport</label><select id="fMode"><option>Foliaire</option><option>Au sol (épandage)</option><option>Fertigation</option><option>Injection sol</option><option>Autre</option></select></div>
+    <div class="fg"><label>Notes</label><textarea id="fNotes" placeholder="Observations, conditions météo, etc." style="min-height:60px"></textarea></div>
+    <button class="btn btp" id="bSF" onclick="saveFert()" disabled>🌱 Enregistrer l'apport</button>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Historique des apports</span></div>
+    <div id="fHist"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun apport enregistré</div></div>
   </div>
 </section>
 <!-- PARCELLES -->
@@ -1002,6 +1034,26 @@
     <div class="er"><span style="font-size:22px">📄</span><div class="ei"><div class="en">PDF complet</div></div><button class="btn btgold btsm" onclick="doExport('PDF')">PDF</button></div>
     <div class="er"><span style="font-size:22px">🗂️</span><div class="ei"><div class="en">DDT (XML machine)</div></div><button class="btn btgold btsm" onclick="doExport('XML')">XML</button></div>
     <button class="btn btghost" style="width:100%;margin-top:12px" onclick="closeM(null,'mExport')">Fermer</button>
+  </div>
+</div>
+
+<div class="ov" id="mAddEngrais" onclick="closeM(event,'mAddEngrais')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">🌱 Ajouter un engrais</div>
+    <div class="fg"><label>Nom commercial *</label><input type="text" id="meNom" placeholder="Ex : Basfoliar, Actiwin, Cristalco…"></div>
+    <div class="row2">
+      <div class="fg"><label>N (%)</label><input type="number" id="meN" step="0.1"></div>
+      <div class="fg"><label>P (%)</label><input type="number" id="meP" step="0.1"></div>
+      <div class="fg"><label>K (%)</label><input type="number" id="meK" step="0.1"></div>
+    </div>
+    <div class="fg"><label>Type de produit</label><input type="text" id="meType" placeholder="Ex : Engrais foliaire, Activation racinaire…"></div>
+    <div class="row2">
+      <div class="fg"><label>Quantité stock</label><div class="ig"><input type="number" id="meQte" step="0.1"><span class="isuf" id="meQteU">L</span></div></div>
+      <div class="fg"><label>Seuil alerte</label><div class="ig"><input type="number" id="meSeuil" step="0.1"><span class="isuf">L</span></div></div>
+    </div>
+    <div class="fg"><label>Unité stock</label><select id="meUnite" onchange="document.getElementById('meQteU').textContent=this.value"><option value="L">L</option><option value="kg">kg</option><option value="sachet">sachet</option></select></div>
+    <button class="btn btp" onclick="saveEngrais()">💾 Ajouter engrais</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddEngrais')">Annuler</button>
   </div>
 </div>
 
