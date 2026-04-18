@@ -218,13 +218,15 @@ const AN = new Date().getFullYear().toString();
 async function loadAll() {
   syncSaving();
   try {
-    const [p,t,s,c,v,mv] = await Promise.all([
+    const [p,t,s,c,v,mv,eng,fer] = await Promise.all([
       sb.from('parcelles').select('*').eq('domaine_id',DOM_ID).order('code'),
       sb.from('traitements').select('*').eq('domaine_id',DOM_ID).order('date_application',{ascending:false}),
       sb.from('produits_phyto').select('*').eq('domaine_id',DOM_ID).eq('actif',true),
       sb.from('cuves').select('*').eq('domaine_id',DOM_ID),
       sb.from('ventes').select('*').eq('domaine_id',DOM_ID).order('created_at',{ascending:false}),
       sb.from('mouvements_cave').select('*').eq('domaine_id',DOM_ID).order('date_mouvement',{ascending:false}).limit(100),
+      sb.from('engrais').select('*').eq('domaine_id',DOM_ID),
+      sb.from('fertilisations').select('*').eq('domaine_id',DOM_ID).order('date_application',{ascending:false}),
     ]);
     PARCS  = (p && p.data) ? p.data : [];
     TRAITS = (t && t.data) ? t.data : [];
@@ -232,6 +234,8 @@ async function loadAll() {
     CUVES  = (c && c.data) ? c.data : [];
     VENTES = (v && v.data) ? v.data : [];
     MOUVEMENTS = (mv && mv.data) ? mv.data : [];
+    ENGRAIS = (eng && eng.data) ? eng.data : [];
+    FERTIS = (fer && fer.data) ? fer.data : [];
     syncOK();
   } catch(e) {
     console.error('loadAll error:', e);
@@ -256,6 +260,7 @@ function showApp() {
   updateSidebarNom();
   fillProfil();
   renderDash(); renderIFT(); renderStock('all'); renderRegistre(); fillSelects();
+  fillFertiSelects(); renderFertiHistory();
   fillCuveSelects();
   loadPerso();
   // Remplir les selects des modals manuels
@@ -327,7 +332,7 @@ function showAuthMsg(msg, type) {
 
 async function doSignOut() {
   await sb.auth.signOut();
-  DOM = null; DOM_ID = null; PARCS=[]; TRAITS=[]; STOCK=[]; CUVES=[]; VENTES=[]; MOUVEMENTS=[];
+  DOM = null; DOM_ID = null; PARCS=[]; TRAITS=[]; STOCK=[]; CUVES=[]; VENTES=[]; MOUVEMENTS=[]; ENGRAIS=[]; FERTIS=[];
   const ah = document.getElementById('ah'); if(ah) ah.style.display='none';
   const an = document.getElementById('an'); if(an) an.style.display='none';
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
@@ -373,7 +378,7 @@ function go(id, btn) {
   // Update topbar title
   const titles = {
     sDash:'🏠 Accueil', sTrait:'🌿 Traitement', sIFT:'📊 IFT',
-    sScan:'📷 Scan IA', sStock:'🧪 Stock phytosanitaire',
+    sScan:'📷 Scan IA', sStock:'🧪 Stock phytosanitaire', sFerti:'🌱 Fertilisation',
     sCarto:'🗺️ Parcelles', sMeteo:'🌤️ Météo', sRegistre:'📋 Registre',
     sCave:'🍷 Cave & Négoce', sHVE:'🏅 HVE / AB', sConseil:'💡 Conseils associations', sPerso:'⚙️ Personnaliser'
   };
@@ -3510,4 +3515,142 @@ function updatePhytoAlert(ma, prodNom) {
   alertEl.style.display = 'block';
   const contentEl = document.getElementById('mpPhytoAlertContent');
   if (contentEl) contentEl.innerHTML = warnings.map(w => `<div style="margin-bottom:4px;font-size:12px">${w}</div>`).join('');
+}
+
+// ══════════════════════════════════════════
+//  FERTILISATION
+// ══════════════════════════════════════════
+
+function getSelectedFertiParcs() {
+  return Array.from(document.querySelectorAll('#fPaWrap input[type=checkbox]:checked')).map(cb => cb.value);
+}
+
+function fillFertiSelects() {
+  const wrap=document.getElementById('fPaWrap');
+  wrap.innerHTML='';
+  activeParcs().forEach(p=>{
+    const lbl=document.createElement('label');
+    lbl.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 4px;cursor:pointer;font-size:14px';
+    lbl.innerHTML=`<input type="checkbox" value="${p.code}" onchange="uFi()" style="width:20px;height:20px;accent-color:#2d5a1e;cursor:pointer;-webkit-appearance:checkbox;appearance:checkbox"> ${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)`;
+    wrap.appendChild(lbl);
+  });
+  const en=document.getElementById('fEn');
+  en.innerHTML='<option value="">— Choisir —</option>';
+  ENGRAIS.forEach(e=>{
+    en.innerHTML+=`<option value="${e.id}" data-npk="${e.composition_npk||''}">${e.nom} (${e.qte_stock} ${e.unite_stock})</option>`;
+  });
+  if(!ENGRAIS.length) en.innerHTML+='<option disabled>— Ajouter un engrais d\'abord —</option>';
+}
+
+function selEngrais() {
+  const sel=document.getElementById('fEn'),opt=sel.options[sel.selectedIndex];
+  if(!opt.value) return;
+  const e=ENGRAIS.find(x=>x.id===opt.value);
+  if(e&&e.composition_npk){
+    const npk=e.composition_npk.split('-').map(v=>parseFloat(v)||0);
+    document.getElementById('fN').value=npk[0]||'';
+    document.getElementById('fP').value=npk[1]||'';
+    document.getElementById('fK').value=npk[2]||'';
+  }
+  uFi();
+}
+
+function uFi() {
+  const selParcs=getSelectedFertiParcs();
+  const en=document.getElementById('fEn').value;
+  const btn=document.getElementById('bSF');
+  btn.disabled=!(selParcs.length&&en);
+}
+
+async function saveFert() {
+  const selParcs=getSelectedFertiParcs();
+  if(!selParcs.length){toast('⚠️ Parcelle obligatoire');return;}
+  const en=document.getElementById('fEn').value;
+  if(!en){toast('⚠️ Engrais obligatoire');return;}
+  const dateApp=document.getElementById('fD').value;
+  const heureApp=document.getElementById('fH').value;
+  const dose=parseFloat(document.getElementById('fDose').value);
+  const doseUn=document.getElementById('fDoseUn').value;
+  const n=parseFloat(document.getElementById('fN').value)||null;
+  const p=parseFloat(document.getElementById('fP').value)||null;
+  const k=parseFloat(document.getElementById('fK').value)||null;
+  const mode=document.getElementById('fMode').value;
+  const notes=document.getElementById('fNotes').value;
+  syncSaving();
+  try{
+    const engr=ENGRAIS.find(x=>x.id===en);
+    const payload=[];
+    for(const pCode of selParcs){
+      const parc=PARCS.find(p=>p.code===pCode);
+      payload.push({
+        domaine_id:DOM_ID,
+        parcelle_id:parc?.id,
+        parcelle_code:pCode,
+        engrais_id:en,
+        engrais_nom:engr?.nom||'—',
+        date_application:dateApp,
+        heure_application:heureApp,
+        campagne:AN,
+        dose_appliquee:dose||null,
+        dose_unite:doseUn,
+        composition_npk:engr?.composition_npk||null,
+        mode_apport:mode,
+        notes,
+      });
+    }
+    const {data,error}=await sb.from('fertilisations').insert(payload).select();
+    if(error)throw error;
+    data.forEach(d=>FERTIS.unshift(d));
+
+    // Déduire stock engrais
+    for(const pCode of selParcs){
+      const parc=PARCS.find(p=>p.code===pCode);
+      if(engr&&parc&&dose){
+        const nq=Math.max(0,Math.round((engr.qte_stock-dose*(parc.surface_ha||1))*100)/100);
+        const ne=nq<=0?'zero':nq<=engr.seuil_alerte?'low':'ok';
+        await sb.from('engrais').update({qte_stock:nq,etat:ne}).eq('id',en);
+        engr.qte_stock=nq;engr.etat=ne;
+      }
+    }
+
+    syncOK();
+    fillFertiSelects();renderFertiHistory();
+    toast(`✅ ${selParcs.length} parcelle(s) · ${dose} ${doseUn}`);
+    ['fD','fH','fDose','fN','fP','fK','fNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('fEn').value='';
+    document.querySelectorAll('#fPaWrap input[type=checkbox]').forEach(cb=>cb.checked=false);
+    document.getElementById('bSF').disabled=true;
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+async function saveEngrais() {
+  const nom=document.getElementById('meNom').value.trim();
+  if(!nom){toast('⚠️ Nom obligatoire');return;}
+  syncSaving();
+  try{
+    const n=parseFloat(document.getElementById('meN').value)||null;
+    const p=parseFloat(document.getElementById('meP').value)||null;
+    const k=parseFloat(document.getElementById('meK').value)||null;
+    const npk=n!==null||p!==null||k!==null?`${n||0}-${p||0}-${k||0}`:null;
+    const {data,error}=await sb.from('engrais').insert({
+      domaine_id:DOM_ID,
+      nom,
+      composition_npk:npk,
+      type_produit:document.getElementById('meType').value,
+      qte_stock:parseFloat(document.getElementById('meQte').value)||0,
+      unite_stock:document.getElementById('meUnite').value,
+      seuil_alerte:parseFloat(document.getElementById('meSeuil').value)||null,
+      etat:'ok'
+    }).select().single();
+    if(error)throw error;
+    ENGRAIS.push(data);syncOK();fillFertiSelects();
+    toast('✅ Engrais ajouté');closeM(null,'mAddEngrais');
+    ['meNom','meN','meP','meK','meType','meQte','meSeuil'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+function renderFertiHistory() {
+  const h=document.getElementById('fHist');
+  if(!FERTIS.length){h.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun apport enregistré</div>';return;}
+  h.innerHTML=FERTIS.slice(0,20).map(f=>`<div class="li"><div class="lic" style="background:#d4f0e8">🌱</div><div class="lib"><div class="lit">${f.engrais_nom||'—'}</div><div class="lim">${f.date_application} · ${f.parcelle_code} · ${f.dose_appliquee||'—'} ${f.dose_unite}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">${f.mode_apport||'—'} · ${f.composition_npk||'—'}</div></div></div>`).join('');
 }
