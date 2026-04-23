@@ -851,14 +851,29 @@ async function saveTrait() {
 // ══════════════════════════════════════════
 let img64=null,imgMime='image/jpeg';
 function triggerUpload(){document.getElementById('fI').click();}
+// Compresse l'image via canvas pour rester sous la limite Vercel (4.5MB)
+function compressImage(dataUrl, maxW, quality){
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>{
+      const ratio=Math.min(1, maxW/Math.max(img.width,img.height));
+      const w=Math.round(img.width*ratio), h=Math.round(img.height*ratio);
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(c.toDataURL('image/jpeg', quality));
+    };img.src=dataUrl;
+  });
+}
 function handleFile(input){
   const f=input.files[0];if(!f)return;
-  imgMime=f.type||'image/jpeg';
+  imgMime='image/jpeg';
   const r=new FileReader();
-  r.onload=e=>{
-    img64=e.target.result.split(',')[1];
+  r.onload=async e=>{
+    // Compresser à max 1024px et qualité 0.6 pour rester sous 4.5MB Vercel
+    const compressed=await compressImage(e.target.result, 1024, 0.6);
+    img64=compressed.split(',')[1];
     const prev=document.getElementById('pi'),zone=document.getElementById('dZ');
-    prev.src=e.target.result;prev.style.display='block';
+    prev.src=compressed;prev.style.display='block';
     document.getElementById('uC').style.display='none';
     document.getElementById('iO').style.display='flex';
     zone.classList.add('has');
