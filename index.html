@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
@@ -94,6 +95,22 @@
   <div class="sb-sync">
     <div class="sp sp-ok" id="spDesk"><span>●</span><span id="stDesk">Cloud</span></div>
     <div class="sb-avatar" onclick="showM('mProfil')" id="aviDesk">?</div>
+  </div>
+</div>
+
+<!-- BANDEAU SECRÉTAIRE CAVE -->
+<div id="secBar" style="display:none;background:linear-gradient(135deg,#1a3a5c,#2d5a8e);color:#fff;padding:10px 16px;font-size:13px;position:fixed;top:0;left:0;right:0;z-index:999;display:none;align-items:center;gap:10px;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.2)">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:18px">🏛️</span>
+    <span style="font-weight:700">Secrétaire Cave</span>
+    <span id="secCaveName" style="opacity:.8">—</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:11px;opacity:.7">Viticulteur :</span>
+    <select id="secDomSelect" onchange="switchDomaine(this.value)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:13px;font-family:Outfit,sans-serif;cursor:pointer">
+      <option value="">— Mon compte —</option>
+    </select>
+    <button onclick="showM('mValidIFT')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer">✅ Valider IFT</button>
   </div>
 </div>
 
@@ -225,6 +242,29 @@
   <div id="iAl"></div>
   <div id="iPL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Ajoutez des parcelles et saisissez des traitements</div></div>
   <div class="card"><div class="ch"><span class="ct">Objectifs certifications</span></div><div id="iObj"></div></div>
+
+  <!-- QR CODE IFT CERTIFIÉ -->
+  <div class="card">
+    <div class="ch"><span class="ct">🔐 Certification IFT officielle</span><span class="badge bgold">ecoagri</span></div>
+    <div style="font-size:13px;color:var(--gris);margin-bottom:12px">
+      Certifiez vos IFT via l'API officielle du Ministère de l'Agriculture. Un QR code unique est généré pour chaque traitement, vérifiable sur <b>ecoagri.agriculture.gouv.fr</b>.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <button class="btn btp" onclick="certifierBilanIFT()" id="btnCertifIFT">🔐 Certifier tous les IFT</button>
+      <button class="btn btghost" onclick="showM('mQRCode')">📱 Voir QR Code bilan</button>
+    </div>
+    <div id="certifStatus" style="display:none"></div>
+    <div id="certifProgress" style="display:none;margin-top:8px">
+      <div style="background:var(--gris3);border-radius:8px;overflow:hidden;height:6px"><div id="certifBar" style="height:100%;background:var(--vert);width:0%;transition:width .3s"></div></div>
+      <div id="certifTxt" style="font-size:11px;color:var(--gris);margin-top:4px;text-align:center">—</div>
+    </div>
+  </div>
+
+  <!-- VALIDATION SECRÉTAIRE -->
+  <div id="iftValidBlock" style="display:none" class="card">
+    <div class="ch"><span class="ct">✅ Validation cave</span></div>
+    <div id="iftValidStatus" style="font-size:13px;color:var(--gris);padding:8px 0">Aucune validation</div>
+  </div>
 </section>
 <!-- SCAN IA -->
 <section id="sScan" class="sec">
@@ -1054,6 +1094,59 @@
     <div class="fg"><label>Unité stock</label><select id="meUnite" onchange="document.getElementById('meQteU').textContent=this.value"><option value="L">L</option><option value="kg">kg</option><option value="sachet">sachet</option></select></div>
     <button class="btn btp" onclick="saveEngrais()">💾 Ajouter engrais</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAddEngrais')">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL QR CODE BILAN IFT -->
+<div class="ov" id="mQRCode" onclick="closeM(event,'mQRCode')">
+  <div class="mo2" onclick="event.stopPropagation()" style="max-width:500px">
+    <div class="mh"></div><div class="mt">📱 QR Code — Bilan IFT certifié</div>
+    <div style="text-align:center;padding:20px 0">
+      <div id="qrContainer" style="display:inline-block;background:#fff;padding:16px;border-radius:12px;border:2px solid var(--gris2)"></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--gris)">Scannez pour vérifier sur <b>ecoagri.agriculture.gouv.fr</b></div>
+    </div>
+    <div style="background:var(--gris3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px">
+      <div><b>Exploitant :</b> <span id="qrNom">—</span></div>
+      <div><b>Campagne :</b> <span id="qrCamp">—</span></div>
+      <div><b>IFT moyen :</b> <span id="qrIFT">—</span></div>
+      <div><b>Nb traitements :</b> <span id="qrNbT">—</span></div>
+      <div id="qrCertifInfo" style="margin-top:6px"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn btp" onclick="printQRCode()">🖨️ Imprimer</button>
+      <button class="btn btghost" onclick="closeM(null,'mQRCode')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VALIDATION IFT (secrétaire) -->
+<div class="ov" id="mValidIFT" onclick="closeM(event,'mValidIFT')">
+  <div class="mo2" onclick="event.stopPropagation()" style="max-width:600px">
+    <div class="mh"></div><div class="mt">✅ Validation IFT — Cave coopérative</div>
+    <div style="font-size:13px;color:var(--gris);margin-bottom:12px">Validez les bilans IFT de vos viticulteurs. La validation est enregistrée avec horodatage et signature.</div>
+    <div id="validList" style="max-height:400px;overflow-y:auto">
+      <div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Chargement…</div>
+    </div>
+    <div class="sep"></div>
+    <div class="fg"><label>Notes de validation (facultatif)</label><textarea id="validNotes" rows="2" placeholder="Observations éventuelles…" style="resize:none"></textarea></div>
+    <button class="btn btp" onclick="validerIFTCave()" id="btnValiderCave">✅ Valider le bilan sélectionné</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mValidIFT')">Fermer</button>
+  </div>
+</div>
+
+<!-- MODAL GESTION CAVE COOP (secrétaire) -->
+<div class="ov" id="mCaveMgmt" onclick="closeM(event,'mCaveMgmt')">
+  <div class="mo2" onclick="event.stopPropagation()" style="max-width:500px">
+    <div class="mh"></div><div class="mt">🏛️ Gestion cave coopérative</div>
+    <div id="caveMgmtContent">
+      <div class="fg"><label>Nom de la cave</label><input type="text" id="caveNom" placeholder="Cave Coopérative de…"></div>
+      <div class="fg"><label>Commune</label><input type="text" id="caveCommune" placeholder="Commune"></div>
+      <div class="fg"><label>SIRET cave</label><input type="text" id="caveSiret" placeholder="Facultatif"></div>
+      <div class="sep"></div>
+      <div style="font-weight:700;margin-bottom:8px">Viticulteurs rattachés :</div>
+      <div id="caveVitiList"><div style="font-size:13px;color:var(--gris)">Aucun viticulteur rattaché</div></div>
+    </div>
+    <button class="btn btghost" style="width:100%;margin-top:12px" onclick="closeM(null,'mCaveMgmt')">Fermer</button>
   </div>
 </div>
 

@@ -145,6 +145,11 @@ async function initSupabase() {
 // ══════════════════════════════════════════
 let DOM_ID=null, DOM=null, PARCS=[], TRAITS=[], STOCK=[], CUVES=[], VENTES=[], MOUVEMENTS=[];
 const AN = new Date().getFullYear().toString();
+// Cave coopérative & secrétaire
+let IS_SECRETARY = false;
+let CAVE_DOMAINES = [];
+let MY_DOMAINE_ID = null; // L'ID du domaine propre de la secrétaire
+let VIEWING_OTHER = false; // true quand la secrétaire regarde un autre domaine
 
 // ══════════════════════════════════════════
 //  INIT
@@ -267,6 +272,8 @@ function showApp() {
   fillObsSelects();
   initPhytoSelects();
   initConseil();
+  // Vérifier rôle secrétaire cave
+  initSecretaire();
 }
 
 // ══════════════════════════════════════════
@@ -333,6 +340,8 @@ function showAuthMsg(msg, type) {
 async function doSignOut() {
   await sb.auth.signOut();
   DOM = null; DOM_ID = null; PARCS=[]; TRAITS=[]; STOCK=[]; CUVES=[]; VENTES=[]; MOUVEMENTS=[]; ENGRAIS=[]; FERTIS=[];
+  IS_SECRETARY=false; CAVE_DOMAINES=[]; MY_DOMAINE_ID=null; VIEWING_OTHER=false;
+  document.getElementById('secBar').style.display='none';
   const ah = document.getElementById('ah'); if(ah) ah.style.display='none';
   const an = document.getElementById('an'); if(an) an.style.display='none';
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
@@ -3668,4 +3677,350 @@ function renderFertiHistory() {
   const h=document.getElementById('fHist');
   if(!FERTIS.length){h.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun apport enregistré</div>';return;}
   h.innerHTML=FERTIS.slice(0,20).map(f=>`<div class="li"><div class="lic" style="background:#d4f0e8">🌱</div><div class="lib"><div class="lit">${f.engrais_nom||'—'}</div><div class="lim">${f.date_application} · ${f.parcelle_code} · ${f.dose_appliquee||'—'} ${f.dose_unite}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">${f.mode_apport||'—'} · ${f.composition_npk||'—'}</div></div></div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
+//  SECRÉTAIRE CAVE COOPÉRATIVE
+// ══════════════════════════════════════════════════════
+
+async function initSecretaire() {
+  if (!DOM || !DOM.role || DOM.role !== 'secretaire_cave' || !DOM.cave_id) {
+    IS_SECRETARY = false;
+    document.getElementById('secBar').style.display = 'none';
+    return;
+  }
+  IS_SECRETARY = true;
+  MY_DOMAINE_ID = DOM_ID;
+
+  // Charger les infos de la cave
+  const { data: cave } = await sb.from('caves').select('*').eq('id', DOM.cave_id).single();
+  if (cave) {
+    document.getElementById('secCaveName').textContent = cave.nom || '';
+  }
+
+  // Charger tous les domaines de la cave
+  const { data: domaines } = await sb.from('domaines').select('*').eq('cave_id', DOM.cave_id).order('nom');
+  CAVE_DOMAINES = domaines || [];
+
+  // Remplir le sélecteur
+  const sel = document.getElementById('secDomSelect');
+  sel.innerHTML = '<option value="">— Mon compte —</option>';
+  CAVE_DOMAINES.filter(d => d.id !== MY_DOMAINE_ID).forEach(d => {
+    sel.innerHTML += `<option value="${d.id}">${d.nom || d.raison_sociale || d.email} (${d.surface_ha || '?'} ha)</option>`;
+  });
+
+  // Afficher le bandeau
+  document.getElementById('secBar').style.display = 'flex';
+
+  // Décaler le contenu pour le bandeau
+  const barH = document.getElementById('secBar').offsetHeight;
+  document.getElementById('ah').style.marginTop = barH + 'px';
+  if (document.getElementById('appSidebar').style.display !== 'none') {
+    document.getElementById('appSidebar').style.top = barH + 'px';
+    document.getElementById('appWrapper').style.marginTop = barH + 'px';
+  }
+
+  // Afficher bloc validation IFT dans la section IFT
+  document.getElementById('iftValidBlock').style.display = 'block';
+  renderValidationStatus();
+}
+
+async function switchDomaine(targetId) {
+  if (!IS_SECRETARY) return;
+
+  if (!targetId) {
+    // Revenir à son propre compte
+    DOM_ID = MY_DOMAINE_ID;
+    const { data } = await sb.from('domaines').select('*').eq('id', MY_DOMAINE_ID).single();
+    DOM = data;
+    VIEWING_OTHER = false;
+  } else {
+    // Charger le domaine du viticulteur
+    DOM_ID = targetId;
+    const { data } = await sb.from('domaines').select('*').eq('id', targetId).single();
+    if (!data) { toast('⚠️ Domaine introuvable'); return; }
+    DOM = data;
+    VIEWING_OTHER = true;
+  }
+
+  await loadAll();
+  // Mettre à jour l'affichage
+  const nom = DOM?.nom || DOM?.raison_sociale || 'Mon domaine';
+  document.getElementById('aN').textContent = nom + (VIEWING_OTHER ? ' 👁️' : '');
+  document.getElementById('avi').textContent = nom.charAt(0).toUpperCase();
+  updateSidebarNom();
+  renderDash(); renderIFT(); renderStock('all'); renderRegistre(); fillSelects();
+  fillFertiSelects(); renderFertiHistory();
+  fillCuveSelects();
+  renderValidationStatus();
+  toast(VIEWING_OTHER ? `👁️ Vue : ${nom}` : '🏠 Retour à mon compte');
+}
+
+async function renderValidationStatus() {
+  const el = document.getElementById('iftValidStatus');
+  if (!el) return;
+  // Charger la dernière validation pour ce domaine/campagne
+  const { data } = await sb.from('ift_validations').select('*')
+    .eq('domaine_id', DOM_ID).eq('campagne', AN)
+    .order('date_validation', { ascending: false }).limit(1);
+
+  if (data && data.length) {
+    const v = data[0];
+    const dt = new Date(v.date_validation).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    el.innerHTML = `<div class="al alg"><span class="al-i">✅</span><div><b>IFT validé le ${dt}</b><br>Par : ${v.valide_par_nom || '—'} · ${v.nb_traitements || '?'} traitements · IFT ${v.ift_moyen || '?'}${v.notes ? '<br>Notes : ' + v.notes : ''}</div></div>`;
+  } else {
+    el.innerHTML = '<div class="al alo"><span class="al-i">⏳</span><div><b>IFT non encore validé</b> pour la campagne ' + AN + '</div></div>';
+  }
+}
+
+async function loadValidationList() {
+  const list = document.getElementById('validList');
+  if (!IS_SECRETARY || !CAVE_DOMAINES.length) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--gris);text-align:center;padding:20px">Aucun viticulteur dans votre cave</div>';
+    return;
+  }
+  list.innerHTML = '';
+  for (const d of CAVE_DOMAINES.filter(x => x.id !== MY_DOMAINE_ID)) {
+    // Charger les traitements de ce domaine pour la campagne
+    const { data: traits } = await sb.from('traitements').select('*').eq('domaine_id', d.id).eq('campagne', AN);
+    const nb = traits ? traits.length : 0;
+    const ift = nb ? (traits.reduce((s, t) => s + (t.ift || 0), 0) / Math.max(1, nb)).toFixed(2) : '0';
+
+    // Vérifier si déjà validé
+    const { data: val } = await sb.from('ift_validations').select('*')
+      .eq('domaine_id', d.id).eq('campagne', AN).limit(1);
+    const isValid = val && val.length > 0;
+
+    list.innerHTML += `<div class="li" style="cursor:pointer" onclick="selectForValidation('${d.id}')">
+      <div class="lic" style="background:${isValid ? '#d4edda' : '#fde8c8'}">${isValid ? '✅' : '⏳'}</div>
+      <div class="lib">
+        <div class="lit">${d.nom || d.raison_sociale || d.email}</div>
+        <div class="lim">${d.surface_ha || '?'} ha · ${nb} traitements · IFT moyen ${ift}</div>
+        ${isValid ? '<div style="font-size:11px;color:var(--vert);margin-top:2px">Validé le ' + new Date(val[0].date_validation).toLocaleDateString('fr-FR') + '</div>' : ''}
+      </div>
+      <input type="radio" name="validTarget" value="${d.id}" style="width:20px;height:20px;accent-color:#2d5a1e">
+    </div>`;
+  }
+}
+
+let _validTargetId = null;
+function selectForValidation(id) {
+  _validTargetId = id;
+  document.querySelector(`input[name="validTarget"][value="${id}"]`).checked = true;
+}
+
+async function validerIFTCave() {
+  if (!IS_SECRETARY) { toast('⚠️ Réservé aux secrétaires de cave'); return; }
+  const targetId = _validTargetId || document.querySelector('input[name="validTarget"]:checked')?.value;
+  if (!targetId) { toast('⚠️ Sélectionnez un viticulteur'); return; }
+
+  const targetDom = CAVE_DOMAINES.find(d => d.id === targetId);
+  if (!targetDom) return;
+
+  // Calculer stats
+  const { data: traits } = await sb.from('traitements').select('*').eq('domaine_id', targetId).eq('campagne', AN);
+  const nb = traits ? traits.length : 0;
+  const iftMoy = nb ? Math.round(traits.reduce((s, t) => s + (t.ift || 0), 0) / nb * 100) / 100 : 0;
+
+  const notes = document.getElementById('validNotes').value.trim();
+
+  // Enregistrer la validation
+  const { error } = await sb.from('ift_validations').insert({
+    domaine_id: targetId,
+    campagne: AN,
+    valide_par_domaine_id: MY_DOMAINE_ID,
+    valide_par_nom: DOM?.nom || 'Secrétaire cave',
+    nb_traitements: nb,
+    ift_moyen: iftMoy,
+    notes: notes || null
+  });
+
+  if (error) { toast('❌ Erreur validation : ' + error.message); return; }
+
+  // Marquer les traitements comme validés
+  if (traits && traits.length) {
+    await sb.from('traitements').update({
+      ift_valide_par: (DOM?.nom || 'Secrétaire'),
+      ift_valide_le: new Date().toISOString()
+    }).eq('domaine_id', targetId).eq('campagne', AN);
+  }
+
+  toast(`✅ IFT validé pour ${targetDom.nom || targetDom.email} · ${nb} traitements · IFT ${iftMoy}`);
+  closeM(null, 'mValidIFT');
+  renderValidationStatus();
+}
+
+// Override showM pour charger les données de validation
+const _origShowM = typeof showM === 'function' ? showM : null;
+function showMExtended(id) {
+  if (id === 'mValidIFT') loadValidationList();
+  if (id === 'mQRCode') renderQRCodeBilan();
+}
+// Patch showM
+(function() {
+  const orig = window.showM || function(id) { document.getElementById(id).style.display = 'flex'; };
+  window.showM = function(id) {
+    orig(id);
+    showMExtended(id);
+  };
+})();
+
+
+// ══════════════════════════════════════════════════════
+//  QR CODE IFT CERTIFIÉ — API ECOAGRI
+// ══════════════════════════════════════════════════════
+
+async function certifierBilanIFT() {
+  const btn = document.getElementById('btnCertifIFT');
+  if (!TRAITS.length) { toast('⚠️ Aucun traitement à certifier'); return; }
+
+  btn.disabled = true; btn.textContent = '⏳ Certification en cours…';
+  const progress = document.getElementById('certifProgress');
+  const bar = document.getElementById('certifBar');
+  const txt = document.getElementById('certifTxt');
+  progress.style.display = 'block';
+
+  // Filtrer les traitements de la campagne en cours sans certification
+  const toProcess = TRAITS.filter(t => t.campagne === AN && !t.ift_certifie_id && t.amm);
+  let done = 0, success = 0, fail = 0;
+
+  for (const t of toProcess) {
+    try {
+      const resp = await fetch('/api/ift-certifie', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'certifier',
+          campagne: AN,
+          amm: t.amm,
+          dose: t.dose_appliquee,
+          categorie: t.produit_categorie
+        })
+      });
+      const data = await resp.json();
+
+      if (data.certifie && data.id) {
+        // Sauvegarder l'ID de certification
+        await sb.from('traitements').update({
+          ift_certifie_id: data.id.toString(),
+          ift_certifie_url: data.verificationUrl || ''
+        }).eq('id', t.id);
+        t.ift_certifie_id = data.id.toString();
+        t.ift_certifie_url = data.verificationUrl || '';
+        success++;
+      } else if (data.ift !== undefined) {
+        // Calcul non certifié mais valide
+        success++;
+      } else {
+        fail++;
+      }
+    } catch (e) {
+      fail++;
+    }
+    done++;
+    bar.style.width = (done / toProcess.length * 100) + '%';
+    txt.textContent = `${done}/${toProcess.length} traitement(s) traités`;
+  }
+
+  btn.disabled = false; btn.innerHTML = '🔐 Certifier tous les IFT';
+  const st = document.getElementById('certifStatus');
+  st.style.display = 'block';
+  st.innerHTML = `<div class="al ${fail === 0 ? 'alg' : 'alo'}"><span class="al-i">${fail === 0 ? '✅' : '⚠️'}</span><div><b>${success} certifié(s)</b>${fail ? ' · ' + fail + ' erreur(s)' : ''} sur ${toProcess.length} traitement(s)</div></div>`;
+
+  if (!toProcess.length) {
+    st.innerHTML = '<div class="al alg"><span class="al-i">✅</span><div><b>Tous les traitements sont déjà certifiés</b></div></div>';
+  }
+
+  toast(`🔐 Certification terminée : ${success}/${toProcess.length}`);
+}
+
+function renderQRCodeBilan() {
+  const container = document.getElementById('qrContainer');
+  container.innerHTML = '';
+
+  const ift = iftDom();
+  const nom = DOM?.nom || DOM?.raison_sociale || 'Domaine';
+
+  document.getElementById('qrNom').textContent = nom;
+  document.getElementById('qrCamp').textContent = AN;
+  document.getElementById('qrIFT').textContent = ift.toFixed(2);
+  document.getElementById('qrNbT').textContent = TRAITS.filter(t => t.campagne === AN).length;
+
+  // Compter les certifiés
+  const certifies = TRAITS.filter(t => t.campagne === AN && t.ift_certifie_id);
+  const total = TRAITS.filter(t => t.campagne === AN).length;
+  const info = document.getElementById('qrCertifInfo');
+  if (certifies.length) {
+    info.innerHTML = `<span style="color:var(--vert);font-weight:700">✅ ${certifies.length}/${total} traitements certifiés ecoagri</span>`;
+  } else {
+    info.innerHTML = `<span style="color:var(--orange)">⏳ Aucun traitement certifié — cliquez "Certifier" d'abord</span>`;
+  }
+
+  // Données QR : lien vers vérification ecoagri avec résumé
+  // Si un traitement est certifié, utiliser son URL ; sinon, lien générique
+  const firstCertif = certifies.find(t => t.ift_certifie_url);
+  const qrData = firstCertif
+    ? firstCertif.ift_certifie_url
+    : `https://ecoagri.agriculture.gouv.fr/ift/traitement-ift/${AN}`;
+
+  // Générer QR code
+  if (typeof QRCode !== 'undefined') {
+    new QRCode(container, {
+      text: qrData,
+      width: 200,
+      height: 200,
+      colorDark: '#1a1410',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } else {
+    container.innerHTML = '<div style="padding:20px;color:var(--gris)">QR Code indisponible</div>';
+  }
+}
+
+function printQRCode() {
+  const container = document.getElementById('qrContainer');
+  const nom = DOM?.nom || DOM?.raison_sociale || 'Domaine';
+  const ift = iftDom();
+  const nb = TRAITS.filter(t => t.campagne === AN).length;
+  const certifs = TRAITS.filter(t => t.campagne === AN && t.ift_certifie_id).length;
+
+  const qrImg = container.querySelector('img') || container.querySelector('canvas');
+  let imgSrc = '';
+  if (qrImg) {
+    if (qrImg.tagName === 'IMG') imgSrc = qrImg.src;
+    else if (qrImg.tagName === 'CANVAS') imgSrc = qrImg.toDataURL();
+  }
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>QR Code IFT - ${nom}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:40px;text-align:center}
+      .header{font-size:24px;font-weight:bold;margin-bottom:4px}
+      .sub{font-size:14px;color:#666;margin-bottom:20px}
+      .qr{margin:20px auto}
+      .info{text-align:left;max-width:400px;margin:20px auto;font-size:14px;line-height:1.8;border:1px solid #ddd;border-radius:8px;padding:16px}
+      .info b{display:inline-block;min-width:140px}
+      .footer{margin-top:20px;font-size:11px;color:#999}
+      .badge{background:#d4edda;color:#155724;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:bold;display:inline-block;margin-top:8px}
+    </style>
+  </head><body>
+    <div class="header">🍇 VitiPilot</div>
+    <div class="sub">Bilan IFT Certifié — Campagne ${AN}</div>
+    ${imgSrc ? `<div class="qr"><img src="${imgSrc}" width="200" height="200"></div>` : ''}
+    <div class="info">
+      <div><b>Exploitant :</b> ${nom}</div>
+      <div><b>Campagne :</b> ${AN}</div>
+      <div><b>SIRET :</b> ${DOM?.siret || '—'}</div>
+      <div><b>Commune :</b> ${DOM?.commune || '—'}</div>
+      <div><b>Surface :</b> ${DOM?.surface_ha || '—'} ha</div>
+      <div><b>IFT moyen :</b> ${ift.toFixed(2)}</div>
+      <div><b>Nb traitements :</b> ${nb}</div>
+      <div><b>Certifiés ecoagri :</b> ${certifs}/${nb}</div>
+    </div>
+    <div class="badge">✅ Vérifiable sur ecoagri.agriculture.gouv.fr</div>
+    <div class="footer">Généré par VitiPilot · ${new Date().toLocaleDateString('fr-FR')} · Scan QR pour vérification officielle</div>
+    <script>setTimeout(()=>window.print(),500)<\/script>
+  </body></html>`);
+  win.document.close();
 }
