@@ -1,7 +1,1 @@
-{
-  "functions": {
-    "api/scan.js": {
-      "maxDuration": 30
-    }
-  }
-}
+{"functions":{"api/scan.js":{"runtime":"nodejs20.x","maxDuration":30},"api/ift-certifie.js":{"runtime":"nodejs20.x","maxDuration":15}}}
