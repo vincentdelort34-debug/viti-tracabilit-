@@ -128,11 +128,14 @@ async function readZipEntries(arrayBuf) {
 // ══════════════════════════════════════════
 let sb = null;
 
+let SUPABASE_URL = '', SUPABASE_ANON_KEY = '';
 async function initSupabase() {
   try {
     const res = await fetch('/api/config');
     if (!res.ok) throw new Error('Config unavailable');
     const { url, key } = await res.json();
+    SUPABASE_URL = url;
+    SUPABASE_ANON_KEY = key;
     sb = supabase.createClient(url, key);
   } catch(e) {
     console.error('Supabase init failed:', e);
@@ -3723,6 +3726,80 @@ async function initSecretaire() {
   // Afficher bloc validation IFT dans la section IFT
   document.getElementById('iftValidBlock').style.display = 'block';
   renderValidationStatus();
+}
+
+async function creerViticulteur() {
+  if (!IS_SECRETARY) { toast('⚠️ Réservé aux secrétaires'); return; }
+  const nom = document.getElementById('avNom').value.trim();
+  const email = document.getElementById('avEmail').value.trim();
+  const pwd = document.getElementById('avPwd').value;
+  const surface = parseFloat(document.getElementById('avSurface').value) || 0;
+  const commune = document.getElementById('avCommune').value.trim();
+  const rs = document.getElementById('avRS').value.trim();
+  const msgEl = document.getElementById('avMsg');
+  const btn = document.getElementById('btnAddVitic');
+
+  if (!nom || !email || !pwd) {
+    msgEl.style.display = 'block'; msgEl.style.background = '#fde8e6'; msgEl.style.color = '#c0392b';
+    msgEl.textContent = 'Veuillez remplir le nom, l\'email et le mot de passe';
+    return;
+  }
+  if (pwd.length < 6) {
+    msgEl.style.display = 'block'; msgEl.style.background = '#fde8e6'; msgEl.style.color = '#c0392b';
+    msgEl.textContent = 'Le mot de passe doit faire au moins 6 caractères';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Création en cours…';
+  msgEl.style.display = 'none';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(SUPABASE_URL + '/functions/v1/create-viticulteur', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ email, password: pwd, nom, surface_ha: surface, commune, raison_sociale: rs })
+    });
+    const result = await res.json();
+
+    if (!res.ok || result.error) {
+      msgEl.style.display = 'block'; msgEl.style.background = '#fde8e6'; msgEl.style.color = '#c0392b';
+      msgEl.textContent = result.error || 'Erreur inconnue';
+      btn.disabled = false; btn.textContent = '✅ Créer le compte';
+      return;
+    }
+
+    // Succès
+    msgEl.style.display = 'block'; msgEl.style.background = '#d4edda'; msgEl.style.color = '#2d5a1e';
+    msgEl.innerHTML = `✅ Compte créé pour <b>${nom}</b><br>📧 ${email} · 🔑 ${pwd}<br><span style="font-size:11px;opacity:.7">Communiquez ces identifiants au viticulteur</span>`;
+    btn.disabled = false; btn.textContent = '✅ Créer un autre compte';
+
+    // Rafraîchir la liste des domaines de la cave
+    const { data: domaines } = await sb.from('domaines').select('*').eq('cave_id', DOM.cave_id).order('nom');
+    CAVE_DOMAINES = domaines || [];
+    const sel = document.getElementById('secDomSelect');
+    sel.innerHTML = '<option value="">— Mon compte —</option>';
+    CAVE_DOMAINES.filter(d => d.id !== MY_DOMAINE_ID).forEach(d => {
+      sel.innerHTML += `<option value="${d.id}">${d.nom || d.raison_sociale || d.email} (${d.surface_ha || '?'} ha)</option>`;
+    });
+
+    // Vider les champs pour un prochain ajout
+    document.getElementById('avNom').value = '';
+    document.getElementById('avEmail').value = '';
+    document.getElementById('avPwd').value = '';
+    document.getElementById('avSurface').value = '';
+    document.getElementById('avCommune').value = '';
+    document.getElementById('avRS').value = '';
+
+  } catch(e) {
+    msgEl.style.display = 'block'; msgEl.style.background = '#fde8e6'; msgEl.style.color = '#c0392b';
+    msgEl.textContent = 'Erreur réseau : ' + e.message;
+    btn.disabled = false; btn.textContent = '✅ Créer le compte';
+  }
 }
 
 async function switchDomaine(targetId) {

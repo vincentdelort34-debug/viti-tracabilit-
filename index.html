@@ -111,6 +111,50 @@
       <option value="">— Mon compte —</option>
     </select>
     <button onclick="showM('mValidIFT')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer">✅ Valider IFT</button>
+    <button onclick="showM('mAddVitic')" style="background:rgba(76,175,80,.6);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer">➕ Viticulteur</button>
+  </div>
+</div>
+
+<!-- MODAL AJOUT VITICULTEUR -->
+<div id="mAddVitic" class="mo" style="display:none" onclick="closeM(event,'mAddVitic')">
+  <div class="mc" style="max-width:440px">
+    <div class="mh"><h3>➕ Nouveau viticulteur</h3><button class="mx" onclick="closeM(null,'mAddVitic')">✕</button></div>
+    <div class="mb" style="padding:20px">
+      <p style="font-size:13px;color:var(--gris);margin:0 0 16px">Créez un compte pour un viticulteur de votre cave. Il pourra se connecter avec ces identifiants sur son téléphone.</p>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:4px">Nom du viticulteur *</label>
+          <input id="avNom" type="text" placeholder="ex: Jean Dupont" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:Outfit,sans-serif">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:4px">Email *</label>
+          <input id="avEmail" type="email" placeholder="viticulteur@email.com" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:Outfit,sans-serif">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:4px">Mot de passe temporaire *</label>
+          <div style="display:flex;gap:8px">
+            <input id="avPwd" type="text" placeholder="min. 6 caractères" style="flex:1;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:Outfit,sans-serif">
+            <button onclick="document.getElementById('avPwd').value=Math.random().toString(36).slice(-8)" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:12px;cursor:pointer;background:#f5f5f5" title="Générer un mot de passe">🎲</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <div style="flex:1">
+            <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:4px">Surface (ha)</label>
+            <input id="avSurface" type="number" step="0.01" placeholder="ex: 5.5" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:Outfit,sans-serif">
+          </div>
+          <div style="flex:1">
+            <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:4px">Commune</label>
+            <input id="avCommune" type="text" placeholder="ex: Puisserguier" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:Outfit,sans-serif">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--txt2);display:block;margin-bottom:4px">Raison sociale</label>
+          <input id="avRS" type="text" placeholder="EARL, GAEC..." style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:Outfit,sans-serif">
+        </div>
+      </div>
+      <div id="avMsg" style="display:none;margin-top:12px;padding:10px;border-radius:8px;font-size:13px"></div>
+      <button id="btnAddVitic" onclick="creerViticulteur()" style="margin-top:16px;width:100%;padding:12px;background:var(--vert);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:Outfit,sans-serif">✅ Créer le compte</button>
+    </div>
   </div>
 </div>
 
