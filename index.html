@@ -110,7 +110,6 @@
     <select id="secDomSelect" onchange="switchDomaine(this.value)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:13px;font-family:Outfit,sans-serif;cursor:pointer">
       <option value="">— Mon compte —</option>
     </select>
-    <button onclick="showM('mValidIFT')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer">✅ Valider IFT</button>
     <button onclick="showM('mAddVitic')" style="background:rgba(76,175,80,.6);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer">➕ Viticulteur</button>
   </div>
 </div>
@@ -305,10 +304,7 @@
   </div>
 
   <!-- VALIDATION SECRÉTAIRE -->
-  <div id="iftValidBlock" style="display:none" class="card">
-    <div class="ch"><span class="ct">✅ Validation cave</span></div>
-    <div id="iftValidStatus" style="font-size:13px;color:var(--gris);padding:8px 0">Aucune validation</div>
-  </div>
+  <div id="iftValidBlock" style="display:none"></div>
 </section>
 <!-- SCAN IA -->
 <section id="sScan" class="sec">
