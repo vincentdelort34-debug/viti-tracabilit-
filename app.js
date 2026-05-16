@@ -3698,7 +3698,7 @@ async function initSecretaire() {
   // Charger les infos de la cave
   const { data: cave } = await sb.from('caves').select('*').eq('id', DOM.cave_id).single();
   if (cave) {
-    document.getElementById('secCaveName').textContent = cave.nom || '';
+    document.getElementById('secCaveName').value = cave.nom || '';
   }
 
   // Charger tous les domaines de la cave
@@ -3726,6 +3726,14 @@ async function initSecretaire() {
   // Afficher bloc validation IFT dans la section IFT
   document.getElementById('iftValidBlock').style.display = 'block';
   renderValidationStatus();
+}
+
+async function saveSecCaveName(newName) {
+  if (!IS_SECRETARY || !DOM || !DOM.cave_id) return;
+  const trimmed = newName.trim();
+  if (!trimmed) return;
+  await sb.from('caves').update({ nom: trimmed }).eq('id', DOM.cave_id);
+  toast('✅ Nom mis à jour : ' + trimmed);
 }
 
 async function creerViticulteur() {
