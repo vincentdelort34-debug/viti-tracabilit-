@@ -74,7 +74,7 @@ Si la photo ne montre pas de symptômes phytosanitaires clairs, indiquer "Aucun 
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5',
         max_tokens: 2000,
         messages: [{
           role: 'user',

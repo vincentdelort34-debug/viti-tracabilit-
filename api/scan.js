@@ -59,7 +59,7 @@ Si tu ne reconnais pas de parcelles cadastrales, retourne parcelles:[] avec info
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5',
           max_tokens: 2000,
           messages: [{ role: 'user', content: [
             { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: image } },
@@ -111,7 +111,7 @@ DAR = délai avant récolte en jours. ZNT = zone non traitée en mètres.`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5',
         max_tokens: 1500,
         messages: [{ role: 'user', content: [
           { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: image } },
