@@ -1,3 +1,15 @@
+async function requireUser(req, res) {
+  const token = (req.headers.authorization || '').match(/^Bearer\s+(.+)$/i)?.[1];
+  if (!token) { res.status(401).json({ error: 'Connexion requise' }); return false; }
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) { res.status(503).json({ error: 'Authentification indisponible' }); return false; }
+  try {
+    const check = await fetch(url + '/auth/v1/user', { headers: { apikey: key, Authorization: 'Bearer ' + token } });
+    if (!check.ok) { res.status(401).json({ error: 'Session invalide' }); return false; }
+    return true;
+  } catch (_) { res.status(503).json({ error: 'Service d’authentification indisponible' }); return false; }
+}
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -8,6 +20,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== 'POST') {
+  if (!(await requireUser(req, res))) return;
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
