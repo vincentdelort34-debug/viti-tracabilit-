@@ -387,6 +387,11 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <button onclick="hide('secPanel')" style="background:rgba(255,255,255,.1);border:none;color:var(--creme);font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer">×</button>
   </div>
   <div style="padding:16px;max-width:520px;margin:0 auto">
+    <!-- Demandes d'inscription en attente (admin) -->
+    <div class="card" id="pendingCard" style="display:none">
+      <div class="ch"><div class="ct">🔔 Demandes en attente</div></div>
+      <div id="pendingList"><div style="text-align:center;color:var(--gris);font-size:13px;padding:20px">Chargement…</div></div>
+    </div>
     <!-- Création d'un compte viticulteur -->
     <div class="card">
       <div class="ch"><div class="ct">➕ Créer un compte viticulteur</div></div>
@@ -1533,7 +1538,7 @@ window.addEventListener('load', async () => {
   if (!USER_ROLE) {
     // Utilisateur sans rôle assigné
     hide('ls'); show('loginScreen');
-    showLoginError("Votre compte n'a pas encore de rôle assigné. Contactez l'administrateur.");
+    showLoginError("Votre compte est en attente de validation par l'administrateur.");
     await sb.auth.signOut();
     return;
   }
@@ -1577,6 +1582,7 @@ async function initAfterAuth() {
       DOM = data; DOM_ID = data.id;
       await loadAll();
       showApp();
+      checkPendingOnLogin();
     } else {
       clearTimeout(timeout);
       hide('ls'); show('loginScreen');
@@ -1609,7 +1615,7 @@ async function doLogin() {
     CURRENT_USER = data.user;
     await loadUserRole();
     if (!USER_ROLE) {
-      showLoginError("Compte sans rôle assigné. Contactez l'administrateur.");
+      showLoginError("Votre compte est en attente de validation par l'administrateur.");
       await sb.auth.signOut();
       return;
     }
@@ -1678,7 +1684,7 @@ async function doRegister() {
       <div style="text-align:center;padding:20px 0">
         <div style="font-size:48px;margin-bottom:12px">📬</div>
         <div style="color:var(--or);font-size:17px;font-weight:700;margin-bottom:8px">Demande envoyée !</div>
-        <div style="color:rgba(255,255,255,.5);font-size:13px;line-height:1.6">L'administrateur va examiner votre demande.<br>Vous recevrez un email de confirmation à <b style="color:rgba(255,255,255,.7)">${email}</b>.</div>
+        <div style="color:rgba(255,255,255,.5);font-size:13px;line-height:1.6">L'administrateur va examiner votre demande.<br>Vous pourrez vous connecter avec <b style="color:rgba(255,255,255,.7)">${email}</b> dès que votre compte sera validé.</div>
       </div>`;
   } catch(e) {
     showLoginError(e.message);
@@ -1739,6 +1745,7 @@ async function loadUsersList() {
   const el = document.getElementById('usersList');
   const domSel = document.getElementById('newVitDomaine');
   if (!el) return;
+  loadPending();
   el.innerHTML = '<div style="text-align:center;color:var(--gris);font-size:13px;padding:20px">Chargement…</div>';
 
   try {
@@ -1772,6 +1779,99 @@ async function loadUsersList() {
   } catch(e) {
     el.innerHTML = '<div style="color:var(--rouge);font-size:13px;padding:12px">Erreur : ' + e.message + '</div>';
   }
+}
+
+// ── Demandes d'inscription en attente (admin) ──
+function escH(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function adminApi(method, body) {
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch('/api/admin-pending', {
+    method,
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (session?.access_token || '') },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  let data = {};
+  try { data = await res.json(); } catch(e) { throw new Error('Réponse serveur invalide (' + res.status + ')'); }
+  if (!res.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+  return data;
+}
+
+async function loadPending() {
+  const card = document.getElementById('pendingCard');
+  const el = document.getElementById('pendingList');
+  if (!card || !el || USER_ROLE !== 'admin') return;
+  card.style.display = '';
+  el.innerHTML = '<div style="text-align:center;color:var(--gris);font-size:13px;padding:20px">Chargement…</div>';
+  try {
+    const { pending, domaines } = await adminApi('GET');
+    updatePendingBadge(pending.length);
+    if (!pending.length) {
+      el.innerHTML = '<div style="text-align:center;color:var(--gris);font-size:13px;padding:16px">Aucune demande en attente ✓</div>';
+      return;
+    }
+    el.innerHTML = pending.map(p => {
+      const wanted = (p.domaine_nom || '').trim().toLowerCase();
+      const match = domaines.find(d => wanted && d.nom.toLowerCase() === wanted);
+      const opts = domaines.map(d => `<option value="${escH(d.id)}"${match && match.id === d.id ? ' selected' : ''}>${escH(d.nom)}</option>`).join('');
+      const newLabel = '➕ Créer le domaine « ' + escH(p.domaine_nom || p.nom) + ' »';
+      const date = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : '';
+      return `
+      <div style="border:1px solid var(--gris2);border-radius:10px;padding:12px;margin-bottom:10px" id="pend_${escH(p.user_id)}">
+        <div style="font-weight:700;font-size:15px">${escH(p.nom)}</div>
+        <div style="font-size:13px;color:var(--gris)">${escH(p.email)} · ${escH(date)}</div>
+        ${p.domaine_nom ? `<div style="font-size:13px;margin-top:2px">Domaine indiqué : <b>${escH(p.domaine_nom)}</b></div>` : ''}
+        <div class="fg" style="margin-top:10px"><label>Rattacher au domaine</label>
+          <select id="pdom_${escH(p.user_id)}"><option value=""${match ? '' : ' selected'}>${newLabel}</option>${opts}</select>
+        </div>
+        <div class="fg"><label>Rôle</label>
+          <select id="prole_${escH(p.user_id)}"><option value="viticulteur">🌿 Viticulteur</option><option value="secretaire">📋 Secrétaire</option></select>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btgold" style="flex:1" onclick="decidePending('${escH(p.user_id)}','validate')">✅ Valider</button>
+          <button class="btn" style="flex:1;background:var(--rouge);color:#fff" onclick="decidePending('${escH(p.user_id)}','refuse')">❌ Refuser</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--rouge);font-size:13px;padding:12px">Erreur : ' + escH(e.message) + '</div>';
+  }
+}
+
+async function decidePending(userId, action) {
+  const box = document.getElementById('pend_' + userId);
+  const domSel = document.getElementById('pdom_' + userId);
+  const roleSel = document.getElementById('prole_' + userId);
+  if (box) box.querySelectorAll('button').forEach(b => b.disabled = true);
+  try {
+    const r = await adminApi('POST', {
+      action, user_id: userId,
+      domaine_id: domSel ? (domSel.value || null) : null,
+      role: roleSel ? roleSel.value : 'viticulteur'
+    });
+    toast((action === 'validate' ? '✅ ' : '❌ ') + r.message);
+    await loadPending();
+    await loadUsersList();
+  } catch(e) {
+    toast('⚠️ ' + e.message);
+    if (box) box.querySelectorAll('button').forEach(b => b.disabled = false);
+  }
+}
+
+function updatePendingBadge(n) {
+  ['userMenuAdmin', 'userMenuAdminDesk'].forEach(id => {
+    const btn = document.querySelector('#' + id + ' button');
+    if (btn) btn.textContent = '👥 Gérer les comptes' + (n ? ' (' + n + ' en attente)' : '');
+  });
+}
+
+async function checkPendingOnLogin() {
+  if (USER_ROLE !== 'admin') return;
+  try {
+    const { pending } = await adminApi('GET');
+    updatePendingBadge(pending.length);
+    if (pending.length) toast('🔔 ' + pending.length + ' demande' + (pending.length > 1 ? 's' : '') + ' de compte en attente — menu compte › Gérer les comptes');
+  } catch(e) { console.warn('checkPendingOnLogin:', e.message); }
 }
 
 function roleIcon(r) { return {admin:'🔑', secretaire:'📋', viticulteur:'🌿'}[r] || '👤'; }
