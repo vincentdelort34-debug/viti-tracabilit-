@@ -315,18 +315,45 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--or);margin-bottom:4px">VitiTrace</div>
     <div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:32px;text-align:center">Suivi vigne · IFT · Cave · Négoce</div>
     <div style="background:rgba(255,255,255,.07);border-radius:18px;padding:28px 24px;width:100%;max-width:400px">
+      <!-- Onglets Connexion / S'inscrire -->
+      <div style="display:flex;gap:0;margin-bottom:20px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.12)">
+        <button id="tabLogin" onclick="switchLoginTab('login')" style="flex:1;padding:10px;background:var(--or);color:var(--noir);border:none;cursor:pointer;font-size:13px;font-weight:700">Se connecter</button>
+        <button id="tabRegister" onclick="switchLoginTab('register')" style="flex:1;padding:10px;background:transparent;color:rgba(255,255,255,.5);border:none;cursor:pointer;font-size:13px">Demander un accès</button>
+      </div>
       <div id="loginError" style="display:none;background:#c0392b22;border:1px solid #c0392b55;border-radius:10px;padding:11px 14px;color:#ff8080;font-size:13px;margin-bottom:16px"></div>
-      <div class="fg"><label style="color:rgba(255,255,255,.5)">Adresse e-mail</label>
-        <input type="email" id="loginEmail" placeholder="votre@email.fr" autocomplete="email" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--creme)" onkeydown="if(event.key==='Enter')document.getElementById('loginPwd').focus()">
+      <!-- FORMULAIRE CONNEXION -->
+      <div id="formLogin">
+        <div class="fg"><label style="color:rgba(255,255,255,.5)">Adresse e-mail</label>
+          <input type="email" id="loginEmail" placeholder="votre@email.fr" autocomplete="email" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--creme)" onkeydown="if(event.key==='Enter')document.getElementById('loginPwd').focus()">
+        </div>
+        <div class="fg" style="margin-bottom:0"><label style="color:rgba(255,255,255,.5)">Mot de passe</label>
+          <input type="password" id="loginPwd" placeholder="••••••••" autocomplete="current-password" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--creme)" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <button class="btn" id="loginBtn" onclick="doLogin()" style="background:var(--or);color:var(--noir);width:100%;font-size:15px;padding:15px;margin-top:14px;font-weight:700">
+          <span id="loginBtnTxt">Se connecter</span>
+        </button>
+        <div style="text-align:center;margin-top:14px">
+          <span onclick="doResetPwd()" style="color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;text-decoration:underline">Mot de passe oublié ?</span>
+        </div>
       </div>
-      <div class="fg" style="margin-bottom:0"><label style="color:rgba(255,255,255,.5)">Mot de passe</label>
-        <input type="password" id="loginPwd" placeholder="••••••••" autocomplete="current-password" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--creme)" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <button class="btn" id="loginBtn" onclick="doLogin()" style="background:var(--or);color:var(--noir);width:100%;font-size:15px;padding:15px;margin-top:14px;font-weight:700">
-        <span id="loginBtnTxt">Se connecter</span>
-      </button>
-      <div style="text-align:center;margin-top:14px">
-        <span onclick="doResetPwd()" style="color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;text-decoration:underline">Mot de passe oublié ?</span>
+      <!-- FORMULAIRE INSCRIPTION -->
+      <div id="formRegister" style="display:none">
+        <div class="fg"><label style="color:rgba(255,255,255,.5)">Votre nom complet</label>
+          <input type="text" id="regNom" placeholder="Jean Dupont" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--creme)">
+        </div>
+        <div class="fg"><label style="color:rgba(255,255,255,.5)">Adresse e-mail</label>
+          <input type="email" id="regEmail" placeholder="votre@email.fr" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--creme)">
+        </div>
+        <div class="fg"><label style="color:rgba(255,255,255,.5)">Mot de passe</label>
+          <input type="password" id="regPwd" placeholder="Min. 6 caractères" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--creme)">
+        </div>
+        <div class="fg" style="margin-bottom:0"><label style="color:rgba(255,255,255,.5)">Nom de votre domaine (facultatif)</label>
+          <input type="text" id="regDomaine" placeholder="Ex : EARL Dupont" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--creme)">
+        </div>
+        <button class="btn" id="regBtn" onclick="doRegister()" style="background:var(--or);color:var(--noir);width:100%;font-size:15px;padding:15px;margin-top:14px;font-weight:700">
+          Envoyer ma demande
+        </button>
+        <div style="color:rgba(255,255,255,.3);font-size:11px;text-align:center;margin-top:12px;line-height:1.5">Votre demande sera examinée par l'administrateur.<br>Vous recevrez un email de confirmation.</div>
       </div>
     </div>
     <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:24px;text-align:center">Accès réservé · vos données restent privées</div>
@@ -1614,6 +1641,49 @@ async function doResetPwd() {
     alert('📧 Email de réinitialisation envoyé à ' + email);
   } else {
     showLoginError(error.message);
+  }
+}
+
+function switchLoginTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('formLogin').style.display = isLogin ? '' : 'none';
+  document.getElementById('formRegister').style.display = isLogin ? 'none' : '';
+  document.getElementById('tabLogin').style.background = isLogin ? 'var(--or)' : 'transparent';
+  document.getElementById('tabLogin').style.color = isLogin ? 'var(--noir)' : 'rgba(255,255,255,.5)';
+  document.getElementById('tabRegister').style.background = isLogin ? 'transparent' : 'var(--or)';
+  document.getElementById('tabRegister').style.color = isLogin ? 'rgba(255,255,255,.5)' : 'var(--noir)';
+  hideLoginError();
+}
+
+async function doRegister() {
+  const nom = document.getElementById('regNom').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pwd = document.getElementById('regPwd').value;
+  const domaine = document.getElementById('regDomaine').value.trim();
+  if (!nom || !email || !pwd) { showLoginError('Nom, email et mot de passe obligatoires.'); return; }
+  if (pwd.length < 6) { showLoginError('Le mot de passe doit faire au moins 6 caractères.'); return; }
+  const btn = document.getElementById('regBtn');
+  btn.textContent = 'Envoi en cours…'; btn.disabled = true;
+  hideLoginError();
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nom, email, password: pwd, domaine_nom: domaine })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+    // Succès — afficher message
+    document.getElementById('formRegister').innerHTML = `
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:48px;margin-bottom:12px">📬</div>
+        <div style="color:var(--or);font-size:17px;font-weight:700;margin-bottom:8px">Demande envoyée !</div>
+        <div style="color:rgba(255,255,255,.5);font-size:13px;line-height:1.6">L'administrateur va examiner votre demande.<br>Vous recevrez un email de confirmation à <b style="color:rgba(255,255,255,.7)">${email}</b>.</div>
+      </div>`;
+  } catch(e) {
+    showLoginError(e.message);
+  } finally {
+    btn.textContent = 'Envoyer ma demande'; btn.disabled = false;
   }
 }
 
