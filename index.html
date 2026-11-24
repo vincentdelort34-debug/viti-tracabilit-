@@ -1190,6 +1190,112 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   </div>
 </div>
 
+<!-- ══ EDIT PARCELLE ══ -->
+<div class="ov" id="mEP" onclick="closeM(event,'mEP')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">✏️ Modifier la parcelle</div>
+    <input type="hidden" id="epID">
+    <div class="fg"><label>Nom / lieu-dit</label><input type="text" id="epN" placeholder="Ex : Mairan, Les Pélisses…"></div>
+    <div class="row2">
+      <div class="fg"><label>Code</label><input type="text" id="epCo" placeholder="P1, P2…"></div>
+      <div class="fg"><label>Surface (ha)</label><input type="number" id="epH" step="0.01" placeholder="1.5"></div>
+    </div>
+    <div class="fg"><label>Commune</label><input type="text" id="epCm" placeholder="Ex : Puisserguier"></div>
+    <div class="fg"><label>Cépage principal</label><input type="text" id="epCe" placeholder="Ex : Chardonnay B"></div>
+    <div class="row2">
+      <div class="fg"><label>Couleur</label><select id="epCl"><option>Blanc</option><option>Noir</option><option>Rosé</option></select></div>
+      <div class="fg"><label>Produit / AOC</label><input type="text" id="epPr" placeholder="Pays d'Oc, AOP…"></div>
+    </div>
+    <div class="fg"><label>Référence cadastrale</label><input type="text" id="epCd" placeholder="Ex : 340225 G0207"></div>
+    <div class="fg"><label>Année de plantation</label><input type="number" id="epPl" placeholder="2005"></div>
+    <button class="btn btp" onclick="saveEditParc()">💾 Enregistrer les modifications</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mEP')">Annuler</button>
+  </div>
+</div>
+
+<!-- ══ EDIT CUVE ══ -->
+<div class="ov" id="mEC" onclick="closeM(event,'mEC')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">✏️ Modifier la cuve</div>
+    <input type="hidden" id="ecID">
+    <div class="fg"><label>Nom de la cuve</label><input type="text" id="ecN" placeholder="Ex : C1, Cuve Grenache…"></div>
+    <div class="row2">
+      <div class="fg"><label>Capacité (hL)</label><input type="number" id="ecCa" placeholder="50"></div>
+      <div class="fg"><label>Contenu actuel (hL)</label><input type="number" id="ecCo" placeholder="0"></div>
+    </div>
+    <div class="fg"><label>Cuvée / vin</label><input type="text" id="ecV" placeholder="Ex : Combe Haute 2025"></div>
+    <button class="btn btp" onclick="saveEditCuve()">💾 Enregistrer les modifications</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mEC')">Annuler</button>
+  </div>
+</div>
+
+<!-- ══ EDIT VENTE ══ -->
+<div class="ov" id="mEV" onclick="closeM(event,'mEV')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">✏️ Modifier la vente</div>
+    <input type="hidden" id="evID">
+    <div class="fg"><label>Cuvée</label><input type="text" id="evVi" placeholder="Ex : Combe Haute 2025"></div>
+    <div class="fg"><label>Acheteur</label><input type="text" id="evAc" placeholder="Négociant, particulier…"></div>
+    <div class="fg"><label>Type de circuit</label><select id="evCi"><option>Négoce en vrac</option><option>Vente directe particulier</option><option>CHR (restaurant, hôtel)</option><option>Grande distribution</option></select></div>
+    <div class="row2">
+      <div class="fg"><label>Volume (L)</label><input type="number" id="evVo" placeholder="500"></div>
+      <div class="fg"><label>Prix (€/L)</label><input type="number" id="evPx" step="0.05" placeholder="5.20"></div>
+    </div>
+    <div class="fg"><label>Date livraison</label><input type="date" id="evDa"></div>
+    <button class="btn btp" onclick="saveEditVente()">💾 Enregistrer les modifications</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mEV')">Annuler</button>
+  </div>
+</div>
+
+<!-- ══ EDIT TRAITEMENT ══ -->
+<div class="ov" id="mET" onclick="closeM(event,'mET')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">✏️ Modifier le traitement</div>
+    <input type="hidden" id="etID">
+    <div class="fg"><label>Date d'application</label><input type="date" id="etDa"></div>
+    <div class="fg"><label>Parcelle</label><select id="etPa"></select></div>
+    <div class="fg"><label>Produit</label><select id="etPr"></select></div>
+    <div class="row2">
+      <div class="fg"><label>Dose appliquée</label><input type="number" id="etDo" step="0.01" placeholder="0.5"></div>
+      <div class="fg"><label>Unité</label><select id="etUn"><option value="kg/ha">kg/ha</option><option value="L/ha">L/ha</option><option value="g/ha">g/ha</option></select></div>
+    </div>
+    <div class="fg"><label>Stade BBCH</label><input type="text" id="etBB" placeholder="Ex : 57"></div>
+    <div class="fg"><label>AMM</label><input type="text" id="etAM" placeholder="Numéro AMM"></div>
+    <button class="btn btp" onclick="saveEditTrait()">💾 Enregistrer les modifications</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mET')">Annuler</button>
+  </div>
+</div>
+
+<!-- ══ EDIT STOCK PRODUIT ══ -->
+<div class="ov" id="mES" onclick="closeM(event,'mES')">
+  <div class="mo2" onclick="event.stopPropagation()">
+    <div class="mh"></div><div class="mt">✏️ Modifier le produit</div>
+    <input type="hidden" id="esID">
+    <div class="fg"><label>Nom du produit</label><input type="text" id="esNom" placeholder="Bouillie bordelaise…"></div>
+    <div class="row2">
+      <div class="fg"><label>Catégorie</label><select id="esCat">
+        <option>Fongicide</option><option>Insecticide</option><option>Herbicide</option>
+        <option>Biocontrôle</option><option>Cuivre (biocontrôle)</option><option>Soufre</option>
+      </select></div>
+      <div class="fg"><label>Fournisseur</label><input type="text" id="esFou" placeholder="Fournisseur"></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Stock actuel</label><input type="number" id="esQte" step="0.1" placeholder="10"></div>
+      <div class="fg"><label>Unité</label><select id="esUni"><option value="kg">kg</option><option value="L">L</option><option value="g">g</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Seuil alerte</label><input type="number" id="esSeu" step="0.1" placeholder="2"></div>
+      <div class="fg"><label>Dose réf. (par ha)</label><input type="number" id="esDos" step="0.01" placeholder="0.5"></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>AMM</label><input type="text" id="esAmm" placeholder="Numéro AMM"></div>
+      <div class="fg"><label>DAR (jours)</label><input type="number" id="esDar" placeholder="28"></div>
+    </div>
+    <button class="btn btp" onclick="saveEditStock()">💾 Enregistrer les modifications</button>
+    <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mES')">Annuler</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/fflate@0.8.2/umd/index.js"></script>
@@ -2104,6 +2210,7 @@ function renderStock(filter){
           <td>${s.dar||0} j</td>
           <td><b style="color:${col}">${s.qte_stock}</b> ${s.unite_stock}</td>
           <td><span class="badge ${bc}">${s.etat==='ok'?'✓ OK':s.etat==='low'?'⚠️ Faible':'🚫 Épuisé'}</span></td>
+          <td><button onclick="editStock('${s.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px;color:var(--gris)" title="Modifier">✏️</button></td>
         </tr>`;
       }).join('')}</tbody>
     </table>`;
@@ -2114,7 +2221,7 @@ function renderStock(filter){
       const bg=s.etat==='ok'?'#d4edda':s.etat==='low'?'#fde8c8':'#fde8e6';
       const ic=s.categorie?.includes('Bio')?'🌱':s.categorie?.includes('cuivre')?'🟤':'🌿';
       const bc=s.etat==='ok'?'bg':s.etat==='low'?'bo':'br';
-      return`<div class="si"><div class="si-ic" style="background:${bg}">${ic}</div><div class="si-b"><div class="si-n">${s.nom}</div><div class="si-a">${s.amm||''} · ${s.categorie||''} · DAR ${s.dar||0}j</div><div class="si-br"><div class="si-bf" style="width:${pct}%;background:${col}"></div></div>${s.etat!=='ok'?`<div style="font-size:10px;font-weight:700;color:${col};text-transform:uppercase;margin-top:3px">${s.etat==='zero'?'ÉPUISÉ':'Sous seuil — '+s.seuil_alerte+' '+s.unite_stock}</div>`:''}</div><div class="si-q"><div class="si-qv" style="color:${col}">${s.qte_stock}</div><div class="si-qu">${s.unite_stock}</div><span class="badge ${bc}" style="margin-top:4px;display:inline-block">${s.etat==='ok'?'✓ OK':s.etat==='low'?'⚠️':'🚫'}</span></div></div>`;
+      return`<div class="si" style="position:relative"><div class="si-ic" style="background:${bg}">${ic}</div><div class="si-b"><div class="si-n">${s.nom}</div><div class="si-a">${s.amm||''} · ${s.categorie||''} · DAR ${s.dar||0}j</div><div class="si-br"><div class="si-bf" style="width:${pct}%;background:${col}"></div></div>${s.etat!=='ok'?`<div style="font-size:10px;font-weight:700;color:${col};text-transform:uppercase;margin-top:3px">${s.etat==='zero'?'ÉPUISÉ':'Sous seuil — '+s.seuil_alerte+' '+s.unite_stock}</div>`:''}</div><div class="si-q"><div class="si-qv" style="color:${col}">${s.qte_stock}</div><div class="si-qu">${s.unite_stock}</div><span class="badge ${bc}" style="margin-top:4px;display:inline-block">${s.etat==='ok'?'✓ OK':s.etat==='low'?'⚠️':'🚫'}</span></div><button onclick="editStock('${s.id}')" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;padding:2px;color:var(--gris)" title="Modifier">✏️</button></div>`;
     }).join('');
   }
 }
@@ -2189,7 +2296,7 @@ function initMap(){
   document.getElementById('cS').textContent=`${PARCS.length} parcelle(s) · ${PARCS.reduce((s,p)=>s+(p.surface_ha||0),0).toFixed(2)} ha`;
   cl.innerHTML=PARCS.map(p=>{
     const v=iftP(p.code),st=iftSt(v),col=iftCol(st);
-    return`<div class="card" id="pli-${p.code}" style="position:relative;transition:box-shadow .2s,outline .2s"><div style="display:flex;align-items:center;justify-content:space-between;padding-right:32px" onclick="highlightParcelle('${p.code}')"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div><button onclick="event.stopPropagation();supprimerParcelle('${p.id}','${p.nom.replace(/'/g,'')}')" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--gris)" title="Supprimer">🗑️</button></div>`;
+    return`<div class="card" id="pli-${p.code}" style="position:relative;transition:box-shadow .2s,outline .2s"><div style="display:flex;align-items:center;justify-content:space-between;padding-right:64px" onclick="highlightParcelle('${p.code}')"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div><button onclick="event.stopPropagation();editParc('${p.id}')" style="position:absolute;top:10px;right:38px;background:none;border:none;cursor:pointer;font-size:15px;padding:2px;color:var(--gris)" title="Modifier">✏️</button><button onclick="event.stopPropagation();supprimerParcelle('${p.id}','${p.nom.replace(/'/g,'')}')" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--gris)" title="Supprimer">🗑️</button></div>`;
   }).join('');
 }
 function highlightParcelle(code){
@@ -2268,10 +2375,11 @@ function renderRegistre(){
         <td style="font-size:12px;color:var(--gris)">${t.bbch||'—'}</td>
         <td style="font-size:12px;color:var(--gris)">${t.amm||'—'}</td>
         <td><b style="color:var(--vigne)">${(t.ift||0).toFixed(2)}</b></td>
+        <td><button onclick="editTrait('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px;color:var(--gris)" title="Modifier">✏️</button></td>
       </tr>`).join('')}</tbody>
     </table>`;
   } else {
-    rl.innerHTML=TRAITS.slice(0,10).map(t=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${t.produit_nom||'—'}</div><div class="lim">${t.date_application} · ${t.parcelle_code} · BBCH ${t.bbch||'—'} · ${t.dose_appliquee||'—'} ${t.dose_unite||'kg/ha'} · AMM ${t.amm||'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">IFT = <b style="color:var(--vigne)">${(t.ift||0).toFixed(2)}</b></div></div><span style="background:#d4edda;color:var(--vert);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700">✓</span></div>`).join('');
+    rl.innerHTML=TRAITS.slice(0,10).map(t=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${t.produit_nom||'—'}</div><div class="lim">${t.date_application} · ${t.parcelle_code} · BBCH ${t.bbch||'—'} · ${t.dose_appliquee||'—'} ${t.dose_unite||'kg/ha'} · AMM ${t.amm||'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">IFT = <b style="color:var(--vigne)">${(t.ift||0).toFixed(2)}</b></div></div><button onclick="editTrait('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--gris);flex-shrink:0" title="Modifier">✏️</button></div>`).join('');
   }
 }
 
@@ -2297,10 +2405,10 @@ async function saveVente(){
 function renderCave(){
   const cl=document.getElementById('cVL');
   if(!CUVES.length){cl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune cuve</div>';}
-  else{cl.innerHTML=`<div class="tw">${CUVES.map(c=>{const p=c.capacite_hl?Math.min(100,c.contenu_actuel_hl/c.capacite_hl*100):0;return`<div><div class="tank" style="height:68px"><div class="tf" style="height:${p}%;background:var(--raisin)"><div class="tl">${p.toFixed(0)}%</div></div></div><div class="tn">${c.nom}·${c.capacite_hl||'?'}hL</div></div>`;}).join('')}</div><div style="font-size:12px;color:var(--gris);margin-top:4px">Total : <b>${CUVES.reduce((s,c)=>s+(c.contenu_actuel_hl||0),0)} hL</b> / <b>${CUVES.reduce((s,c)=>s+(c.capacite_hl||0),0)} hL</b></div>`;}
+  else{cl.innerHTML=`<div class="tw">${CUVES.map(c=>{const p=c.capacite_hl?Math.min(100,c.contenu_actuel_hl/c.capacite_hl*100):0;return`<div style="position:relative"><div class="tank" style="height:68px"><div class="tf" style="height:${p}%;background:var(--raisin)"><div class="tl">${p.toFixed(0)}%</div></div></div><div class="tn">${c.nom}·${c.capacite_hl||'?'}hL</div><button onclick="editCuve('${c.id}')" style="position:absolute;top:0;right:0;background:none;border:none;cursor:pointer;font-size:13px;padding:2px;color:var(--gris)" title="Modifier">✏️</button></div>`;}).join('')}</div><div style="font-size:12px;color:var(--gris);margin-top:4px">Total : <b>${CUVES.reduce((s,c)=>s+(c.contenu_actuel_hl||0),0)} hL</b> / <b>${CUVES.reduce((s,c)=>s+(c.capacite_hl||0),0)} hL</b></div>`;}
   const vl=document.getElementById('vL');
   if(!VENTES.length){vl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucune vente</div>';}
-  else{const ca=VENTES.reduce((s,v)=>s+(v.montant_total||0),0);vl.innerHTML=`<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--raisin);margin-bottom:10px">${ca.toLocaleString('fr-FR')} €</div>${VENTES.slice(0,5).map(v=>`<div class="nr"><div><div style="font-weight:600;font-size:14px">${v.acheteur||'—'}</div><div style="font-size:12px;color:var(--gris)">${v.cuvee_nom||'—'} · ${v.type_circuit||'—'}</div></div><div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--raisin);font-weight:600">${v.prix_litre||'—'} €/L</div><div style="font-size:11px;color:var(--gris)">${v.volume_litres||0} L · ${(v.montant_total||0).toLocaleString('fr-FR')} €</div></div></div>`).join('')}`;}
+  else{const ca=VENTES.reduce((s,v)=>s+(v.montant_total||0),0);vl.innerHTML=`<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--raisin);margin-bottom:10px">${ca.toLocaleString('fr-FR')} €</div>${VENTES.slice(0,5).map(v=>`<div class="nr" style="position:relative"><div><div style="font-weight:600;font-size:14px">${v.acheteur||'—'}</div><div style="font-size:12px;color:var(--gris)">${v.cuvee_nom||'—'} · ${v.type_circuit||'—'}</div></div><div style="text-align:right;padding-right:28px"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--raisin);font-weight:600">${v.prix_litre||'—'} €/L</div><div style="font-size:11px;color:var(--gris)">${v.volume_litres||0} L · ${(v.montant_total||0).toLocaleString('fr-FR')} €</div></div><button onclick="editVente('${v.id}')" style="position:absolute;top:50%;right:0;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;padding:2px;color:var(--gris)" title="Modifier">✏️</button></div>`).join('')}`;}
 }
 
 // ══════════════════════════════════════════
@@ -2368,6 +2476,179 @@ async function saveProfil(){
     const n=u.nom||u.raison_sociale||'Mon domaine';
     document.getElementById('aN').textContent=n;document.getElementById('avi').textContent=n.charAt(0).toUpperCase();
     syncOK();toast('✅ Profil sauvegardé');closeM(null,'mProfil');renderDash();
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+// ══════════════════════════════════════════
+//  ÉDITION — PARCELLE
+// ══════════════════════════════════════════
+function editParc(id){
+  const p=PARCS.find(x=>x.id===id);if(!p)return;
+  document.getElementById('epID').value=p.id;
+  document.getElementById('epN').value=p.nom||'';
+  document.getElementById('epCo').value=p.code||'';
+  document.getElementById('epH').value=p.surface_ha||'';
+  document.getElementById('epCm').value=p.commune||'';
+  document.getElementById('epCe').value=p.cepage||'';
+  document.getElementById('epCl').value=p.couleur||'Blanc';
+  document.getElementById('epPr').value=p.produit_aoc||'';
+  document.getElementById('epCd').value=p.ref_cadastrale||'';
+  document.getElementById('epPl').value=p.date_plantation?p.date_plantation.substring(0,4):'';
+  showM('mEP');
+}
+async function saveEditParc(){
+  const id=document.getElementById('epID').value;
+  const nom=document.getElementById('epN').value.trim(),code=document.getElementById('epCo').value.trim();
+  if(!nom||!code){toast('⚠️ Nom et code obligatoires');return;}
+  syncSaving();
+  try{
+    const upd={nom,code,commune:document.getElementById('epCm').value,cepage:document.getElementById('epCe').value,
+      couleur:document.getElementById('epCl').value,produit_aoc:document.getElementById('epPr').value,
+      ref_cadastrale:document.getElementById('epCd').value,surface_ha:parseFloat(document.getElementById('epH').value)||null,
+      date_plantation:document.getElementById('epPl').value?`${document.getElementById('epPl').value}-01-01`:null};
+    const {error}=await sb.from('parcelles').update(upd).eq('id',id);
+    if(error)throw error;
+    const idx=PARCS.findIndex(x=>x.id===id);if(idx>-1)Object.assign(PARCS[idx],upd);
+    syncOK();toast('✅ Parcelle modifiée');closeM(null,'mEP');
+    renderDash();renderIFT();mI=false;initMap();
+    const th=PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
+    await sb.from('domaines').update({surface_ha:th}).eq('id',DOM_ID);
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+// ══════════════════════════════════════════
+//  ÉDITION — CUVE
+// ══════════════════════════════════════════
+function editCuve(id){
+  const c=CUVES.find(x=>x.id===id);if(!c)return;
+  document.getElementById('ecID').value=c.id;
+  document.getElementById('ecN').value=c.nom||'';
+  document.getElementById('ecCa').value=c.capacite_hl||'';
+  document.getElementById('ecCo').value=c.contenu_actuel_hl||'';
+  document.getElementById('ecV').value=c.cuvee_nom||'';
+  showM('mEC');
+}
+async function saveEditCuve(){
+  const id=document.getElementById('ecID').value;
+  const nom=document.getElementById('ecN').value.trim();
+  if(!nom){toast('⚠️ Nom obligatoire');return;}
+  syncSaving();
+  try{
+    const upd={nom,capacite_hl:parseFloat(document.getElementById('ecCa').value)||null,
+      contenu_actuel_hl:parseFloat(document.getElementById('ecCo').value)||0,
+      cuvee_nom:document.getElementById('ecV').value};
+    const {error}=await sb.from('cuves').update(upd).eq('id',id);
+    if(error)throw error;
+    const idx=CUVES.findIndex(x=>x.id===id);if(idx>-1)Object.assign(CUVES[idx],upd);
+    syncOK();toast('✅ Cuve modifiée');closeM(null,'mEC');renderCave();
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+// ══════════════════════════════════════════
+//  ÉDITION — VENTE
+// ══════════════════════════════════════════
+function editVente(id){
+  const v=VENTES.find(x=>x.id===id);if(!v)return;
+  document.getElementById('evID').value=v.id;
+  document.getElementById('evVi').value=v.cuvee_nom||'';
+  document.getElementById('evAc').value=v.acheteur||'';
+  document.getElementById('evCi').value=v.type_circuit||'Négoce en vrac';
+  document.getElementById('evVo').value=v.volume_litres||'';
+  document.getElementById('evPx').value=v.prix_litre||'';
+  document.getElementById('evDa').value=v.date_livraison||'';
+  showM('mEV');
+}
+async function saveEditVente(){
+  const id=document.getElementById('evID').value;
+  syncSaving();
+  const vol=parseFloat(document.getElementById('evVo').value)||0,prix=parseFloat(document.getElementById('evPx').value)||0;
+  try{
+    const upd={cuvee_nom:document.getElementById('evVi').value,acheteur:document.getElementById('evAc').value,
+      type_circuit:document.getElementById('evCi').value,volume_litres:vol,prix_litre:prix,
+      montant_total:Math.round(vol*prix*100)/100,date_livraison:document.getElementById('evDa').value||null};
+    const {error}=await sb.from('ventes').update(upd).eq('id',id);
+    if(error)throw error;
+    const idx=VENTES.findIndex(x=>x.id===id);if(idx>-1)Object.assign(VENTES[idx],upd);
+    syncOK();toast('✅ Vente modifiée');closeM(null,'mEV');renderCave();
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+// ══════════════════════════════════════════
+//  ÉDITION — TRAITEMENT
+// ══════════════════════════════════════════
+function editTrait(id){
+  const t=TRAITS.find(x=>x.id===id);if(!t)return;
+  document.getElementById('etID').value=t.id;
+  document.getElementById('etDa').value=t.date_application||'';
+  // Remplir select parcelle
+  const sp=document.getElementById('etPa');
+  sp.innerHTML=PARCS.map(p=>`<option value="${p.code}" ${p.code===t.parcelle_code?'selected':''}>${p.nom} (${p.code})</option>`).join('');
+  // Remplir select produit
+  const spr=document.getElementById('etPr');
+  spr.innerHTML=STOCK.map(s=>`<option value="${s.nom}" ${s.nom===t.produit_nom?'selected':''}>${s.nom}</option>`).join('');
+  document.getElementById('etDo').value=t.dose_appliquee||'';
+  document.getElementById('etUn').value=t.dose_unite||'kg/ha';
+  document.getElementById('etBB').value=t.bbch||'';
+  document.getElementById('etAM').value=t.amm||'';
+  showM('mET');
+}
+async function saveEditTrait(){
+  const id=document.getElementById('etID').value;
+  syncSaving();
+  try{
+    const parCode=document.getElementById('etPa').value;
+    const prodNom=document.getElementById('etPr').value;
+    const dose=parseFloat(document.getElementById('etDo').value)||0;
+    const par=PARCS.find(p=>p.code===parCode);
+    const prod=STOCK.find(s=>s.nom===prodNom);
+    const ift_val=prod&&par?(dose/(prod.dose_reference||1))*(par.surface_ha||1):0;
+    const upd={date_application:document.getElementById('etDa').value,parcelle_code:parCode,
+      produit_nom:prodNom,dose_appliquee:dose,dose_unite:document.getElementById('etUn').value,
+      bbch:document.getElementById('etBB').value,amm:document.getElementById('etAM').value,
+      ift:Math.round(ift_val*100)/100};
+    const {error}=await sb.from('traitements').update(upd).eq('id',id);
+    if(error)throw error;
+    const idx=TRAITS.findIndex(x=>x.id===id);if(idx>-1)Object.assign(TRAITS[idx],upd);
+    syncOK();toast('✅ Traitement modifié');closeM(null,'mET');
+    renderRegistre();renderDash();renderIFT();
+  }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
+}
+
+// ══════════════════════════════════════════
+//  ÉDITION — STOCK / PRODUIT PHYTO
+// ══════════════════════════════════════════
+function editStock(id){
+  const s=STOCK.find(x=>x.id===id);if(!s)return;
+  document.getElementById('esID').value=s.id;
+  document.getElementById('esNom').value=s.nom||'';
+  document.getElementById('esCat').value=s.categorie||'Fongicide';
+  document.getElementById('esFou').value=s.fournisseur||'';
+  document.getElementById('esQte').value=s.qte_stock||'';
+  document.getElementById('esUni').value=s.unite_stock||'kg';
+  document.getElementById('esSeu').value=s.seuil_alerte||'';
+  document.getElementById('esDos').value=s.dose_reference||'';
+  document.getElementById('esAmm').value=s.amm||'';
+  document.getElementById('esDar').value=s.dar||'';
+  showM('mES');
+}
+async function saveEditStock(){
+  const id=document.getElementById('esID').value;
+  const nom=document.getElementById('esNom').value.trim();
+  if(!nom){toast('⚠️ Nom obligatoire');return;}
+  syncSaving();
+  const qte=parseFloat(document.getElementById('esQte').value)||0;
+  const seuil=parseFloat(document.getElementById('esSeu').value)||0;
+  const etat=qte<=0?'zero':qte<=seuil?'low':'ok';
+  try{
+    const upd={nom,categorie:document.getElementById('esCat').value,fournisseur:document.getElementById('esFou').value,
+      qte_stock:qte,unite_stock:document.getElementById('esUni').value,seuil_alerte:seuil,
+      dose_reference:parseFloat(document.getElementById('esDos').value)||null,
+      amm:document.getElementById('esAmm').value,dar:parseInt(document.getElementById('esDar').value)||0,
+      etat};
+    const {error}=await sb.from('produits_phyto').update(upd).eq('id',id);
+    if(error)throw error;
+    const idx=STOCK.findIndex(x=>x.id===id);if(idx>-1)Object.assign(STOCK[idx],upd);
+    syncOK();toast('✅ Produit modifié');closeM(null,'mES');renderStock('all');fillSelects();
   }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
 }
 
