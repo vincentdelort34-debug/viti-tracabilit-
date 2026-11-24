@@ -2160,16 +2160,14 @@ function initMap(){
       zoom=13;
     }
   }
-  if(!mI){
-    mI=true;
-    mL=L.map('map',{zoomControl:false,attributionControl:false}).setView(center,zoom);
-    tOSM=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(mL);
-    tSAT=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
-  } else {
-    mL.setView(center,zoom);
-    // Supprimer tous les polygones et markers existants
-    mL.eachLayer(l=>{if(l instanceof L.Polygon||l instanceof L.Marker)mL.removeLayer(l);});
-  }
+  // Détruire proprement la carte si déjà initialisée
+  if(mL){try{mL.remove();}catch(e){} mL=null; mI=false;}
+  const mapDiv=document.getElementById('map');
+  if(mapDiv&&mapDiv._leaflet_id){delete mapDiv._leaflet_id;}
+  mI=true;
+  mL=L.map('map',{zoomControl:false,attributionControl:false}).setView(center,zoom);
+  tOSM=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(mL);
+  tSAT=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
   // Dessiner les parcelles — stocker les polygones pour surbrillance croisée
   window._mapPolys = {};
   PARCS.forEach(p=>{
