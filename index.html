@@ -1380,13 +1380,19 @@ window.addEventListener('load', async () => {
 
 async function loadUserRole() {
   try {
-    const { data, error } = await sb.from('user_roles').select('role, domaine_id').single();
+    if (!CURRENT_USER) return;
+    const { data, error } = await sb.from('user_roles')
+      .select('role, domaine_id')
+      .eq('user_id', CURRENT_USER.id)
+      .maybeSingle();
     if (data && !error) {
       USER_ROLE = data.role;
       USER_DOMAINE_ID = data.domaine_id;
+    } else if (error) {
+      console.error('loadUserRole error:', error);
     }
   } catch(e) {
-    console.error('loadUserRole error:', e);
+    console.error('loadUserRole exception:', e);
   }
 }
 
