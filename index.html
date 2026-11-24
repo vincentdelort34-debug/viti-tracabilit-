@@ -592,8 +592,8 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <div class="stitle">Scan IA</div><div class="ssub">Photo → Extraction automatique · Stock Supabase</div>
   <!-- Onglets mode scan -->
   <div style="display:flex;gap:8px;margin-bottom:14px">
-    <button class="btn btsm" id="scanTabEtiq" style="background:var(--vigne);color:var(--creme)" onclick="setScanMode(‘etiquette’)">📦 Étiquette</button>
-    <button class="btn btsm btghost" id="scanTabFact" onclick="setScanMode(‘facture’)">🧾 Facture / BDC</button>
+    <button class="btn btsm" id="scanTabEtiq" style="background:var(--vigne);color:var(--creme)" onclick="setScanMode('etiquette')">📦 Étiquette</button>
+    <button class="btn btsm btghost" id="scanTabFact" onclick="setScanMode('facture')">🧾 Facture / BDC</button>
   </div>
   <!-- Mode étiquette -->
   <div id="scanModeEtiq">
@@ -608,7 +608,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <input type="file" id="fI" accept="image/*" style="display:none" onchange="handleFile(this)">
       <input type="file" id="cI" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
-        <button class="btn" style="background:var(--vigne);color:var(--creme);flex-direction:column;gap:4px;padding:14px 10px" onclick="document.getElementById(‘cI’).click()"><span style="font-size:24px">📷</span><span>Appareil photo</span></button>
+        <button class="btn" style="background:var(--vigne);color:var(--creme);flex-direction:column;gap:4px;padding:14px 10px" onclick="document.getElementById('cI').click()"><span style="font-size:24px">📷</span><span>Appareil photo</span></button>
         <button class="btn btghost" style="flex-direction:column;gap:4px;padding:14px 10px" onclick="triggerUpload()"><span style="font-size:24px">🖼️</span><span>Galerie</span></button>
       </div>
     </div>
@@ -626,13 +626,13 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <input type="file" id="fIF" accept="image/*" style="display:none" onchange="handleFileFact(this)">
       <input type="file" id="cIF" accept="image/*" capture="environment" style="display:none" onchange="handleFileFact(this)">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
-        <button class="btn" style="background:var(--vigne);color:var(--creme);flex-direction:column;gap:4px;padding:14px 10px" onclick="document.getElementById(‘cIF’).click()"><span style="font-size:24px">📷</span><span>Appareil photo</span></button>
+        <button class="btn" style="background:var(--vigne);color:var(--creme);flex-direction:column;gap:4px;padding:14px 10px" onclick="document.getElementById('cIF').click()"><span style="font-size:24px">📷</span><span>Appareil photo</span></button>
         <button class="btn btghost" style="flex-direction:column;gap:4px;padding:14px 10px" onclick="triggerUploadFact()"><span style="font-size:24px">🖼️</span><span>Galerie</span></button>
       </div>
     </div>
     <button class="btn btp" id="aBF" onclick="lancerAnalyseFact()" disabled style="margin-bottom:14px">🔍 Analyser la facture</button>
     <div class="ldc" id="lCF" style="display:none">
-      <div style="font-family:’Cormorant Garamond’,serif;font-size:20px;font-weight:700;color:var(--vigne);margin-bottom:6px">Lecture de la facture…</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--vigne);margin-bottom:6px">Lecture de la facture…</div>
       <div class="spin"></div>
     </div>
     <div id="sRF" style="display:none"></div>
