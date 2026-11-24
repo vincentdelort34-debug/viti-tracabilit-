@@ -1,8 +1,38 @@
 // Vercel Serverless Function — Valider ou refuser un compte en attente
-// Appelé via le lien dans l'email admin
+// Utilise l'API REST Supabase directement (pas de dépendance npm)
 // ?token=<base64url encoded {userId, email, action, exp}>
 
-import { createClient } from '@supabase/supabase-js';
+// Helper : appel REST Supabase
+async function sbFetch(path, options = {}) {
+  const url = `${process.env.SUPABASE_URL}/rest/v1${path}`;
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'apikey': process.env.SUPABASE_SERVICE_KEY,
+      'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': options.method === 'POST' ? 'return=representation' : 'return=minimal',
+      ...(options.headers || {})
+    }
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = JSON.parse(text); } catch(e) { data = text; }
+  return { ok: res.ok, status: res.status, data };
+}
+
+// Helper : Admin Auth API
+async function sbAuthDelete(userId) {
+  const url = `${process.env.SUPABASE_URL}/auth/v1/admin/users/${userId}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'apikey': process.env.SUPABASE_SERVICE_KEY,
+      'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+    }
+  });
+  return res.ok;
+}
 
 export default async function handler(req, res) {
   const { token } = req.query;
@@ -19,15 +49,14 @@ export default async function handler(req, res) {
     return res.status(400).send(page('⏱ Lien expiré', 'Ce lien a expiré (7 jours). Demandez un nouvel envoi.', '#e67e22'));
   }
 
-  const sbAdmin = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY
-  );
-
   // Vérifier que l'utilisateur est bien en attente
-  const { data: pending } = await sbAdmin.from('pending_users').select('*').eq('user_id', payload.userId).single();
+  const pendingRes = await sbFetch(`/pending_users?user_id=eq.${payload.userId}&select=*`, {
+    headers: { 'Accept': 'application/json' }
+  });
+
+  const pending = Array.isArray(pendingRes.data) ? pendingRes.data[0] : null;
   if (!pending) {
-    return res.status(404).send(page('🤔 Introuvable', 'Ce compte n\'existe pas ou a déjà été traité.', '#e67e22'));
+    return res.status(404).send(page('🤔 Introuvable', "Ce compte n'existe pas ou a déjà été traité.", '#e67e22'));
   }
   if (pending.status !== 'pending') {
     const already = pending.status === 'validated' ? 'déjà validé' : 'déjà refusé';
@@ -35,32 +64,46 @@ export default async function handler(req, res) {
   }
 
   if (payload.action === 'validate') {
-    // Créer le rôle dans user_roles
-    // Chercher un domaine existant pour ce nom (ou laisser null — Lisa sera secrétaire de tout)
+    // Chercher un domaine existant pour ce nom (ou laisser null)
     let domaineId = null;
     if (pending.domaine_nom) {
-      const { data: dom } = await sbAdmin.from('domaines').select('id').ilike('nom', `%${pending.domaine_nom}%`).limit(1).single();
-      if (dom) domaineId = dom.id;
+      const domRes = await sbFetch(`/domaines?nom=ilike.*${encodeURIComponent(pending.domaine_nom)}*&select=id&limit=1`);
+      if (domRes.ok && Array.isArray(domRes.data) && domRes.data.length > 0) {
+        domaineId = domRes.data[0].id;
+      }
     }
 
-    // Insérer dans user_roles avec rôle 'secretaire' par défaut
-    const { error: roleError } = await sbAdmin.from('user_roles').insert({
-      user_id: payload.userId,
-      role: 'secretaire',
-      domaine_id: domaineId
-    });
-    if (roleError && !roleError.message.includes('duplicate')) {
-      return res.status(500).send(page('❌ Erreur', 'Impossible d\'assigner le rôle : ' + roleError.message, '#c0392b'));
+    // Vérifier si le rôle existe déjà
+    const roleCheck = await sbFetch(`/user_roles?user_id=eq.${payload.userId}&select=id`);
+    if (!roleCheck.ok || !Array.isArray(roleCheck.data) || roleCheck.data.length === 0) {
+      // Insérer dans user_roles
+      const roleRes = await sbFetch('/user_roles', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: payload.userId,
+          role: 'secretaire',
+          domaine_id: domaineId
+        })
+      });
+      if (!roleRes.ok && !JSON.stringify(roleRes.data).includes('duplicate')) {
+        return res.status(500).send(page('❌ Erreur', 'Impossible d\'assigner le rôle : ' + JSON.stringify(roleRes.data), '#c0392b'));
+      }
     }
 
     // Marquer comme validé
-    await sbAdmin.from('pending_users').update({ status: 'validated', validated_at: new Date().toISOString() }).eq('user_id', payload.userId);
+    await sbFetch(`/pending_users?user_id=eq.${payload.userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'validated', validated_at: new Date().toISOString() })
+    });
 
     // Notifier l'utilisateur
     if (process.env.RESEND_API_KEY) {
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           from: 'VitiTrace <noreply@vititrace.fr>',
           to: payload.email,
@@ -80,15 +123,21 @@ export default async function handler(req, res) {
     return res.status(200).send(page('✅ Compte validé !', `${pending.nom} (${payload.email}) peut maintenant se connecter à VitiTrace.`, '#2d5a27'));
 
   } else if (payload.action === 'refuse') {
-    // Désactiver le compte Auth
-    await sbAdmin.auth.admin.deleteUser(payload.userId);
-    await sbAdmin.from('pending_users').update({ status: 'refused', refused_at: new Date().toISOString() }).eq('user_id', payload.userId);
+    // Supprimer le compte Auth
+    await sbAuthDelete(payload.userId);
+    await sbFetch(`/pending_users?user_id=eq.${payload.userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'refused', refused_at: new Date().toISOString() })
+    });
 
     // Notifier l'utilisateur du refus
     if (process.env.RESEND_API_KEY) {
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           from: 'VitiTrace <noreply@vititrace.fr>',
           to: payload.email,
