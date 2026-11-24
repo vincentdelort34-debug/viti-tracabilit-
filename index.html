@@ -2203,7 +2203,7 @@ async function supprimerParcelle(id, nom) {
     PARCS = PARCS.filter(p => p.id !== id);
     syncOK();
     toast(`🗑️ Parcelle "${nom}" supprimée`);
-    renderCarto(); renderDash(); renderIFT();
+    renderDash(); renderIFT();
     mI = false; initMap();
   } catch(e) { syncErr(); toast('❌ ' + e.message); }
 }
