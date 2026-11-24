@@ -77,6 +77,61 @@ Si tu ne reconnais pas de parcelles cadastrales, retourne parcelles:[] avec info
       return res.status(200).json(result);
     }
 
+    // MODE SCAN FACTURE — extrait une liste de produits depuis une facture, bon de commande, etc.
+    if (mode === 'facture') {
+      const prompt = `Tu es un expert phytosanitaire français spécialisé en viticulture.
+Analyse cette facture / bon de commande / bon de livraison de produits phytosanitaires.
+Extrait tous les produits phyto présents dans le document.
+Retourne UNIQUEMENT un JSON valide sans markdown :
+{
+  "type_document": "facture|bon de commande|bon de livraison|autre",
+  "fournisseur": "nom du fournisseur si visible",
+  "date": "YYYY-MM-DD si visible",
+  "produits": [
+    {
+      "nom": "nom commercial exact",
+      "fabricant": "fabricant si visible",
+      "amm": "numéro AMM si visible, sinon vide",
+      "categorie": "Fongicide|Fongicide cuivre|Insecticide|Herbicide|Biocontrole|Acaricide",
+      "quantite": 5.0,
+      "unite": "kg|L|g|mL",
+      "prix_unitaire": 0,
+      "prix_total": 0,
+      "reference": "référence fournisseur si visible"
+    }
+  ],
+  "total_ttc": 0,
+  "confiance": 85
+}
+Si tu ne vois pas de produits phytosanitaires clairement identifiables, retourne produits:[].
+Inclure uniquement les produits phyto, pas les autres fournitures.`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5',
+          max_tokens: 2000,
+          messages: [{ role: 'user', content: [
+            { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: image } },
+            { type: 'text', text: prompt }
+          ]}]
+        })
+      });
+
+      if (!response.ok) throw new Error('API Claude: ' + response.status);
+      const data = await response.json();
+      const text = data.content.map(c => c.text || '').join('').replace(/```json|```/g, '').trim();
+      let result;
+      try { result = JSON.parse(text); }
+      catch(e) { const m = text.match(/\{[\s\S]*\}/); result = m ? JSON.parse(m[0]) : { produits: [], type_document: 'inconnu' }; }
+      return res.status(200).json(result);
+    }
+
     // MODE SCAN ETIQUETTE (défaut)
     const prompt = `Tu es un expert phytosanitaire français spécialisé en viticulture.
 Analyse cette étiquette de produit phytosanitaire et extrait toutes les informations visibles.
