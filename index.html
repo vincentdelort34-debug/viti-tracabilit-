@@ -2170,13 +2170,16 @@ function initMap(){
     // Supprimer tous les polygones et markers existants
     mL.eachLayer(l=>{if(l instanceof L.Polygon||l instanceof L.Marker)mL.removeLayer(l);});
   }
-  // Dessiner les parcelles
+  // Dessiner les parcelles — stocker les polygones pour surbrillance croisée
+  window._mapPolys = {};
   PARCS.forEach(p=>{
     if(p.coords&&p.coords.length>=3){
       const poly=L.polygon(p.coords,{color:'#1a1410',weight:2,fillColor:p.color||'#4a8a42',fillOpacity:.55}).addTo(mL);
+      window._mapPolys[p.code] = poly;
       const c=poly.getBounds().getCenter();
       L.marker(c,{icon:L.divIcon({className:'',html:`<div style="background:rgba(255,255,255,.92);border-radius:6px;padding:3px 7px;font-family:Outfit,sans-serif;font-size:11px;font-weight:700;color:#1a1410;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2)">${p.code} · IFT ${iftP(p.code).toFixed(1)}</div>`,iconAnchor:[30,10]})}).addTo(mL);
-      poly.bindPopup(`<b>${p.nom}</b><br>${p.surface_ha} ha · ${p.cepage||'—'}<br>IFT : <b>${iftP(p.code).toFixed(2)}</b>`);
+      // Clic sur polygone → fiche détail parcelle
+      poly.on('click', ()=>{ showPD(p.code); });
     }
   });
   const cl=document.getElementById('cL');
@@ -2188,8 +2191,34 @@ function initMap(){
   document.getElementById('cS').textContent=`${PARCS.length} parcelle(s) · ${PARCS.reduce((s,p)=>s+(p.surface_ha||0),0).toFixed(2)} ha`;
   cl.innerHTML=PARCS.map(p=>{
     const v=iftP(p.code),st=iftSt(v),col=iftCol(st);
-    return`<div class="card" style="position:relative"><div style="display:flex;align-items:center;justify-content:space-between;padding-right:32px" onclick="showPD('${p.code}')"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div><button onclick="event.stopPropagation();supprimerParcelle('${p.id}','${p.nom.replace(/'/g,'')}')" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--gris)" title="Supprimer">🗑️</button></div>`;
+    return`<div class="card" id="pli-${p.code}" style="position:relative;transition:box-shadow .2s,outline .2s"><div style="display:flex;align-items:center;justify-content:space-between;padding-right:32px" onclick="highlightParcelle('${p.code}')"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div><button onclick="event.stopPropagation();supprimerParcelle('${p.id}','${p.nom.replace(/'/g,'')}')" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--gris)" title="Supprimer">🗑️</button></div>`;
   }).join('');
+}
+function highlightParcelle(code){
+  // Surbrillance dans la liste
+  document.querySelectorAll('[id^="pli-"]').forEach(el=>el.style.outline='');
+  const li=document.getElementById('pli-'+code);
+  if(li){li.style.outline='3px solid var(--or)';li.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  // Zoom + surbrillance sur la carte
+  if(!window._mapPolys) return;
+  Object.entries(window._mapPolys).forEach(([c,poly])=>{
+    if(c===code){
+      poly.setStyle({color:'var(--or)',weight:4,fillOpacity:.75});
+      mL.fitBounds(poly.getBounds(),{padding:[30,30]});
+      poly.openPopup();
+    } else {
+      const p=PARCS.find(x=>x.code===c);
+      poly.setStyle({color:'#1a1410',weight:2,fillColor:p&&p.color||'#4a8a42',fillOpacity:.55});
+    }
+  });
+  // Retirer surbrillance après 3s
+  setTimeout(()=>{
+    if(li) li.style.outline='';
+    if(window._mapPolys&&window._mapPolys[code]){
+      const p=PARCS.find(x=>x.code===code);
+      window._mapPolys[code].setStyle({color:'#1a1410',weight:2,fillColor:p&&p.color||'#4a8a42',fillOpacity:.55});
+    }
+  },3000);
 }
 function mSat(){if(!mL)return;try{mL.removeLayer(tOSM);}catch(e){}tSAT.addTo(mL);toast('🛰️ Vue satellite');}
 function mOSM(){if(!mL)return;try{mL.removeLayer(tSAT);}catch(e){}tOSM.addTo(mL);toast('🗺️ Vue plan');}
