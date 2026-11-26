@@ -539,8 +539,11 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <div class="stitle">Nouveau traitement</div><div class="ssub">IFT calculé auto · Sauvegardé cloud</div>
   <div class="ipp" id="ipp"><div><div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:.07em">Contribution IFT</div><div style="font-size:12px;color:var(--gris);margin-top:3px" id="ipd">Remplir les champs</div></div><div><div class="ippv" id="ipv">—</div><div style="font-size:10px;color:var(--gris);text-align:right">IFT</div></div></div>
   <div class="card">
-    <div class="row2"><div class="fg"><label>📅 Date</label><input type="date" id="tD"></div><div class="fg"><label>🕐 Heure</label><input type="time" id="tH" value="08:00"></div></div>
-    <div class="fg"><label>📍 Parcelle</label><select id="tPa" onchange="uTP()"><option value="">— Choisir —</option></select></div>
+    <div class="fg"><label>📅 Date</label><input type="date" id="tD"></div>
+    <div class="row2"><div class="fg"><label>🕐 Heure de début</label><input type="time" id="tH" value="08:00"></div><div class="fg"><label>🕑 Heure de fin</label><input type="time" id="tHf"></div></div>
+    <div class="fg"><label>📍 Parcelle</label><select id="tPa" onchange="selParcTrait();uTP()"><option value="">— Choisir —</option></select></div>
+    <div id="tParcInfo" style="display:none;font-size:12px;color:var(--gris);margin:-6px 0 12px;line-height:1.5"></div>
+    <div class="fg"><label>📐 Surface traitée</label><div class="ig"><input type="number" id="tSu" step="0.01" placeholder="Surface de la parcelle par défaut"><span class="isuf">ha</span></div></div>
     <div class="fg"><label>🧪 Produit</label><select id="tPr" onchange="selP()"><option value="">— Choisir —</option></select></div>
     <div class="al alb" id="sAl" style="display:none;margin-bottom:12px"><span class="al-i">ℹ️</span><div id="sAlT"></div></div>
     <div class="row2">
@@ -558,6 +561,8 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       </div>
     </div>
     <div class="row2"><div class="fg"><label>🔢 N° AMM</label><input type="text" id="tA" placeholder="FR-XXXX-XXXX"></div><div class="fg"><label>🌱 Stade BBCH</label><select id="tB"><option>BBCH 09</option><option>BBCH 53</option><option>BBCH 65</option><option>BBCH 71</option><option>BBCH 79</option><option>BBCH 81</option></select></div></div>
+    <div class="row2"><div class="fg"><label>🎯 Cible (organisme nuisible)</label><input type="text" id="tCi" placeholder="Ex : mildiou, oïdium…"></div><div class="fg"><label>🔎 Date 1er constat</label><input type="date" id="tCd"></div></div>
+    <div class="row2"><div class="fg"><label>⏱ Délai de rentrée</label><select id="tDre"><option value="6">6 h (plein champ)</option><option value="8">8 h (milieu fermé)</option><option value="24">24 h (H315, H318, H319)</option><option value="48">48 h (H317, H334…)</option></select></div><div class="fg"><label>🌿 Production bio</label><select id="tBio"><option value="0">Non</option><option value="1">Oui (AB)</option></select></div></div>
     <div class="fg"><label>🧫 Adjuvants</label><input type="text" id="tAd" placeholder="Facultatif"></div>
     <div class="al alg" id="dD" style="display:none"><span class="al-i">✅</span><div id="dDT"></div></div>
     <button class="btn btp" id="bST" onclick="saveTrait()" disabled>💾 Enregistrer dans le cloud</button>
@@ -766,12 +771,12 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
 </section>
 <!-- REGISTRE -->
 <section id="sRegistre" class="sec">
-  <div class="stitle">Registre phytosanitaire</div><div class="ssub">Conforme arrêté déc. 2025 · Format DDT/OC · Cloud</div>
-  <div class="al alg"><span class="al-i">✅</span><div><b>Registre à jour</b> — <span id="rC">0</span> intervention(s)</div></div>
-  <div class="card"><div class="ch"><span class="ct">Export 1-clic</span><span class="badge bgold">Certifié 2026</span></div>
-    <div class="er"><span style="font-size:22px">📄</span><div class="ei"><div class="en">Registre complet — PDF</div><div class="ed">Toutes parcelles · Signé</div></div><button class="btn btgold btsm" onclick="doExport('PDF')">PDF</button></div>
-    <div class="er"><span style="font-size:22px">🗂️</span><div class="ei"><div class="en">Format machine — DDT (XML)</div><div class="ed">Contrôle réglementaire</div></div><button class="btn btgold btsm" onclick="doExport('XML DDT')">XML</button></div>
-    <div class="er"><span style="font-size:22px">🍷</span><div class="ei"><div class="en">Bilan IFT — Cave / acheteur</div><div class="ed">Synthèse annuelle</div></div><button class="btn btgold btsm" onclick="doExport('IFT')">Export</button></div>
+  <div class="stitle">Registre phytosanitaire</div><div class="ssub">Mentions obligatoires 2026 · Registre numérique (obligatoire au 01/01/2027)</div>
+  <div class="al alg" id="rStat"><span class="al-i">✅</span><div><b>Registre</b> — <span id="rC">0</span> intervention(s)</div></div>
+  <div class="card"><div class="ch"><span class="ct">Export</span><span class="badge bgold">Mentions 2026</span></div>
+    <div class="er"><span style="font-size:22px">📄</span><div class="ei"><div class="en">Registre complet — PDF</div><div class="ed">À imprimer ou enregistrer en PDF</div></div><button class="btn btgold btsm" onclick="exportRegistrePDF()">PDF</button></div>
+    <div class="er"><span style="font-size:22px">🗂️</span><div class="ei"><div class="en">Registre — tableur (CSV)</div><div class="ed">Ouvrable dans Excel / Numbers</div></div><button class="btn btgold btsm" onclick="exportRegistreCSV()">CSV</button></div>
+    <div class="er"><span style="font-size:22px">🍷</span><div class="ei"><div class="en">Bilan IFT — Cave / acheteur</div><div class="ed">Synthèse par parcelle (CSV)</div></div><button class="btn btgold btsm" onclick="exportIFTCSV()">Export</button></div>
     <div class="er"><span style="font-size:22px">🏅</span><div class="ei"><div class="en">Certificat HVE / AB</div></div><button class="btn btgold btsm" onclick="doExport('HVE')">Export</button></div>
   </div>
   <div class="card"><div class="ch"><span class="ct">Historique</span></div><div id="rL"><div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement</div></div></div>
@@ -1179,7 +1184,10 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <div class="fg"><label>Couleur</label><select id="pCl"><option>Blanc</option><option>Noir</option><option>Rosé</option></select></div>
       <div class="fg"><label>Produit / AOC</label><input type="text" id="pPr" placeholder="Pays d’Oc, AOP…"></div>
     </div>
-    <div class="fg"><label>Référence cadastrale</label><input type="text" id="pCd" placeholder="Ex : 340225 G0207"></div>
+    <div class="row2">
+      <div class="fg"><label>Référence cadastrale</label><input type="text" id="pCd" placeholder="Ex : 340225 G0207"></div>
+      <div class="fg"><label>N° d'îlot PAC</label><input type="text" id="pIl" placeholder="Ex : 12"></div>
+    </div>
     <div class="fg"><label>Année de plantation</label><input type="number" id="pPl" placeholder="2005"></div>
     <button class="btn btp" onclick="saveParc()">💾 Enregistrer la parcelle</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mAP')">Annuler</button>
@@ -1240,10 +1248,11 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <div class="fg"><label>Raison sociale</label><input type="text" id="prR" placeholder="EARL, SCEA…"></div>
     <div class="fg"><label>Commune</label><input type="text" id="prC" placeholder="Commune principale"></div>
     <div class="row2">
-      <div class="fg"><label>SIRET</label><input type="text" id="prS" placeholder="Facultatif"></div>
+      <div class="fg"><label>SIRET</label><input type="text" id="prS" placeholder="Obligatoire au registre"></div>
       <div class="fg"><label>CERTIPHYTO</label><input type="text" id="prCe" placeholder="Facultatif"></div>
     </div>
     <div class="fg"><label>Surface totale (ha)</label><div class="ig"><input type="number" id="prH" step="0.01"><span class="isuf">ha</span></div></div>
+    <div class="fg"><label>Agriculture biologique</label><select id="prBio"><option value="0">Non</option><option value="1">Oui — exploitation en bio (AB)</option></select></div>
     <div class="sep"></div>
     <div class="sro"><span style="font-size:14px;font-weight:500">🔔 Alertes DAR</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
     <div class="sro"><span style="font-size:14px;font-weight:500">🧪 Alerte stock critique</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
@@ -1269,7 +1278,10 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <div class="fg"><label>Couleur</label><select id="epCl"><option>Blanc</option><option>Noir</option><option>Rosé</option></select></div>
       <div class="fg"><label>Produit / AOC</label><input type="text" id="epPr" placeholder="Pays d'Oc, AOP…"></div>
     </div>
-    <div class="fg"><label>Référence cadastrale</label><input type="text" id="epCd" placeholder="Ex : 340225 G0207"></div>
+    <div class="row2">
+      <div class="fg"><label>Référence cadastrale</label><input type="text" id="epCd" placeholder="Ex : 340225 G0207"></div>
+      <div class="fg"><label>N° d'îlot PAC</label><input type="text" id="epIl" placeholder="Ex : 12"></div>
+    </div>
     <div class="fg"><label>Année de plantation</label><input type="number" id="epPl" placeholder="2005"></div>
     <button class="btn btp" onclick="saveEditParc()">💾 Enregistrer les modifications</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mEP')">Annuler</button>
@@ -1322,8 +1334,23 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <div class="fg"><label>Dose appliquée</label><input type="number" id="etDo" step="0.01" placeholder="0.5"></div>
       <div class="fg"><label>Unité</label><select id="etUn"><option value="kg/ha">kg/ha</option><option value="L/ha">L/ha</option><option value="g/ha">g/ha</option></select></div>
     </div>
-    <div class="fg"><label>Stade BBCH</label><input type="text" id="etBB" placeholder="Ex : 57"></div>
+    <div class="row2">
+      <div class="fg"><label>Heure de début</label><input type="time" id="etHd"></div>
+      <div class="fg"><label>Heure de fin</label><input type="time" id="etHf"></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Surface traitée (ha)</label><input type="number" id="etSu" step="0.01"></div>
+      <div class="fg"><label>Stade BBCH</label><input type="text" id="etBB" placeholder="Ex : 57"></div>
+    </div>
     <div class="fg"><label>AMM</label><input type="text" id="etAM" placeholder="Numéro AMM"></div>
+    <div class="row2">
+      <div class="fg"><label>Cible (organisme nuisible)</label><input type="text" id="etCi" placeholder="Ex : mildiou"></div>
+      <div class="fg"><label>Date 1er constat</label><input type="date" id="etCd"></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Délai de rentrée</label><select id="etDre"><option value="">—</option><option value="6">6 h</option><option value="8">8 h</option><option value="24">24 h</option><option value="48">48 h</option></select></div>
+      <div class="fg"><label>Production bio</label><select id="etBio"><option value="0">Non</option><option value="1">Oui (AB)</option></select></div>
+    </div>
     <button class="btn btp" onclick="saveEditTrait()">💾 Enregistrer les modifications</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mET')">Annuler</button>
   </div>
@@ -2153,8 +2180,27 @@ function fillSelects() {
     pr.innerHTML+=`<option value="${s.id}" data-ref="${s.dose_reference||1}" data-unit="${s.dose_unite||'kg/ha'}" data-dar="${s.dar||0}" data-cat="${s.categorie||''}" data-amm="${s.amm||''}">${e} ${s.nom} (${s.qte_stock} ${s.unite_stock})</option>`;
   });
   if(!STOCK.length) pr.innerHTML+='<option disabled>— Scanner une étiquette pour ajouter un produit —</option>';
+  const tb=document.getElementById('tBio'); if(tb) tb.value=DOM?.settings?.bio?'1':'0';
 }
 
+// ── Mentions registre 2026 : helpers ──
+function cultureParc(p){ return p ? ('Vigne' + (p.cepage ? ' – ' + p.cepage : '')) : 'Vigne'; }
+function centreParc(p){
+  const c = p && Array.isArray(p.coords) ? p.coords.filter(x=>Array.isArray(x)&&x.length>=2) : [];
+  if(!c.length) return null;
+  const lat=c.reduce((a,x)=>a+ +x[0],0)/c.length, lon=c.reduce((a,x)=>a+ +x[1],0)/c.length;
+  return [Math.round(lat*1e6)/1e6, Math.round(lon*1e6)/1e6];
+}
+function selParcTrait(){
+  const p=PARCS.find(x=>x.code===document.getElementById('tPa').value);
+  const info=document.getElementById('tParcInfo');
+  if(!p){info.style.display='none';return;}
+  document.getElementById('tSu').value=p.surface_ha||'';
+  const g=centreParc(p);
+  const loc=p.ilot?('Îlot n° '+p.ilot):g?('GPS '+g[0]+', '+g[1]):'⚠️ ni îlot ni GPS — à compléter dans la parcelle';
+  info.innerHTML=`Culture : <b>${cultureParc(p)}</b> · Localisation : <b>${loc}</b>`;
+  info.style.display='block';
+}
 function selP() {
   const sel=document.getElementById('tPr'),opt=sel.options[sel.selectedIndex];
   if(!opt.value) return;
@@ -2223,13 +2269,22 @@ async function saveTrait() {
       bbch:document.getElementById('tB').value,
       adjuvants:document.getElementById('tAd').value,
       dar:parseInt(opt?.dataset.dar)||0,
+      heure_fin:document.getElementById('tHf').value||null,
+      surface_traitee:parseFloat(document.getElementById('tSu').value)||parc?.surface_ha||null,
+      culture:cultureParc(parc),
+      ilot:parc?.ilot||null,
+      gps_lat:centreParc(parc)?.[0]??null, gps_lon:centreParc(parc)?.[1]??null,
+      delai_rentree_h:parseInt(document.getElementById('tDre').value)||6,
+      cible:document.getElementById('tCi').value.trim()||null,
+      date_constat:document.getElementById('tCd').value||null,
+      bio:document.getElementById('tBio').value==='1',
     }).select().single();
     if(error) throw error;
     TRAITS.unshift(data);
     // Déduire stock
     const s=STOCK.find(x=>x.id===pId);
     if(s&&parc){
-      const nq=Math.max(0,Math.round((s.qte_stock-dose*(parc.surface_ha||1))*100)/100);
+      const nq=Math.max(0,Math.round((s.qte_stock-dose*(data.surface_traitee||parc.surface_ha||1))*100)/100);
       const ne=nq<=0?'zero':nq<=s.seuil_alerte?'low':'ok';
       await sb.from('produits_phyto').update({qte_stock:nq,etat:ne}).eq('id',pId);
       s.qte_stock=nq;s.etat=ne;
@@ -2237,7 +2292,7 @@ async function saveTrait() {
     syncOK();
     renderDash();renderIFT();renderRegistre();renderStock('all');fillSelects();
     toast(`✅ Traitement sauvegardé · IFT +${ift.toFixed(2)} · Stock déduit`);
-    ['tDo','tDR','tA','tAd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['tDo','tDR','tA','tAd','tHf','tCi','tCd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     document.getElementById('tPr').value='';
     document.getElementById('ipv').textContent='—';document.getElementById('ipv').classList.remove('has');
     document.getElementById('ipp').classList.remove('has');document.getElementById('iF').style.display='none';
@@ -2579,6 +2634,7 @@ async function saveParc(){
       domaine_id:DOM_ID,code,nom,commune:document.getElementById('pCm').value,
       cepage:document.getElementById('pCe').value,couleur:document.getElementById('pCl').value,
       produit_aoc:document.getElementById('pPr').value,ref_cadastrale:document.getElementById('pCd').value,
+      ilot:document.getElementById('pIl').value.trim()||null,
       surface_ha:parseFloat(document.getElementById('pH').value)||null,
       date_plantation:document.getElementById('pPl').value?`${document.getElementById('pPl').value}-01-01`:null,
       color:'#4a8a42',
@@ -2589,7 +2645,7 @@ async function saveParc(){
     await sb.from('domaines').update({surface_ha:th}).eq('id',DOM_ID);
     DOM.surface_ha=th;document.getElementById('dH').textContent=th.toFixed(2)+' ha';
     toast('✅ Parcelle enregistrée dans Supabase');closeM(null,'mAP');
-    ['pN','pCo','pH','pCm','pCe','pPr','pCd','pPl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['pN','pCo','pH','pCm','pCe','pPr','pCd','pPl','pIl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
 }
 
@@ -2695,32 +2751,128 @@ async function reloadMap(){
 // ══════════════════════════════════════════
 //  REGISTRE
 // ══════════════════════════════════════════
+// Vue "registre" d'un traitement : valeurs enregistrées, complétées par la parcelle si absentes
+function regRow(t){
+  const p=PARCS.find(x=>x.id===t.parcelle_id)||PARCS.find(x=>x.code===t.parcelle_code);
+  const g=(t.gps_lat!=null&&t.gps_lon!=null)?[t.gps_lat,t.gps_lon]:centreParc(p);
+  const surf=t.surface_traitee??p?.surface_ha??null;
+  const ilot=t.ilot||p?.ilot||'';
+  const dose=t.dose_appliquee;
+  const qte=(dose&&surf)?Math.round(dose*surf*100)/100:null;
+  return {
+    date:t.date_application||'', debut:(t.heure_application||'').slice(0,5), fin:(t.heure_fin||'').slice(0,5),
+    parcelle:t.parcelle_code||'', parcelleNom:p?.nom||'', ilot, gps:g?`${g[0]}, ${g[1]}`:'',
+    localisation: ilot?('Îlot '+ilot):(g?`GPS ${g[0]}, ${g[1]}`:''),
+    surface:surf, culture:t.culture||cultureParc(p), produit:t.produit_nom||'', amm:t.amm||'',
+    dose, unite:t.dose_unite||'kg/ha', qte, qteUnite:(t.dose_unite||'kg/ha').replace('/ha',''),
+    bbch:t.bbch||'', cible:t.cible||'', constat:t.date_constat||'', dre:t.delai_rentree_h, dar:t.dar,
+    bio:t.bio??!!DOM?.settings?.bio, ift:t.ift||0, adjuvants:t.adjuvants||'', id:t.id
+  };
+}
+function mentionsManquantes(r){
+  const m=[];
+  if(!DOM?.siret) m.push('SIRET');
+  if(!r.amm) m.push('AMM');
+  if(!r.localisation) m.push('îlot/GPS');
+  if(!r.surface) m.push('surface');
+  if(!r.dose) m.push('dose');
+  if(!r.cible) m.push('cible');
+  if(r.dre==null) m.push('délai rentrée');
+  return m;
+}
+function fmtN(n){return n==null||n===''?'—':String(n).replace('.',',');}
+function escR(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
 function renderRegistre(){
   document.getElementById('rC').textContent=TRAITS.length;
   const rl=document.getElementById('rL');
+  const st=document.getElementById('rStat');
   if(!TRAITS.length){rl.innerHTML='<div style="font-size:13px;color:var(--gris);text-align:center;padding:16px">Aucun traitement</div>';return;}
-  
+  const rows=TRAITS.map(regRow);
+  const incomplets=rows.filter(r=>mentionsManquantes(r).length).length;
+  if(st){
+    st.className='al '+(incomplets?'alo':'alg');
+    st.innerHTML=incomplets
+      ? `<span class="al-i">⚠️</span><div><b>${incomplets} intervention(s) sur ${TRAITS.length} incomplète(s)</b> au regard des mentions 2026${!DOM?.siret?' — <b>SIRET du domaine manquant</b> (menu compte › profil)':''}. Cliquez ✏️ pour compléter.</div>`
+      : `<span class="al-i">✅</span><div><b>Registre complet</b> — ${TRAITS.length} intervention(s)</div>`;
+  }
+  const badge=r=>{const m=mentionsManquantes(r);return m.length?`<span title="Manque : ${m.join(', ')}" style="color:var(--or);font-size:11px;font-weight:700">⚠️ ${m.join(', ')}</span>`:'<span style="color:var(--vigne);font-size:11px">✓ complet</span>';};
   const isDesktop = window.innerWidth >= 900;
   if (isDesktop) {
-    rl.innerHTML = `<table class="reg-table">
+    rl.innerHTML = `<div style="overflow-x:auto"><table class="reg-table">
       <thead><tr>
-        <th>Date</th><th>Parcelle</th><th>Produit</th><th>Dose</th>
-        <th>BBCH</th><th>AMM</th><th>IFT</th>
+        <th>Date · horaires</th><th>Parcelle · localisation</th><th>Culture</th><th>Produit · AMM</th><th>Dose · quantité</th>
+        <th>Surface</th><th>BBCH</th><th>Cible</th><th>DRE</th><th>IFT</th><th>Mentions</th><th></th>
       </tr></thead>
-      <tbody>${TRAITS.slice(0,20).map(t=>`<tr>
-        <td>${t.date_application}</td>
-        <td><span class="badge bb">${t.parcelle_code}</span></td>
-        <td style="font-weight:600">${t.produit_nom||'—'}</td>
-        <td>${t.dose_appliquee||'—'} ${t.dose_unite||'kg/ha'}</td>
-        <td style="font-size:12px;color:var(--gris)">${t.bbch||'—'}</td>
-        <td style="font-size:12px;color:var(--gris)">${t.amm||'—'}</td>
-        <td><b style="color:var(--vigne)">${(t.ift||0).toFixed(2)}</b></td>
-        <td><button onclick="editTrait('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px;color:var(--gris)" title="Modifier">✏️</button></td>
+      <tbody>${rows.slice(0,50).map(r=>`<tr>
+        <td>${escR(r.date)}<div style="font-size:11px;color:var(--gris)">${escR(r.debut)}${r.fin?'–'+escR(r.fin):''}</div></td>
+        <td><span class="badge bb">${escR(r.parcelle)}</span><div style="font-size:11px;color:var(--gris)">${escR(r.localisation)||'—'}</div></td>
+        <td style="font-size:12px">${escR(r.culture)}${r.bio?' · AB':''}</td>
+        <td style="font-weight:600">${escR(r.produit)||'—'}<div style="font-size:11px;color:var(--gris);font-weight:400">${escR(r.amm)||'AMM —'}</div></td>
+        <td>${fmtN(r.dose)} ${escR(r.unite)}<div style="font-size:11px;color:var(--gris)">${r.qte!=null?'= '+fmtN(r.qte)+' '+escR(r.qteUnite):''}</div></td>
+        <td>${fmtN(r.surface)} ha</td>
+        <td style="font-size:12px;color:var(--gris)">${escR(r.bbch)||'—'}</td>
+        <td style="font-size:12px">${escR(r.cible)||'—'}${r.constat?`<div style="font-size:11px;color:var(--gris)">constat ${escR(r.constat)}</div>`:''}</td>
+        <td style="font-size:12px">${r.dre!=null?r.dre+' h':'—'}</td>
+        <td><b style="color:var(--vigne)">${(r.ift||0).toFixed(2)}</b></td>
+        <td>${badge(r)}</td>
+        <td><button onclick="editTrait('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px;color:var(--gris)" title="Modifier">✏️</button></td>
       </tr>`).join('')}</tbody>
-    </table>`;
+    </table></div>`;
   } else {
-    rl.innerHTML=TRAITS.slice(0,10).map(t=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${t.produit_nom||'—'}</div><div class="lim">${t.date_application} · ${t.parcelle_code} · BBCH ${t.bbch||'—'} · ${t.dose_appliquee||'—'} ${t.dose_unite||'kg/ha'} · AMM ${t.amm||'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">IFT = <b style="color:var(--vigne)">${(t.ift||0).toFixed(2)}</b></div></div><button onclick="editTrait('${t.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--gris);flex-shrink:0" title="Modifier">✏️</button></div>`).join('');
+    rl.innerHTML=rows.slice(0,20).map(r=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${escR(r.produit)||'—'}</div><div class="lim">${escR(r.date)} ${escR(r.debut)}${r.fin?'–'+escR(r.fin):''} · ${escR(r.parcelle)} (${escR(r.localisation)||'loc. —'}) · ${fmtN(r.surface)} ha · BBCH ${escR(r.bbch)||'—'} · ${fmtN(r.dose)} ${escR(r.unite)} · AMM ${escR(r.amm)||'—'} · Cible ${escR(r.cible)||'—'} · DRE ${r.dre!=null?r.dre+' h':'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">IFT = <b style="color:var(--vigne)">${(r.ift||0).toFixed(2)}</b> · ${badge(r)}</div></div><button onclick="editTrait('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--gris);flex-shrink:0" title="Modifier">✏️</button></div>`).join('');
   }
+}
+
+// ── Exports du registre ──
+const REG_COLS=[
+  ['Date','date'],['Heure début','debut'],['Heure fin','fin'],['Parcelle','parcelle'],['Nom parcelle','parcelleNom'],
+  ['N° îlot','ilot'],['GPS','gps'],['Surface traitée (ha)','surface'],['Culture','culture'],['Production bio','bio'],
+  ['Produit (spécialité commerciale)','produit'],['N° AMM','amm'],['Dose','dose'],['Unité dose','unite'],
+  ['Quantité totale','qte'],['Stade phénologique','bbch'],['Cible (organisme nuisible)','cible'],['Date 1er constat','constat'],
+  ['Délai de rentrée (h)','dre'],['DAR (j)','dar'],['Adjuvants','adjuvants'],['IFT','ift']
+];
+function regValue(r,k){const v=r[k]; if(k==='bio')return v?'Oui':'Non'; if(typeof v==='number')return String(v).replace('.',','); return v??'';}
+function regRowsTries(){return TRAITS.map(regRow).sort((a,b)=>(a.date+a.debut).localeCompare(b.date+b.debut));}
+function telecharger(nom,contenu,type){
+  const blob=new Blob([contenu],{type});const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=nom;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+}
+function exportRegistreCSV(){
+  if(!TRAITS.length){toast('Aucun traitement à exporter');return;}
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const head=[`Registre phytosanitaire — ${DOM?.raison_sociale||DOM?.nom||''} — SIRET ${DOM?.siret||'NON RENSEIGNÉ'} — Certiphyto ${DOM?.certiphyto||'—'}`];
+  const lignes=[head.map(q).join(';'), REG_COLS.map(c=>q(c[0])).join(';'),
+    ...regRowsTries().map(r=>REG_COLS.map(c=>q(regValue(r,c[1]))).join(';'))];
+  telecharger(`registre-phyto-${(DOM?.nom||'domaine').replace(/\W+/g,'-')}-${new Date().toISOString().slice(0,10)}.csv`,'﻿'+lignes.join('\r\n'),'text/csv;charset=utf-8');
+  toast('✅ Registre exporté (CSV)');
+}
+function exportIFTCSV(){
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const lignes=[['Parcelle','Nom','Culture','Surface (ha)','IFT cumulé','Nb traitements'].map(q).join(';'),
+    ...PARCS.map(p=>{const ts=TRAITS.filter(t=>t.parcelle_code===p.code);return [p.code,p.nom||'',cultureParc(p),String(p.surface_ha??'').replace('.',','),iftP(p.code).toFixed(2).replace('.',','),ts.length].map(q).join(';');})];
+  telecharger(`bilan-ift-${new Date().toISOString().slice(0,10)}.csv`,'﻿'+lignes.join('\r\n'),'text/csv;charset=utf-8');
+  toast('✅ Bilan IFT exporté');
+}
+function exportRegistrePDF(){
+  if(!TRAITS.length){toast('Aucun traitement à exporter');return;}
+  const w=window.open('','_blank');
+  if(!w){toast('⚠️ Autorisez les fenêtres pop-up pour imprimer le registre');return;}
+  const rows=regRowsTries();
+  const cols=REG_COLS.filter(c=>!['parcelleNom','gps','adjuvants'].includes(c[1]));
+  const e=escR;
+  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Registre phytosanitaire</title>
+<style>body{font-family:Arial,sans-serif;font-size:9px;margin:12mm}h1{font-size:15px;margin:0 0 4px}.m{font-size:10px;margin-bottom:8px}
+table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:3px 4px;vertical-align:top}th{background:#eee;font-size:8px;text-align:left}
+.manque{color:#b00;font-weight:bold}@page{size:A4 landscape;margin:8mm}</style></head><body>
+<h1>Registre des traitements phytopharmaceutiques</h1>
+<div class="m"><b>Exploitation :</b> ${e(DOM?.raison_sociale||DOM?.nom||'')} · <b>SIRET :</b> ${DOM?.siret?e(DOM.siret):'<span class="manque">NON RENSEIGNÉ</span>'} · <b>Certiphyto :</b> ${e(DOM?.certiphyto||'—')} · <b>Commune :</b> ${e(DOM?.commune||'—')} · <b>Agriculture biologique :</b> ${DOM?.settings?.bio?'Oui':'Non'}<br>
+Édité le ${new Date().toLocaleDateString('fr-FR')} · ${rows.length} intervention(s)</div>
+<table><thead><tr>${cols.map(c=>`<th>${e(c[0])}</th>`).join('')}</tr></thead><tbody>
+${rows.map(r=>`<tr>${cols.map(c=>{const v=regValue(r,c[1]);return `<td>${v===''?'<span class="manque">—</span>':e(v)}</td>`;}).join('')}</tr>`).join('')}
+</tbody></table><script>setTimeout(()=>print(),300)<\/script></body></html>`);
+  w.document.close();
 }
 
 // ══════════════════════════════════════════
@@ -2806,10 +2958,12 @@ function calcHVE(){
 function fillProfil(){
   if(!DOM)return;
   sv('prN',DOM.nom);sv('prR',DOM.raison_sociale);sv('prC',DOM.commune);sv('prS',DOM.siret);sv('prCe',DOM.certiphyto);sv('prH',DOM.surface_ha);
+  sv('prBio',DOM.settings?.bio?'1':'0');
 }
 async function saveProfil(){
   syncSaving();
-  const u={nom:g('prN'),raison_sociale:g('prR'),commune:g('prC'),siret:g('prS'),certiphyto:g('prCe'),surface_ha:parseFloat(g('prH'))||null};
+  const u={nom:g('prN'),raison_sociale:g('prR'),commune:g('prC'),siret:g('prS').replace(/\s/g,''),certiphyto:g('prCe'),surface_ha:parseFloat(g('prH'))||null,
+    settings:{...(DOM.settings||{}), bio:g('prBio')==='1'}};
   try{
     const {error}=await sb.from('domaines').update(u).eq('id',DOM_ID);
     if(error)throw error;Object.assign(DOM,u);
@@ -2833,6 +2987,7 @@ function editParc(id){
   document.getElementById('epCl').value=p.couleur||'Blanc';
   document.getElementById('epPr').value=p.produit_aoc||'';
   document.getElementById('epCd').value=p.ref_cadastrale||'';
+  document.getElementById('epIl').value=p.ilot||'';
   document.getElementById('epPl').value=p.date_plantation?p.date_plantation.substring(0,4):'';
   showM('mEP');
 }
@@ -2844,7 +2999,7 @@ async function saveEditParc(){
   try{
     const upd={nom,code,commune:document.getElementById('epCm').value,cepage:document.getElementById('epCe').value,
       couleur:document.getElementById('epCl').value,produit_aoc:document.getElementById('epPr').value,
-      ref_cadastrale:document.getElementById('epCd').value,surface_ha:parseFloat(document.getElementById('epH').value)||null,
+      ref_cadastrale:document.getElementById('epCd').value,ilot:document.getElementById('epIl').value.trim()||null,surface_ha:parseFloat(document.getElementById('epH').value)||null,
       date_plantation:document.getElementById('epPl').value?`${document.getElementById('epPl').value}-01-01`:null};
     const {error}=await sb.from('parcelles').update(upd).eq('id',id);
     if(error)throw error;
@@ -2930,6 +3085,14 @@ function editTrait(id){
   document.getElementById('etUn').value=t.dose_unite||'kg/ha';
   document.getElementById('etBB').value=t.bbch||'';
   document.getElementById('etAM').value=t.amm||'';
+  const r=regRow(t);
+  document.getElementById('etHd').value=(t.heure_application||'').slice(0,5);
+  document.getElementById('etHf').value=(t.heure_fin||'').slice(0,5);
+  document.getElementById('etSu').value=r.surface??'';
+  document.getElementById('etCi').value=t.cible||'';
+  document.getElementById('etCd').value=t.date_constat||'';
+  document.getElementById('etDre').value=t.delai_rentree_h!=null?String(t.delai_rentree_h):'';
+  document.getElementById('etBio').value=r.bio?'1':'0';
   showM('mET');
 }
 async function saveEditTrait(){
@@ -2941,11 +3104,23 @@ async function saveEditTrait(){
     const dose=parseFloat(document.getElementById('etDo').value)||0;
     const par=PARCS.find(p=>p.code===parCode);
     const prod=STOCK.find(s=>s.nom===prodNom);
-    const ift_val=prod&&par?(dose/(prod.dose_reference||1))*(par.surface_ha||1):0;
-    const upd={date_application:document.getElementById('etDa').value,parcelle_code:parCode,
+    const old=TRAITS.find(x=>x.id===id)||{};
+    const dRef=old.dose_reference||prod?.dose_reference||1;
+    const ift_val=dose/dRef;
+    const dre=document.getElementById('etDre').value;
+    const upd={date_application:document.getElementById('etDa').value,parcelle_code:parCode,parcelle_id:par?.id||old.parcelle_id,
       produit_nom:prodNom,dose_appliquee:dose,dose_unite:document.getElementById('etUn').value,
       bbch:document.getElementById('etBB').value,amm:document.getElementById('etAM').value,
-      ift:Math.round(ift_val*100)/100};
+      ift:Math.round(ift_val*100)/100,
+      heure_application:document.getElementById('etHd').value||null,
+      heure_fin:document.getElementById('etHf').value||null,
+      surface_traitee:parseFloat(document.getElementById('etSu').value)||null,
+      culture:cultureParc(par), ilot:par?.ilot||null,
+      cible:document.getElementById('etCi').value.trim()||null,
+      date_constat:document.getElementById('etCd').value||null,
+      delai_rentree_h:dre?parseInt(dre):null,
+      bio:document.getElementById('etBio').value==='1'};
+    const gps=centreParc(par); if(gps){upd.gps_lat=gps[0];upd.gps_lon=gps[1];}
     const {error}=await sb.from('traitements').update(upd).eq('id',id);
     if(error)throw error;
     const idx=TRAITS.findIndex(x=>x.id===id);if(idx>-1)Object.assign(TRAITS[idx],upd);
@@ -3609,7 +3784,7 @@ function fillObsSelects() {
   if (mpRecep && !mpRecep.value) mpRecep.value = new Date().toISOString().split('T')[0];
 }
 
-function doExport(t){toast(`📤 Export ${t} en cours…`);setTimeout(()=>toast(`✅ ${t} exporté`),1500);}
+function doExport(t){toast(`🚧 Export ${t} pas encore disponible`);}
 
 // ══════════════════════════════════════════
 //  SAISIE MANUELLE — PRODUIT PHYTO
