@@ -1997,7 +1997,7 @@ async function saveOnboarding() {
     const {data,error} = await sb.from('domaines').insert({
       nom, raison_sociale:g('obRaison'), commune:g('obCommune'),
       siret:g('obSiret'), certiphyto:g('obCertif'),
-      surface_ha:parseFloat(g('obHa'))||null, campagne_en_cours:AN
+      surface_ha:r2(parseFloat(g('obHa'))||null), campagne_en_cours:AN
     }).select().single();
     if(error) throw error;
     DOM=data; DOM_ID=data.id;
@@ -2040,6 +2040,8 @@ function go(id, btn) {
 // ══════════════════════════════════════════
 //  IFT MOTEUR
 // ══════════════════════════════════════════
+const ha2=v=>(v===null||v===undefined||v===''||isNaN(+v))?'—':(+v).toFixed(2).replace('.',',');
+const r2=v=>(v===null||v===undefined||v===''||isNaN(+v))?null:Math.round(+v*100)/100;
 const iFT=(d,r)=>(!d||!r)?0:Math.round(d/r*100)/100;
 const iftP=code=>TRAITS.filter(t=>t.parcelle_code===code).reduce((s,t)=>s+(t.ift||0),0);
 function iftDom() {
@@ -2067,12 +2069,12 @@ function renderDash() {
   const ift=iftDom();
   const nom=DOM?.nom||DOM?.raison_sociale||'';
   document.getElementById('dG').textContent=nom?`Bonjour, ${nom.split(' ')[0]} 👋`:'Bonjour 👋';
-  document.getElementById('dS').textContent=`Campagne ${AN} · ${DOM?.commune||'Domaine'} · ${DOM?.surface_ha||'—'} ha`;
+  document.getElementById('dS').textContent=`Campagne ${AN} · ${DOM?.commune||'Domaine'} · ${ha2(DOM?.surface_ha)} ha`;
   const dI=document.getElementById('dI');
   dI.textContent=TRAITS.length?ift.toFixed(1).replace('.',','):'—';
   dI.className='sv '+(ift>4?'d':ift>3.2?'w':'');
   document.getElementById('dP').textContent=PARCS.length||'—';
-  document.getElementById('dH').textContent=(DOM?.surface_ha?DOM.surface_ha+' ha':'— ha');
+  document.getElementById('dH').textContent=(ha2(DOM?.surface_ha)+' ha');
   document.getElementById('dT').textContent=TRAITS.length;
   document.getElementById('rC').textContent=TRAITS.length;
   // Bars
@@ -2125,7 +2127,7 @@ function renderIFT() {
     const v=iftP(p.code),pst=iftSt(v),col=iftCol(pst),pct=Math.min(100,v/4.8*100),nb=TRAITS.filter(t=>t.parcelle_code===p.code).length;
     return`<div class="pc ${pst}" onclick="showPD('${p.code}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
-        <div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:1px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${nb} traitement(s)</div></div>
+        <div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:1px">${ha2(p.surface_ha)} ha · ${p.cepage||'—'} · ${nb} traitement(s)</div></div>
         <div style="text-align:right"><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1;color:${col}">${v.toFixed(1).replace('.',',')} <span style="font-size:13px;color:var(--gris);font-weight:400">/ ${ref}</span></div></div>
       </div>
       <div class="pb"><div class="pbf" style="width:${pct}%;background:${col}"></div><div class="pbr" style="left:${(4/4.8*100).toFixed(0)}%"></div></div>
@@ -2153,7 +2155,7 @@ function showPD(code) {
       <div style="font-size:13px;opacity:.7">sur 4,0 référence · ${(v/4*100).toFixed(0)}%</div>
     </div>
     <div style="background:var(--gris3);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px">
-      <div><b>Cépage :</b> ${p.cepage||'—'} · <b>Surface :</b> ${p.surface_ha||'—'} ha</div>
+      <div><b>Cépage :</b> ${p.cepage||'—'} · <b>Surface :</b> ${ha2(p.surface_ha)} ha</div>
       <div style="margin-top:3px"><b>Commune :</b> ${p.commune||'—'}</div>
       ${p.ref_cadastrale?`<div style="margin-top:3px"><b>Réf. cadastrale :</b> ${p.ref_cadastrale}</div>`:''}
     </div>
@@ -2172,7 +2174,7 @@ async function delTrait(id) {
 function fillSelects() {
   const sp=document.getElementById('tPa');
   sp.innerHTML='<option value="">— Choisir —</option>';
-  PARCS.forEach(p=>sp.innerHTML+=`<option value="${p.code}">${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)</option>`);
+  PARCS.forEach(p=>sp.innerHTML+=`<option value="${p.code}">${p.code} · ${p.nom} (${ha2(p.surface_ha)} ha)</option>`);
   const pr=document.getElementById('tPr');
   pr.innerHTML='<option value="">— Choisir —</option>';
   STOCK.forEach(s=>{
@@ -2195,7 +2197,7 @@ function selParcTrait(){
   const p=PARCS.find(x=>x.code===document.getElementById('tPa').value);
   const info=document.getElementById('tParcInfo');
   if(!p){info.style.display='none';return;}
-  document.getElementById('tSu').value=p.surface_ha||'';
+  document.getElementById('tSu').value=r2(p.surface_ha)??'';
   const g=centreParc(p);
   const loc=p.ilot?('Îlot n° '+p.ilot):g?('GPS '+g[0]+', '+g[1]):'⚠️ ni îlot ni GPS — à compléter dans la parcelle';
   info.innerHTML=`Culture : <b>${cultureParc(p)}</b> · Localisation : <b>${loc}</b>`;
@@ -2270,7 +2272,7 @@ async function saveTrait() {
       adjuvants:document.getElementById('tAd').value,
       dar:parseInt(opt?.dataset.dar)||0,
       heure_fin:document.getElementById('tHf').value||null,
-      surface_traitee:parseFloat(document.getElementById('tSu').value)||parc?.surface_ha||null,
+      surface_traitee:r2(parseFloat(document.getElementById('tSu').value)||parc?.surface_ha||null),
       culture:cultureParc(parc),
       ilot:parc?.ilot||null,
       gps_lat:centreParc(parc)?.[0]??null, gps_lon:centreParc(parc)?.[1]??null,
@@ -2635,15 +2637,15 @@ async function saveParc(){
       cepage:document.getElementById('pCe').value,couleur:document.getElementById('pCl').value,
       produit_aoc:document.getElementById('pPr').value,ref_cadastrale:document.getElementById('pCd').value,
       ilot:document.getElementById('pIl').value.trim()||null,
-      surface_ha:parseFloat(document.getElementById('pH').value)||null,
+      surface_ha:r2(parseFloat(document.getElementById('pH').value)||null),
       date_plantation:document.getElementById('pPl').value?`${document.getElementById('pPl').value}-01-01`:null,
       color:'#4a8a42',
     }).select().single();
     if(error)throw error;
     PARCS.push(data);syncOK();fillSelects();renderDash();renderIFT();
     const th=PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
-    await sb.from('domaines').update({surface_ha:th}).eq('id',DOM_ID);
-    DOM.surface_ha=th;document.getElementById('dH').textContent=th.toFixed(2)+' ha';
+    await sb.from('domaines').update({surface_ha:r2(th)}).eq('id',DOM_ID);
+    DOM.surface_ha=th;document.getElementById('dH').textContent=ha2(th)+' ha';
     toast('✅ Parcelle enregistrée dans Supabase');closeM(null,'mAP');
     ['pN','pCo','pH','pCm','pCe','pPr','pCd','pPl','pIl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
@@ -2689,7 +2691,7 @@ function initMap(){
     document.getElementById('cS').textContent='Aucune parcelle configurée';
     return;
   }
-  document.getElementById('cS').textContent=`${PARCS.length} parcelle(s) · ${PARCS.reduce((s,p)=>s+(p.surface_ha||0),0).toFixed(2)} ha`;
+  document.getElementById('cS').textContent=`${PARCS.length} parcelle(s) · ${ha2(PARCS.reduce((s,p)=>s+(p.surface_ha||0),0))} ha`;
   cl.innerHTML=PARCS.map(p=>{
     const v=iftP(p.code),st=iftSt(v),col=iftCol(st);
     return`<div class="card" id="pli-${p.code}" style="position:relative;transition:box-shadow .2s,outline .2s"><div style="display:flex;align-items:center;justify-content:space-between;padding-right:64px" onclick="highlightParcelle('${p.code}')"><div><div style="font-weight:700;font-size:15px">${p.nom}</div><div style="font-size:12px;color:var(--gris);margin-top:2px">${p.surface_ha||'—'} ha · ${p.cepage||'—'} · ${p.commune||'—'}</div></div><span class="badge ${st==='ok'?'bg':st==='warn'?'bo':'br'}">IFT ${v.toFixed(1)}</span></div><button onclick="event.stopPropagation();editParc('${p.id}')" style="position:absolute;top:10px;right:38px;background:none;border:none;cursor:pointer;font-size:15px;padding:2px;color:var(--gris)" title="Modifier">✏️</button><button onclick="event.stopPropagation();supprimerParcelle('${p.id}','${p.nom.replace(/'/g,'')}')" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:2px;color:var(--gris)" title="Supprimer">🗑️</button></div>`;
@@ -2755,7 +2757,7 @@ async function reloadMap(){
 function regRow(t){
   const p=PARCS.find(x=>x.id===t.parcelle_id)||PARCS.find(x=>x.code===t.parcelle_code);
   const g=(t.gps_lat!=null&&t.gps_lon!=null)?[t.gps_lat,t.gps_lon]:centreParc(p);
-  const surf=t.surface_traitee??p?.surface_ha??null;
+  const surf=r2(t.surface_traitee??p?.surface_ha??null);
   const ilot=t.ilot||p?.ilot||'';
   const dose=t.dose_appliquee;
   const qte=(dose&&surf)?Math.round(dose*surf*100)/100:null;
@@ -2810,7 +2812,7 @@ function renderRegistre(){
         <td style="font-size:12px">${escR(r.culture)}${r.bio?' · AB':''}</td>
         <td style="font-weight:600">${escR(r.produit)||'—'}<div style="font-size:11px;color:var(--gris);font-weight:400">${escR(r.amm)||'AMM —'}</div></td>
         <td>${fmtN(r.dose)} ${escR(r.unite)}<div style="font-size:11px;color:var(--gris)">${r.qte!=null?'= '+fmtN(r.qte)+' '+escR(r.qteUnite):''}</div></td>
-        <td>${fmtN(r.surface)} ha</td>
+        <td>${ha2(r.surface)} ha</td>
         <td style="font-size:12px;color:var(--gris)">${escR(r.bbch)||'—'}</td>
         <td style="font-size:12px">${escR(r.cible)||'—'}${r.constat?`<div style="font-size:11px;color:var(--gris)">constat ${escR(r.constat)}</div>`:''}</td>
         <td style="font-size:12px">${r.dre!=null?r.dre+' h':'—'}</td>
@@ -2820,7 +2822,7 @@ function renderRegistre(){
       </tr>`).join('')}</tbody>
     </table></div>`;
   } else {
-    rl.innerHTML=rows.slice(0,20).map(r=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${escR(r.produit)||'—'}</div><div class="lim">${escR(r.date)} ${escR(r.debut)}${r.fin?'–'+escR(r.fin):''} · ${escR(r.parcelle)} (${escR(r.localisation)||'loc. —'}) · ${fmtN(r.surface)} ha · BBCH ${escR(r.bbch)||'—'} · ${fmtN(r.dose)} ${escR(r.unite)} · AMM ${escR(r.amm)||'—'} · Cible ${escR(r.cible)||'—'} · DRE ${r.dre!=null?r.dre+' h':'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">IFT = <b style="color:var(--vigne)">${(r.ift||0).toFixed(2)}</b> · ${badge(r)}</div></div><button onclick="editTrait('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--gris);flex-shrink:0" title="Modifier">✏️</button></div>`).join('');
+    rl.innerHTML=rows.slice(0,20).map(r=>`<div class="li"><div class="lic" style="background:#fde8c8">🌿</div><div class="lib"><div class="lit">${escR(r.produit)||'—'}</div><div class="lim">${escR(r.date)} ${escR(r.debut)}${r.fin?'–'+escR(r.fin):''} · ${escR(r.parcelle)} (${escR(r.localisation)||'loc. —'}) · ${ha2(r.surface)} ha · BBCH ${escR(r.bbch)||'—'} · ${fmtN(r.dose)} ${escR(r.unite)} · AMM ${escR(r.amm)||'—'} · Cible ${escR(r.cible)||'—'} · DRE ${r.dre!=null?r.dre+' h':'—'}</div><div style="font-size:11px;color:var(--gris);margin-top:2px">IFT = <b style="color:var(--vigne)">${(r.ift||0).toFixed(2)}</b> · ${badge(r)}</div></div><button onclick="editTrait('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--gris);flex-shrink:0" title="Modifier">✏️</button></div>`).join('');
   }
 }
 
@@ -2832,7 +2834,7 @@ const REG_COLS=[
   ['Quantité totale','qte'],['Stade phénologique','bbch'],['Cible (organisme nuisible)','cible'],['Date 1er constat','constat'],
   ['Délai de rentrée (h)','dre'],['DAR (j)','dar'],['Adjuvants','adjuvants'],['IFT','ift']
 ];
-function regValue(r,k){const v=r[k]; if(k==='bio')return v?'Oui':'Non'; if(typeof v==='number')return String(v).replace('.',','); return v??'';}
+function regValue(r,k){const v=r[k]; if(k==='surface')return v==null?'':ha2(v); if(k==='bio')return v?'Oui':'Non'; if(typeof v==='number')return String(v).replace('.',','); return v??'';}
 function regRowsTries(){return TRAITS.map(regRow).sort((a,b)=>(a.date+a.debut).localeCompare(b.date+b.debut));}
 function telecharger(nom,contenu,type){
   const blob=new Blob([contenu],{type});const a=document.createElement('a');
@@ -2851,7 +2853,7 @@ function exportRegistreCSV(){
 function exportIFTCSV(){
   const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
   const lignes=[['Parcelle','Nom','Culture','Surface (ha)','IFT cumulé','Nb traitements'].map(q).join(';'),
-    ...PARCS.map(p=>{const ts=TRAITS.filter(t=>t.parcelle_code===p.code);return [p.code,p.nom||'',cultureParc(p),String(p.surface_ha??'').replace('.',','),iftP(p.code).toFixed(2).replace('.',','),ts.length].map(q).join(';');})];
+    ...PARCS.map(p=>{const ts=TRAITS.filter(t=>t.parcelle_code===p.code);return [p.code,p.nom||'',cultureParc(p),(p.surface_ha!=null?ha2(p.surface_ha):''),iftP(p.code).toFixed(2).replace('.',','),ts.length].map(q).join(';');})];
   telecharger(`bilan-ift-${new Date().toISOString().slice(0,10)}.csv`,'﻿'+lignes.join('\r\n'),'text/csv;charset=utf-8');
   toast('✅ Bilan IFT exporté');
 }
@@ -2957,12 +2959,12 @@ function calcHVE(){
 // ══════════════════════════════════════════
 function fillProfil(){
   if(!DOM)return;
-  sv('prN',DOM.nom);sv('prR',DOM.raison_sociale);sv('prC',DOM.commune);sv('prS',DOM.siret);sv('prCe',DOM.certiphyto);sv('prH',DOM.surface_ha);
+  sv('prN',DOM.nom);sv('prR',DOM.raison_sociale);sv('prC',DOM.commune);sv('prS',DOM.siret);sv('prCe',DOM.certiphyto);sv('prH',r2(DOM.surface_ha)??'');
   sv('prBio',DOM.settings?.bio?'1':'0');
 }
 async function saveProfil(){
   syncSaving();
-  const u={nom:g('prN'),raison_sociale:g('prR'),commune:g('prC'),siret:g('prS').replace(/\s/g,''),certiphyto:g('prCe'),surface_ha:parseFloat(g('prH'))||null,
+  const u={nom:g('prN'),raison_sociale:g('prR'),commune:g('prC'),siret:g('prS').replace(/\s/g,''),certiphyto:g('prCe'),surface_ha:r2(parseFloat(g('prH'))||null),
     settings:{...(DOM.settings||{}), bio:g('prBio')==='1'}};
   try{
     const {error}=await sb.from('domaines').update(u).eq('id',DOM_ID);
@@ -2981,7 +2983,7 @@ function editParc(id){
   document.getElementById('epID').value=p.id;
   document.getElementById('epN').value=p.nom||'';
   document.getElementById('epCo').value=p.code||'';
-  document.getElementById('epH').value=p.surface_ha||'';
+  document.getElementById('epH').value=r2(p.surface_ha)??'';
   document.getElementById('epCm').value=p.commune||'';
   document.getElementById('epCe').value=p.cepage||'';
   document.getElementById('epCl').value=p.couleur||'Blanc';
@@ -2999,7 +3001,7 @@ async function saveEditParc(){
   try{
     const upd={nom,code,commune:document.getElementById('epCm').value,cepage:document.getElementById('epCe').value,
       couleur:document.getElementById('epCl').value,produit_aoc:document.getElementById('epPr').value,
-      ref_cadastrale:document.getElementById('epCd').value,ilot:document.getElementById('epIl').value.trim()||null,surface_ha:parseFloat(document.getElementById('epH').value)||null,
+      ref_cadastrale:document.getElementById('epCd').value,ilot:document.getElementById('epIl').value.trim()||null,surface_ha:r2(parseFloat(document.getElementById('epH').value)||null),
       date_plantation:document.getElementById('epPl').value?`${document.getElementById('epPl').value}-01-01`:null};
     const {error}=await sb.from('parcelles').update(upd).eq('id',id);
     if(error)throw error;
@@ -3007,7 +3009,7 @@ async function saveEditParc(){
     syncOK();toast('✅ Parcelle modifiée');closeM(null,'mEP');
     renderDash();renderIFT();mI=false;initMap();
     const th=PARCS.reduce((s,p)=>s+(p.surface_ha||0),0);
-    await sb.from('domaines').update({surface_ha:th}).eq('id',DOM_ID);
+    await sb.from('domaines').update({surface_ha:r2(th)}).eq('id',DOM_ID);
   }catch(e){syncErr();toast('❌ Erreur : '+e.message);}
 }
 
@@ -3114,7 +3116,7 @@ async function saveEditTrait(){
       ift:Math.round(ift_val*100)/100,
       heure_application:document.getElementById('etHd').value||null,
       heure_fin:document.getElementById('etHf').value||null,
-      surface_traitee:parseFloat(document.getElementById('etSu').value)||null,
+      surface_traitee:r2(parseFloat(document.getElementById('etSu').value)||null),
       culture:cultureParc(par), ilot:par?.ilot||null,
       cible:document.getElementById('etCi').value.trim()||null,
       date_constat:document.getElementById('etCd').value||null,
@@ -3776,7 +3778,7 @@ function fillObsSelects() {
     const sel = document.getElementById(id);
     if (!sel) return;
     const first = id==='obParc' ? '<option value="">— Toutes —</option>' : '<option value="">— Choisir —</option>';
-    sel.innerHTML = first + PARCS.map(p=>`<option value="${p.code}">${p.code} · ${p.nom} (${p.surface_ha||'?'} ha)</option>`).join('');
+    sel.innerHTML = first + PARCS.map(p=>`<option value="${p.code}">${p.code} · ${p.nom} (${ha2(p.surface_ha)} ha)</option>`).join('');
   });
   const obDate = document.getElementById('obDate');
   if (obDate && !obDate.value) obDate.value = new Date().toISOString().split('T')[0];
@@ -4240,6 +4242,7 @@ async function handleShpFile(input) {
       return {
         code: `I${ilot}P${parc}`,
         nom: `Îlot ${ilot} · ${TYPES[typeCode] || typeCode || 'Parcelle'}`,
+        ilot: String(ilot),
         surface_ha: surf,
         commune: COMMUNES[communeCode] || communeCode || 'Inconnue',
         culture: TYPES[typeCode] || typeCode || '',
@@ -4279,7 +4282,7 @@ function afficherShpResult() {
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <div style="flex:1;min-width:120px">
           <div style="font-weight:700;font-size:13px">${p.nom}</div>
-          <div style="font-size:11px;color:var(--gris);margin-top:2px">${p.surface_ha} ha · ${p.commune} · ${p.coords.length} pts GPS</div>
+          <div style="font-size:11px;color:var(--gris);margin-top:2px">${ha2(p.surface_ha)} ha · ${p.commune} · ${p.coords.length} pts GPS</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
           <input type="text" value="${p.code}" placeholder="Code" style="width:70px;padding:5px 7px;font-size:12px" onchange="shpParcelles[${i}].code=this.value">
@@ -4302,7 +4305,7 @@ async function confirmShpImport() {
     try {
       const {data,error} = await sb.from('parcelles').insert({
         domaine_id: DOM_ID, code: p.code, nom: p.nom,
-        commune: p.commune, surface_ha: p.surface_ha || null,
+        commune: p.commune, surface_ha: r2(p.surface_ha) || null, ilot: p.ilot || null,
         cepage: p.culture, produit_aoc: 'PAC 2025',
         ref_cadastrale: `PAC2025-${p.code}`,
         coords: p.coords, color: p.color || COLORS[i%COLORS.length]
