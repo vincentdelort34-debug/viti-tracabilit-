@@ -423,6 +423,10 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <div style="font-weight:700;font-size:14px;color:var(--terre);margin-top:2px" id="userMenuEmail"></div>
       <div id="userMenuRole" style="font-size:12px;color:var(--or);font-weight:600;margin-top:1px"></div>
     </div>
+<div style="padding:4px 0">
+      <button onclick="hide('userMenu');fillProfil();showM('mProfil')" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--terre);font-family:'Outfit',sans-serif">🏢 Profil du domaine</button>
+      <button onclick="hide('userMenu');go('sAide',null)" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--terre);font-family:'Outfit',sans-serif">❓ Mode d'emploi</button>
+    </div>
     <div id="userMenuAdmin" style="display:none;padding:4px 0">
       <button onclick="hide('userMenu');show('secPanel');loadUsersList()" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--terre);font-family:'Outfit',sans-serif">👥 Gérer les comptes</button>
     </div>
@@ -444,6 +448,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   <button class="tab" onclick="go('sHVE',this)">🏅 HVE/AB</button>
   <button class="tab" onclick="go('sConseil',this)">📸 Conseil IA</button>
   <button class="tab" onclick="go('sPerso',this)">⚙️ Perso.</button>
+  <button class="tab" onclick="go('sAide',this)">❓ Aide</button>
 </nav>
 
 <!-- SIDEBAR (desktop only) -->
@@ -466,6 +471,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <button class="sb-tab" onclick="go('sHVE',this)" id="sb-sHVE"><span class="sb-tab-icon">🏅</span>HVE / AB</button>
     <button class="sb-tab" onclick="go('sConseil',this)" id="sb-sConseil"><span class="sb-tab-icon">💡</span>Conseils associations</button>
     <button class="sb-tab" onclick="go('sPerso',this)" id="sb-sPerso"><span class="sb-tab-icon">⚙️</span>Personnaliser</button>
+    <button class="sb-tab" onclick="go('sAide',this)" id="sb-sAide"><span class="sb-tab-icon">❓</span>Mode d'emploi</button>
   </div>
   <div class="sb-sync">
     <div class="sp sp-ok" id="spDesk"><span>●</span><span id="stDesk">Cloud</span></div>
@@ -477,6 +483,10 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
       <div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:.07em">Connecté</div>
       <div style="font-weight:700;font-size:13px;color:var(--terre);margin-top:2px;word-break:break-all" id="userMenuEmailDesk"></div>
       <div id="userMenuRoleDesk" style="font-size:12px;color:var(--or);font-weight:600;margin-top:1px"></div>
+    </div>
+<div style="padding:4px 0">
+      <button onclick="closeUserMenus();fillProfil();showM('mProfil')" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--terre);font-family:'Outfit',sans-serif">🏢 Profil du domaine</button>
+      <button onclick="closeUserMenus();go('sAide',null)" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--terre);font-family:'Outfit',sans-serif">❓ Mode d'emploi</button>
     </div>
     <div id="userMenuAdminDesk" style="display:none;padding:4px 0">
       <button onclick="closeUserMenus();show('secPanel');loadUsersList()" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--terre);font-family:'Outfit',sans-serif">👥 Gérer les comptes</button>
@@ -1037,9 +1047,165 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
   </div>
 
   <!-- ACTIONS -->
-  <button class="btn btp" onclick="savePerso()" style="margin-bottom:10px">💾 Sauvegarder dans Supabase</button>
+  <button class="btn btp" onclick="savePerso()" style="margin-bottom:10px">💾 Sauvegarder</button>
   <button class="btn btghost" style="width:100%;margin-bottom:20px" onclick="resetPerso()">↩ Réinitialiser les valeurs par défaut</button>
 </section>
+<!-- MODE D'EMPLOI -->
+<section id="sAide" class="sec">
+  <div class="stitle">Mode d'emploi</div><div class="ssub">Tout ce qu'il faut savoir pour utiliser VitiTrace au quotidien</div>
+  <style>
+    .aide details{background:var(--blanc,#fff);border:1px solid var(--gris2,#e5e0d6);border-radius:12px;margin-bottom:10px;overflow:hidden}
+    .aide summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:15px;color:var(--terre,#3b2a1a);list-style:none;display:flex;justify-content:space-between;align-items:center}
+    .aide summary::-webkit-details-marker{display:none}
+    .aide summary::after{content:'＋';color:var(--or,#c8a84c);font-size:18px}
+    .aide details[open] summary::after{content:'－'}
+    .aide .ac{padding:0 16px 14px;font-size:14px;line-height:1.6;color:var(--terre,#3b2a1a)}
+    .aide .ac ol,.aide .ac ul{padding-left:20px;margin:6px 0}
+    .aide .ac li{margin-bottom:4px}
+    .aide .ac p{margin:6px 0}
+    .aide .tip{background:var(--gris3,#f4f1ea);border-left:3px solid var(--or,#c8a84c);border-radius:6px;padding:8px 10px;font-size:13px;margin:8px 0}
+    .aide .warn{background:#fdf0e0;border-left:3px solid #e67e22;border-radius:6px;padding:8px 10px;font-size:13px;margin:8px 0}
+    .aide .go{display:inline-block;margin-top:6px;font-size:13px;color:var(--vigne,#2d5a27);font-weight:700;cursor:pointer;text-decoration:underline}
+    .aide table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}
+    .aide td{border-bottom:1px solid var(--gris2,#e5e0d6);padding:5px 4px;vertical-align:top}
+    .aide td:first-child{font-weight:600;white-space:nowrap;padding-right:10px}
+  </style>
+  <div class="aide">
+
+  <div class="al alb" style="margin-bottom:14px"><span class="al-i">💡</span><div><b>Par où commencer ?</b> Suivez les rubriques dans l'ordre la première fois : 1 → 5. Ensuite, au quotidien, vous utiliserez surtout « Saisir un traitement » et « Le registre ».</div></div>
+
+  <details open><summary>1 · Se repérer dans l'app</summary><div class="ac">
+    <ul>
+      <li><b>Sur téléphone</b> : les rubriques sont dans la barre d'onglets en haut (faites-la glisser pour voir la suite). Le rond avec votre initiale, en haut à droite, ouvre <b>votre compte</b>.</li>
+      <li><b>Sur ordinateur</b> : les rubriques sont dans la colonne de gauche ; votre compte est le rond en bas à gauche. Le bouton doré <b>« + Nouvelle saisie »</b> en haut donne accès rapide à toutes les saisies.</li>
+      <li>La pastille <b>● Cloud</b> indique que tout est bien enregistré en ligne. Si elle devient orange ou rouge, vérifiez votre connexion internet et recommencez la saisie.</li>
+      <li>Tout est sauvegardé automatiquement : on retrouve les mêmes données sur le téléphone et sur l'ordinateur.</li>
+    </ul>
+    <div class="tip">📱 <b>Installer l'app sur le téléphone</b> : ouvrez le site dans Safari (iPhone) ou Chrome (Android), puis « Partager › Sur l'écran d'accueil » (iPhone) ou « ⋮ › Ajouter à l'écran d'accueil » (Android). VitiTrace s'ouvre ensuite comme une application.</div>
+  </div></details>
+
+  <details><summary>2 · Se connecter, créer un compte</summary><div class="ac">
+    <ol>
+      <li>Sur l'écran d'accueil, onglet <b>« Se connecter »</b> : email + mot de passe.</li>
+      <li>Pas encore de compte ? Onglet <b>« Créer un compte »</b> : nom, email, mot de passe (6 caractères minimum) et nom du domaine. La demande part chez l'administrateur.</li>
+      <li>Tant que l'administrateur n'a pas validé, la connexion affiche « Votre compte est en attente de validation ». C'est normal.</li>
+      <li>Mot de passe oublié : tapez votre email puis cliquez <b>« Mot de passe oublié ? »</b> sous le bouton de connexion ; un email de réinitialisation arrive.</li>
+    </ol>
+  </div></details>
+
+  <details><summary>3 · Renseigner le domaine (SIRET, Certiphyto, bio)</summary><div class="ac">
+    <p>À faire <b>une seule fois</b>. Le SIRET est <b>obligatoire</b> dans le registre phyto depuis 2026.</p>
+    <ol>
+      <li>Ouvrez votre compte (rond avec l'initiale) › <b>« 🏢 Profil du domaine »</b>.</li>
+      <li>Remplissez : exploitant, raison sociale, commune, <b>SIRET</b>, n° <b>Certiphyto</b>, et indiquez si l'exploitation est en <b>agriculture biologique</b>.</li>
+      <li>Cliquez sur <b>« 💾 Sauvegarder »</b>.</li>
+    </ol>
+    <span class="go" onclick="fillProfil();showM('mProfil')">→ Ouvrir le profil du domaine</span>
+  </div></details>
+
+  <details><summary>4 · Les parcelles</summary><div class="ac">
+    <p><b>Le plus simple : importer depuis Télépac</b> (les parcelles arrivent avec leur contour GPS) :</p>
+    <ol>
+      <li>Sur Télépac, téléchargez le fichier des parcelles de votre déclaration PAC (fichier ZIP « shapefile »).</li>
+      <li>Rubrique <b>Parcelles</b> › déposez le fichier dans le cadre « Importer depuis Télépac » (ZIP, ou les fichiers .shp + .dbf + .shx ensemble). On peut aussi déposer un GeoJSON, KML, GPX ou une photo du relevé.</li>
+      <li>Vérifiez la liste, puis <b>« Importer ces parcelles »</b>.</li>
+    </ol>
+    <p><b>Ou à la main</b> : bouton <b>« + Ajouter une parcelle manuellement »</b> : nom, code, surface, commune, cépage, couleur, appellation, référence cadastrale, <b>n° d'îlot PAC</b>, année de plantation.</p>
+    <div class="tip">📍 Le <b>n° d'îlot</b> (ou à défaut le contour GPS) sert à la <b>localisation</b> obligatoire dans le registre. Pour modifier une parcelle : bouton <b>✏️</b> sur sa fiche.</div>
+  </div></details>
+
+  <details><summary>5 · Le stock de produits phyto</summary><div class="ac">
+    <p>Il faut que le produit soit dans le stock pour pouvoir saisir un traitement. Trois façons de l'ajouter :</p>
+    <ul>
+      <li><b>Scan IA › 📦 Étiquette</b> : photographiez l'étiquette du bidon/sachet, puis <b>« Analyser avec l'IA »</b>. Nom, AMM, doses, DAR, ZNT sont lus automatiquement. Vérifiez puis enregistrez.</li>
+      <li><b>Scan IA › 🧾 Facture / BDC</b> : photographiez une facture ou un bon de commande : tous les produits sont détectés d'un coup, cochez ceux à ajouter au stock.</li>
+      <li><b>Stock › ✏️ Saisie manuelle</b> : remplissez la fiche produit vous-même.</li>
+    </ul>
+    <p>Le stock <b>diminue tout seul</b> à chaque traitement (dose × surface traitée). Filtres : ✓ OK · ⚠️ Faible (sous le seuil d'alerte) · 🚫 Épuisé.</p>
+    <div class="tip">📸 Pour une bonne lecture : photo nette, bien éclairée, étiquette à plat, sans reflet.</div>
+  </div></details>
+
+  <details><summary>6 · Saisir un traitement</summary><div class="ac">
+    <p>Rubrique <b>Traitement</b> (ou « + Nouvelle saisie › Traitement phyto »). Remplissez de haut en bas :</p>
+    <table>
+      <tr><td>📅 Date</td><td>Jour du traitement.</td></tr>
+      <tr><td>🕐 Heures</td><td>Heure de <b>début</b> et de <b>fin</b> (la fin est obligatoire quand l'AMM impose des horaires).</td></tr>
+      <tr><td>📍 Parcelle</td><td>Choisissez-la : la culture et la localisation (îlot ou GPS) s'affichent automatiquement.</td></tr>
+      <tr><td>📐 Surface traitée</td><td>Pré-remplie avec la surface de la parcelle ; corrigez si seule une partie a été traitée.</td></tr>
+      <tr><td>🧪 Produit</td><td>Choisi dans le stock. Le n° AMM et la dose de référence se remplissent seuls.</td></tr>
+      <tr><td>💊 Dose appliquée</td><td>Par hectare. L'IFT se calcule en direct en haut de l'écran.</td></tr>
+      <tr><td>🌱 Stade BBCH</td><td>Stade de la vigne.</td></tr>
+      <tr><td>🎯 Cible</td><td>Maladie ou ravageur visé (mildiou, oïdium…) et <b>date du 1er constat</b>.</td></tr>
+      <tr><td>⏱ Délai de rentrée</td><td>6 h en plein champ par défaut ; 24 h ou 48 h selon les phrases de risque de l'étiquette (H315, H317, H318, H319, H334…).</td></tr>
+      <tr><td>🌿 Production bio</td><td>Pré-réglé d'après le profil du domaine.</td></tr>
+    </table>
+    <p>Cliquez <b>« Enregistrer dans le cloud »</b> : le traitement va au registre, l'IFT est mis à jour et le stock est déduit. Si le produit a un DAR, la date de récolte possible s'affiche.</p>
+  </div></details>
+
+  <details><summary>7 · Le registre phyto et les exports</summary><div class="ac">
+    <div class="warn">⚠️ <b>Registre numérique obligatoire à partir du 1er janvier 2027.</b> Toutes les mentions ci-dessous doivent y figurer.</div>
+    <p><b>Mentions obligatoires</b> : spécialité commerciale, n° AMM, quantité et dose, date, horaires de début et fin (si prévu par l'AMM), organisme nuisible ciblé et date du 1er constat, SIRET de l'exploitation, localisation (n° d'îlot ou GPS), surface traitée, culture, stade phénologique (si imposé par l'AMM), délai de rentrée, caractère biologique de la production.</p>
+    <ul>
+      <li>Rubrique <b>Registre</b> : chaque ligne indique <b>✓ complet</b> ou <b>⚠️</b> avec ce qui manque. Le bandeau du haut résume l'état du registre.</li>
+      <li>Pour compléter une ligne : cliquez <b>✏️</b> au bout de la ligne, remplissez, enregistrez.</li>
+      <li><b>PDF</b> : ouvre le registre prêt à imprimer (ou « Enregistrer en PDF » dans la fenêtre d'impression). Autorisez les fenêtres pop-up si rien ne s'ouvre.</li>
+      <li><b>CSV</b> : télécharge le registre en tableau, ouvrable dans Excel ou Numbers.</li>
+      <li><b>Bilan IFT</b> : tableau de l'IFT par parcelle, pour la cave ou l'acheteur.</li>
+    </ul>
+    <div class="tip">✅ Avant un contrôle : vérifiez que le bandeau du registre est vert, puis faites un export PDF.</div>
+  </div></details>
+
+  <details><summary>8 · IFT et HVE</summary><div class="ac">
+    <ul>
+      <li><b>IFT</b> = dose appliquée ÷ dose de référence. La rubrique IFT montre le total du domaine et le détail par parcelle, avec un code couleur par rapport à la référence.</li>
+      <li><b>HVE / AB</b> : score calculé à partir des traitements réels. Cochez les pratiques (fertilisation, irrigation, biodiversité) pour affiner le score.</li>
+    </ul>
+  </div></details>
+
+  <details><summary>9 · Météo, observations et Conseil IA</summary><div class="ac">
+    <ul>
+      <li><b>Météo</b> : prévisions 7 jours et créneaux conseillés pour traiter.</li>
+      <li><b>Observation</b> (« + Nouvelle saisie › Observation ») : noter une maladie, un ravageur, sa gravité et la parcelle. Utile pour la <b>date du 1er constat</b>.</li>
+      <li><b>Conseil IA</b> : photographiez une feuille, une grappe ou une adventice : l'IA propose un diagnostic et des pistes de produits. <b>À vérifier</b> avec votre technicien avant tout traitement.</li>
+    </ul>
+  </div></details>
+
+  <details><summary>10 · Cave et ventes</summary><div class="ac">
+    <ul>
+      <li><b>+ Cuve</b> : nom, capacité, volume actuel, cuvée.</li>
+      <li><b>+ Vente</b> : cuvée, acheteur, circuit, volume, prix, date de livraison.</li>
+      <li><b>+ Nouvelle saisie › Rendement</b> pour noter les vendanges.</li>
+    </ul>
+    <div class="tip">🚧 Les documents DREV, certificat de traçabilité, QR code bouteille et dossiers HVE/AB en PDF ne sont <b>pas encore disponibles</b>.</div>
+  </div></details>
+
+  <details><summary>11 · Personnaliser l'app</summary><div class="ac">
+    <p>Rubrique <b>Personnaliser</b> : nom affiché, sous-titre, emoji, couleurs et textes d'accueil. L'aperçu se met à jour en direct.</p>
+  </div></details>
+
+  <details id="aideAdmin"><summary>12 · Administrateur : gérer les comptes</summary><div class="ac">
+    <p>Réservé au compte administrateur. Ouvrez votre compte › <b>« 👥 Gérer les comptes »</b>.</p>
+    <ul>
+      <li><b>Demandes en attente</b> : quand quelqu'un s'inscrit, un message « 🔔 demande de compte en attente » s'affiche à votre connexion et le bouton indique le nombre de demandes. Pour chaque demande : choisissez le <b>domaine</b> (existant, ou création automatique d'un nouveau), le <b>rôle</b> (Viticulteur ou Secrétaire), puis <b>✅ Valider</b> ou <b>❌ Refuser</b> (le compte est alors supprimé).</li>
+      <li><b>Créer un compte viticulteur</b> directement : nom, email, mot de passe temporaire, domaine.</li>
+    </ul>
+    <div class="tip">Rôles : <b>Administrateur</b> (tout, y compris valider les comptes) · <b>Secrétaire</b> (saisie et gestion des comptes) · <b>Viticulteur</b> (son domaine uniquement).</div>
+  </div></details>
+
+  <details><summary>13 · En cas de souci</summary><div class="ac">
+    <table>
+      <tr><td>« Compte en attente de validation »</td><td>L'administrateur doit valider la demande (rubrique 12).</td></tr>
+      <tr><td>« Domaine introuvable »</td><td>Le compte n'est rattaché à aucun domaine : l'administrateur doit le rattacher.</td></tr>
+      <tr><td>Le produit n'apparaît pas dans la liste</td><td>Il n'est pas dans le stock : ajoutez-le (rubrique 5).</td></tr>
+      <tr><td>Pastille Cloud rouge</td><td>Pas de connexion internet : la saisie n'est pas enregistrée, recommencez une fois connecté.</td></tr>
+      <tr><td>Le PDF ne s'ouvre pas</td><td>Autorisez les fenêtres pop-up pour le site dans le navigateur.</td></tr>
+      <tr><td>Une donnée a disparu après rechargement</td><td>Elle n'avait pas été enregistrée (Cloud rouge) : saisissez-la à nouveau.</td></tr>
+    </table>
+  </div></details>
+
+  </div>
+</section>
+
 </div><!-- /main -->
 </div><!-- /appWrapper -->
 <button class="fab" id="aFab" style="display:none" onclick="showM('mNI')">+</button>
@@ -1257,7 +1423,7 @@ input.aif{border-color:rgba(74,138,66,.5);background:#f0faf0}input.aiu{border-co
     <div class="sro"><span style="font-size:14px;font-weight:500">🔔 Alertes DAR</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
     <div class="sro"><span style="font-size:14px;font-weight:500">🧪 Alerte stock critique</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
     <div class="sro"><span style="font-size:14px;font-weight:500">🍄 Alertes météo risque</span><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
-    <button class="btn btp" onclick="saveProfil()" style="margin-top:8px">💾 Sauvegarder dans Supabase</button>
+    <button class="btn btp" onclick="saveProfil()" style="margin-top:8px">💾 Sauvegarder</button>
     <button class="btn btghost" style="width:100%;margin-top:8px" onclick="closeM(null,'mProfil')">Fermer</button>
   </div>
 </div>
@@ -2027,7 +2193,7 @@ function go(id, btn) {
     sDash:'🏠 Accueil', sTrait:'🌿 Traitement', sIFT:'📊 IFT',
     sScan:'📷 Scan IA', sStock:'🧪 Stock phytosanitaire',
     sCarto:'🗺️ Parcelles', sMeteo:'🌤️ Météo', sRegistre:'📋 Registre',
-    sCave:'🍷 Cave & Négoce', sHVE:'🏅 HVE / AB', sConseil:'💡 Conseils associations', sPerso:'⚙️ Personnaliser'
+    sCave:'🍷 Cave & Négoce', sHVE:'🏅 HVE / AB', sConseil:'💡 Conseils associations', sPerso:'⚙️ Personnaliser', sAide:'❓ Mode d\'emploi'
   };
   const tbEl = document.getElementById('tbTitle');
   if (tbEl) tbEl.textContent = titles[id] || '';
